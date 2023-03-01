@@ -14,4 +14,60 @@ Metric_12	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
 Metric_13	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
 Metric_14	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
 Metric_15	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_16	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_17	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_18	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_19	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_20	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_21	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_22	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_23	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_24	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_25	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_26	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_27	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_28	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_29	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_30	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_31	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_32	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_33	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_34	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_35	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_36	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_37	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_38	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_39	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_40	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_41	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_42	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_43	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_44	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_45	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_46	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_47	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_48	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_49	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_50	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_51	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_52	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_53	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_54	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_55	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_56	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_57	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_58	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_59	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_60	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_61	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_62	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_63	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_64	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_65	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_66	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_67	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_68	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_69	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_70	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_71	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
 {'MDEngine': 'ACEMD', 'PSF': 'NEUTRAL_fis.psf', 'PDB': 'NEUTRAL_fis.pdb', 'Parameters': ['par_all36_cgenff_empty.prm', 'par_all36_carb_2.prm', 'par_all35_ethers.prm', 'par_all36_na.prm', 'par_all36m_prot.prm', 'par_all22_prot.prm', 'par_all36_lipid.prm', 'par_all36_cgenff.prm', 'par_all36_prot.prm', 'par_all36_carb.prm', 'parm14sb_all.prm'], 'Forcefield': 'CHARMM', 'Timestep': '4', 'Savefreq': '20', 'Wrap': 'protein and name CA and segid P0 P1', 'NumberCV': 1, 'Metric_1': 'RMSD', 'Cutoff_1': 3, 'Transition_1': 'negative', 'Slope': 'NO', 'Metric_2': 'RMSD', 'Cutoff_2': 3, 'Transition_2': 'negative', 'Walkers': 1, 'Timewindow': '500', 'GPU_ID': '2', 'REFERENCE': 'NEUTRAL_fis.pdb', 'PLUMED': None, 'Restart': 'NO', 'Output': 'output', 'ligand_HB': None, 'coor': 'NEUTRAL_fis.coor', 'vel': 'NEUTRAL_fis.vel', 'xsc': 'previous.xsc'}

@@ -3,7 +3,6 @@ from lib import *
 
 def main():
     print("HI")
-    SuMD_1_CV.suMD1()
 
     if SuMD_1_CV.suMD1().par['NumberCV'] == 1:
         SuMD_1_CV.suMD1().run_SuMD_1_CV()
