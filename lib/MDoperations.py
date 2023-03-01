@@ -18,12 +18,14 @@ class MDoperations(mwInputParser):
         # run acemd3
         self.runMD(self.trajCount, self.par['Walkers'])
         self.new_value, self.walker_metrics, self.slope = self.saveSteps_and_Logs_and_value()
+        print("SET AND RUN COMPLETED")
         return self.new_value, self.walker_metrics, self.slope
 
     def runMD(self, trajCount, number_of_walkers):
         os.chdir(self.folder)
         self.folderOps.checkCycle(trajCount)
-        for walk_number in range(1, int(number_of_walkers) + 1):
+        # for walk_number in range(1, int(number_of_walkers) + 1):
+        for walk_number in range(1, 7):
             os.makedirs('tmp/walker_' + str(walk_number), exist_ok=True)
             MDsetter().createInput(walk_number, trajCount)
             if self.par['PLUMED'] is not None:
@@ -38,11 +40,17 @@ class MDoperations(mwInputParser):
             # os.chdir('tmp/walker_' + str(walk_number))
 
             # qui andrà multiprocessing
-        gpus = self.folderOps.getGPUs()
-        for batch in FolderOps().createBatches(self.par['Walkers'], gpus):
+        # gpus = self.folderOps.getGPUs()
+        gpus = [[0, 1, 2, 3], [0, 1]]
+        print("avaliable gpus: " + str(gpus))
+        # for batch in FolderOps().createBatches(self.par['Walkers'], gpus):
+        for batch in FolderOps().createBatches(6, gpus):
             print(batch)
             if self.par['MDEngine'] == 'ACEMD':
-                Runner().runACEMD(self.par['Walkers'], trajCount, batch)
+                # print("questi i walkers")
+                # print(self.par['Walkers'])
+                # Runner().runACEMD(self.par['Walkers'], trajCount, batch)
+                Runner().runACEMD(6, trajCount, batch)
             if self.par['MDEngine'] == 'GROMACS':
                 print('test')
                 # Runner.runGROMACS(trajCount, batch)

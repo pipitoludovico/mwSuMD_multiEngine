@@ -1,0 +1,90 @@
+### Is this a restart? YES or NO
+Restart = NO
+
+########################################################################
+### MD engine used (ACEMD; GROMACS) 
+MDEngine = ACEMD
+
+# if GROMACS:
+### GROMACS input mdp file
+GROMACS_MDP =  input_files/md.mdp
+### GROMACS topology file
+GROMACS_TOP = input_files/topol.top
+
+
+# if ACEMD:
+### charmm or amber - ACEMD only  - 
+Forcefield = CHARMM
+### Selection for wrapping (default "protein") - ACEMD only  -
+Wrap = protein and name CA and segid P0 P1
+
+########################################################################
+### Input root of the files (.gro / .cpt for GROMACS  ----  .pdb / .psf / .coor ./ .vel for ACEMD)
+Topology = NEUTRAL_fis
+
+### Output root of the files
+Output = output 
+
+
+########################################################################
+# Supervision on one or two metrics?
+NumberCV = 1
+
+### First metric ######
+#List of selection to work with (MDTraj selection for Distance / MDAnalysis for Contacts  / MDAnalysis for RMSD)
+#RMSD
+Sel_1 = segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Sel_2 = segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+
+## Distance (Sel_1 and Sel_2); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_1 and Sel_2)
+Metric_1 = RMSD
+#value the simulation will stop when reached
+Cutoff_1 = 3
+# positive or negative 
+Transition_1 = negative
+# Slope = YES to use linear interpolation (doable only if NumberCV = 1)
+Slope = NO
+ 
+## Second metric #####
+# List of selection to work with (MDTraj selection for Distance / MDAnalysis for Contacts  / MDAnalysis for RMSD)
+#RMSD
+Sel_3 =  segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Sel_4 =  segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+
+##  Distance (Sel_3 and Sel_4); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_3 and Sel_4) ; HB_score (just fill 'ligand_HB')
+Metric_2 = RMSD
+# value the simulation will stop when reached
+Cutoff_2 = 3
+# positive or negative 
+Transition_2 = negative
+
+###########################à
+# pdb to use as reference for RMSD only
+REFERENCE = /scratch/giuseppe/NPY_project/mwSuMD/reference.pdb
+#
+# # plumed input file for metadynamics etc during  mwSuMD
+PLUMED =
+#
+# # selction for ligand - needed only if HB_score to be used (not tested)
+ligand_HB =
+#
+########################################################################
+### Algorithm and MD settings
+# number of walkers
+Walkers = 1
+
+#each simulation length in ps  - ACEMD only - 
+Timewindow = 500 
+
+#fs - ACEMD only - 
+Timestep = 4 
+
+#ps - ACEMD only - 
+Savefreq = 20
+
+#gpu card number
+GPU_ID = 2
+
+### Define CHARMM parameter files other than the standards ones (separated by ;) - ACEMD only
+Parameters =  
+

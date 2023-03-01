@@ -1,0 +1,17 @@
+Metric_0	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_1	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_2	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_3	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_4	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_5	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_6	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_7	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_8	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_9	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_10	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_11	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+Metric_12	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_13	segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Metric_14	segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
+Metric_15	segid P2 and resnum 32:36 and not (name H* or name NT or name NXT)
+{'MDEngine': 'ACEMD', 'PSF': 'NEUTRAL_fis.psf', 'PDB': 'NEUTRAL_fis.pdb', 'Parameters': ['par_all36_cgenff_empty.prm', 'par_all36_carb_2.prm', 'par_all35_ethers.prm', 'par_all36_na.prm', 'par_all36m_prot.prm', 'par_all22_prot.prm', 'par_all36_lipid.prm', 'par_all36_cgenff.prm', 'par_all36_prot.prm', 'par_all36_carb.prm', 'parm14sb_all.prm'], 'Forcefield': 'CHARMM', 'Timestep': '4', 'Savefreq': '20', 'Wrap': 'protein and name CA and segid P0 P1', 'NumberCV': 1, 'Metric_1': 'RMSD', 'Cutoff_1': 3, 'Transition_1': 'negative', 'Slope': 'NO', 'Metric_2': 'RMSD', 'Cutoff_2': 3, 'Transition_2': 'negative', 'Walkers': 1, 'Timewindow': '500', 'GPU_ID': '2', 'REFERENCE': 'NEUTRAL_fis.pdb', 'PLUMED': None, 'Restart': 'NO', 'Output': 'output', 'ligand_HB': None, 'coor': 'NEUTRAL_fis.coor', 'vel': 'NEUTRAL_fis.vel', 'xsc': 'previous.xsc'}

@@ -3,6 +3,7 @@ import os
 
 class mwInputParser:
     folder = os.getcwd()
+    inputFile = 'simulation_settings_mwSuMD.inp'
     par = {}
     selection_list = []
     walker_metrics = []
@@ -12,13 +13,12 @@ class mwInputParser:
     slope = 0
 
     def __init__(self):
-        self.inputFile = 'simulation_settings_mwSuMD.inp'
+        self.trajCount = 0
         self.outExtensions = ('coor', 'vel', 'xsc')
         self.groExtensions = ('.mpd', '.gro', '.cpt', '.itp', 'top')
         self.paramExt = ('.param', '.prmtop', '.prm')
         os.makedirs('trajectories', exist_ok=True)
         self.getSettings()
-        self.trajCount = self.countTraj_logTraj()
         if not os.path.isfile(self.inputFile):
             print('Input file for SuMD simulation required')
             quit()
@@ -168,19 +168,20 @@ class mwInputParser:
 
     def countTraj_logTraj(self, metric=0, slope=0):
         """ At what cycle number mwSuMD was stopped? """
-        trajCount = len([x for x in os.scandir('trajectories')])
-        if trajCount == 0:
+        self.trajCount = len([x for x in os.scandir('trajectories')])
+        if self.trajCount == 0:
             with open('walkerSummary.log', 'w') as logF:
                 logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")
         else:
             with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(trajCount) + " " + str(metric) + " " + str(slope) + "\n")
+                logF.write(str(self.trajCount) + " " + str(metric) + " " + str(slope) + "\n")
                 logF.close()
-        return trajCount
+        return self.trajCount
 
     def getSettings(self):
         self.checkEngine(), self.getTopology(), self.getParameters(), self.getForcefields()
         self.getMetrics(), self.getReferencePDB(), self.argumentParser(), self.getRestartOutput()
+        self.countTraj_logTraj()
         logF = open("settings.txt", "w")
         for idx, sel in enumerate(self.selection_list):
             logF.write('Metric_%s	%s\n' % (str(idx), sel))
