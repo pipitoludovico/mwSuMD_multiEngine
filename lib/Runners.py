@@ -1,6 +1,6 @@
 import os
 
-from .mwParser import mwInputParser
+from .Parser import mwInputParser
 
 
 class Runner(mwInputParser):

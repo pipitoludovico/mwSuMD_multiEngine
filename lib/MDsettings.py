@@ -1,25 +1,24 @@
 import os
 
-from .FolderOps import FolderOps
-from .mwParser import mwInputParser
+from .EngineInputParser import EngineInputs
+from .Parser import mwInputParser
 
 
 class MDsetter(mwInputParser):
     def __init__(self, par):
         super(MDsetter, self).__init__()
         self.par = par
-        print("INIT MD SETTER")
 
     def createInput(self, trajCount):
         savefreq = int((int(self.par['Savefreq']) * 1000) / int(self.par['Timestep']))
-        for walker in range(1, self.par['Walkers']+1):
+        for walker in range(1, self.par['Walkers'] + 1):
             print("creating walker:" + str(walker))
             os.makedirs('tmp', exist_ok=True)
-            os.makedirs('tmp/walker_' + str(walker),exist_ok=True)
+            os.makedirs('tmp/walker_' + str(walker), exist_ok=True)
             eq_file = open(f'tmp/walker_{walker}/input_{walker}_{trajCount}.inp', 'w')
 
             if self.par['Forcefield'] == 'CHARMM':
-                txt = FolderOps(self.par).getAcemdInputFile(savefreq)
+                txt = EngineInputs(self.par).getAcemdInputFile(savefreq)
 
                 for line in txt:
                     eq_file.write(line)
@@ -35,7 +34,7 @@ class MDsetter(mwInputParser):
 
             # AMBER INPUT NEEDS TO BE DONE WITH THE NEW DICT
             if self.par['Forcefield'] == 'AMBER':
-                txt = FolderOps(self.par).getAMBERinputFile(savefreq)
+                txt = EngineInputs(self.par).getAMBERinputFile(savefreq)
 
                 for e in txt:
                     eq_file.write(e)

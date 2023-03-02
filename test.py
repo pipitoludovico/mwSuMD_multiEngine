@@ -162,9 +162,25 @@
 #         print(gpu, walker)
 #         gpu += 1
 #         walker += 1
-import MDAnalysis as Mda
 
-xtc = 'tmp/walker_1/wrapped.xtc'
-psf = 'system/NEUTRAL_fis.psf'
 
-uni = Mda.Universe(psf, xtc)
+# Center of Mass with MDA
+# import MDAnalysis as mda
+# import numpy as np
+#
+# selection = 'segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA'
+#
+# psf = "NEUTRAL_fis.psf"
+# xtc = "wrapped.xtc"
+#
+# u = mda.Universe(psf, xtc)
+# sele = u.select_atoms(selection)
+# arr = np.empty((sele.n_residues, u.trajectory.n_frames, 3))
+#
+# for ts in mda.log.ProgressBar(u.trajectory):
+#     arr[:, ts.frame] = sele.center_of_mass()
+#
+# print(arr)
+import os
+trajCount = len([x for x in os.scandir('trajectories')])
+print(trajCount)

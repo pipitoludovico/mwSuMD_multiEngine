@@ -56,3 +56,11 @@ class Logger:
             distF.write('distances: %s, mean: %s, last: %s, score: %s\n' % (
                 " ".join(map(str, logDistances)), str(log_mean_distance),
                 str(log_last_distance), str(log_distMetric)))
+
+    @staticmethod
+    def HbLogger(logScoreValue, logScoreNumHB_frame, logScoreHBscore):
+        with open('/HB_scores_crude.log', 'a') as scoreF:
+            scoreF.write(
+                'number wat mols: %s, number HB: %s, HB_score: %s\n' % (str(logScoreValue),
+                                                                        str(logScoreNumHB_frame),
+                                                                        str(logScoreHBscore)))
