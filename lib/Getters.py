@@ -1,72 +1,56 @@
-class Getters:
-    def __init__(self):
+import os
+import mdtraj
+
+from .mwParser import mwInputParser
+
+
+class Getters(mwInputParser):
+    def __init__(self, par):
+        super(Getters, self).__init__()
+        self.par = par
         self.denume = None
         self.nume = None
         self.com = None
 
-    def getRMSD(self, par, sel_1, sel_2, trajCount):
+    def getRMSD(self, sel_1, sel_2):
+        print("GETRMSD")
+        print(os.getcwd())
         import MDAnalysis as Mda
         import MDAnalysis.analysis.rms
-        print()
-        pdb = f'../../system/reference/' + str(par['REFERENCE'])
-        psf = None
-        if par['MDEngine'] == 'ACEMD':
-            xtc = '%s_%s_wrapped.xtc' % (par['Output'], str(trajCount))
-            if par['Forcefield'] == 'CHARMM':
-                psf = f'../../system/%s' % par['PSF']
-            elif par['Forcefield'] == 'AMBER':
-                psf = f'../../system/%s.prmtop' % par['Topology']
-        else:
-            xtc = '%s_%s.xtc' % (par['Output'], str(trajCount))
-            psf = '%s.gro' % par['Topology']
 
+        pdb = f'{self.folder}/system/reference/' + str(self.par['REFERENCE'])
+        psf = None
+        if self.par['MDEngine'] == 'ACEMD':
+            xtc = 'wrapped.xtc'
+            if self.par['Forcefield'] == 'CHARMM':
+                psf = f'{self.folder}/system/%s' % self.par['PSF']
+            elif self.par['Forcefield'] == 'AMBER':
+                psf = f'{self.folder}/system/%s.prmtop' % self.par['Topology']
+        else:
+            xtc = '%s_%s.xtc' % (self.par['Output'], str(self.trajCount))
+            psf = '%s.gro' % self.par['Topology']
         u = Mda.Universe(psf, xtc)
         ref = Mda.Universe(pdb)
         R = Mda.analysis.rms.RMSD(u, ref, select="%s" % sel_1, groupselections=["%s" % sel_2])
         R.run()
-        rmsd = R.rmsd.T
 
+        rmsd = R.rmsd.T
         data = list(rmsd[3])
         mean_rmsd = sum(data) / len(data)
-        last_rmsd = rmsd[-1]
-        # minimumRmsd = min(data)
-        # bestFrame = data.index(minimumRmsd)
+        last_rmsd = data[-1]
 
-        # try:
-        #     maxRMSD = max(x for x in data if x < 100)
-        #     maxFrame = data.index(maxRMSD)
-        # except:
-        #     maxRMSD = 0
-        #     maxFrame = 0
-
-        if par['NumberCV'] == 1:
-            if par['Slope'] == 'NO':  # we return the walker score
+        if self.par['NumberCV'] == 1:  # we return the walker score or slope already
+            if self.par['Slope'] == 'NO':  # we return the walker score
                 distMetric = (mean_rmsd * last_rmsd) ** 0.5
                 return distMetric
-                # distMetric = minimumRmsd
-                # logRMSD(data, mean_rmsd, last_rmsd, distMetric)  # logger da sistemare a parte
-                # print("\nFrame " + str(bestFrame) + " had the lowest RMSD: " + str(distMetric))
-                # return bestFrame, distMetric, ""
-            if par['Slope'] == 'YES':
-                return self.getSlope(data)
-        if par['NumberCV'] == 2:
-            return data, last_rmsd
-                    # distMetric = minimumRmsd
-                    # slope = self.getSlope(data)
-                    # return bestFrame, distMetric, slope
-            # if par['Transition_1'] == 'positive':
-            #     if par['Slope'] == 'NO':  # we return the walker score
-                    # distMetric = maxRMSD
-                    # print("\nFrame " + str(maxFrame) + " had the highest RMSD: " + str(distMetric))
-                    # return maxFrame, distMetric, ""
-                    # distMetric = (mean_rmsd * last_rmsd) ** 0.5
-                    # return distMetric
-                # elif par['Slope'] == 'YES':
-                    # distMetric = maxRMSD
-                    # slope = self.getSlope(data)
-                    # return maxFrame, distMetric, slope
 
-    # @staticmethod
+            elif self.par['Slope'] == 'YES':  # we return the walker slope
+                distMetric = self.getSlope(data)
+                return distMetric
+
+        elif self.par['NumberCV'] == 2:  # we return all the metric values and the last distance
+            return data, last_rmsd
+
     # def getHB_score(par, n, selection_list=list):
     #     print(selection_list)
     #     psf = None
@@ -195,24 +179,22 @@ class Getters:
     #             logScores_detailed(index, value, numHB_frame[index], HBscore)
     #         return score_per_frame, score_per_frame[-1]
 
-    def contacts_misc(self, par, sel_1, sel_2, cycle_number):
+    def contacts_misc(self, sel_1, sel_2):
         import MDAnalysis
         from MDAnalysis.analysis import contacts
 
         # Debug: log with crude values for score computation
         psf = None
-        xtc = None
-        if par['MDEngine'] == 'ACEMD':
-            xtc = '%s_%s_wrapped.xtc' % (par['Output'], str(cycle_number))
+        xtc = 'wrapped.xtc'
 
-            if par['Forcefield'] == 'CHARMM':
-                psf = '%s.psf' % par['Topology']
-            elif par['Forcefield'] == 'AMBER':
-                psf = '%s.prmtop' % par['Topology']
+        if self.par['MDEngine'] == 'ACEMD':
+            if self.par['Forcefield'] == 'CHARMM':
+                psf = '%s.psf' % self.par['PSF']
+            elif self.par['Forcefield'] == 'AMBER':
+                psf = '%s.prmtop' % self.par['Topology']
 
-        elif par['MDEngine'] == 'GROMACS':
-            xtc = '%s_%s.xtc' % (par['Output'], str(cycle_number))
-            psf = '%s.gro' % par['Topology']
+        elif self.par['MDEngine'] == 'GROMACS':
+            psf = '%s.gro' % self.par['gro']
 
         u = MDAnalysis.Universe(psf, xtc)
 
@@ -243,17 +225,17 @@ class Getters:
         mean_contacts = sum(timeseries) / n
         last_contacts = timeseries[-1]
 
-        if par['NumberCV'] == '1':  # we return the walker score or slope already
-            if par['Slope'] == 'NO':  # we return the walker score
+        if self.par['NumberCV'] == 1:  # we return the walker score or slope already
+            if self.par['Slope'] == 'NO':  # we return the walker score
                 distMetric = (mean_contacts * last_contacts) ** 0.5
                 # logContact_misc(timeseries, mean_contacts, last_contacts, distMetric)
                 return distMetric
 
-            elif par['Slope'] == 'YES':  # we return the walker slope
+            elif self.par['Slope'] == 'YES':  # we return the walker slope
                 distMetric = self.getSlope(timeseries)
                 return distMetric
 
-        elif par['NumberCV'] == '2':  # we return all the metric values and the last distance
+        elif self.par['NumberCV'] == '2':  # we return all the metric values and the last distance
             return timeseries, last_contacts
 
     def getSlope(self, values_metric):
@@ -284,38 +266,6 @@ class Getters:
         # Compute center of mass for each frame
         self.com = np.dot(xyz.astype('float64'), masses / masses.sum(axis=0))
         return self.com
-
-    def getDistance_coincise(self, par, sel_1, sel_2, trajCount):
-        import mdtraj
-        import numpy as np
-
-        # Construct path to trajectory and topology files
-        if par['MDEngine'] == 'ACEMD':
-            xtc = f"{par['Output']}_{trajCount}_wrapped.xtc"
-            topology = f"../../system/{par['Topology']}.psf" \
-                if par['Forcefield'] == 'CHARMM' else f"../../system/{par['Topology']}.prmtop"
-        else:
-            xtc = f"{par['Output']}_{trajCount}.xtc"
-            topology = f"{par['Topology']}.gro"
-
-        # Load trajectory and compute center of mass
-        traj = mdtraj.load(xtc, top=topology)
-        c1 = self.compute_center_of_mass(traj, select=sel_1)
-        c2 = self.compute_center_of_mass(traj, select=sel_2)
-
-        # Compute distances
-        distances = [np.linalg.norm(a - b) * 10 for a, b in zip(c1, c2)]
-        mean_distance = np.mean(distances)
-        last_distance = distances[-1]
-
-        # Return computed metric(s)
-        if par['NumberCV'] == '1':
-            if par['Slope'] == 'NO':
-                return (mean_distance * last_distance) ** 0.5
-            else:
-                return self.getSlope(distances)
-        else:
-            return distances, last_distance
 
     def compute_center_of_mass(self, traj, select=None):
         import numpy as np
@@ -354,55 +304,85 @@ class Getters:
             self.com[i, :] = x.astype('float64').T.dot(masses)
         return self.com
 
-    def getDistance(self, par, sel_1, sel_2, trajCount):
+    # def getDistance_OLD(self, sel_1, sel_2):
+    #     import mdtraj
+    #     import numpy as np
+    #     """Compute distances between COMs"""
+    #     topology = None
+    #     if self.par['MDEngine'] == 'ACEMD':
+    #         xtc = 'wrapped.xtc'
+    #         if self.par['Forcefield'] == 'CHARMM':
+    #             topology = f'../../system/%s.psf' % self.par['Topology']
+    #         elif self.par['Forcefield'] == 'AMBER':
+    #             topology = '../../system/%s.prmtop' % self.par['Topology']
+    #
+    #     else:
+    #         xtc = 'wrapped.xtc'
+    #         topology = '%s.gro' % self.par['mdp']
+    #
+    #     traj = mdtraj.load(xtc, top=topology)
+    #     c1 = self.compute_center_of_mass(traj, select=sel_1)
+    #     c2 = self.compute_center_of_mass(traj, select=sel_2)
+    #
+    #     # elif par['NumberCV'] == '2' and par['Metric_1'] == 'Distance':
+    #     # c1 = compute_center_of_mass(traj, select=selection_list[0])
+    #     # c2 = compute_center_of_mass(traj, select=selection_list[1])
+    #
+    #     # elif par['NumberCV'] == '2' and par['Metric_2'] == 'Distance':
+    #     # c1 = compute_center_of_mass(traj, select=selection_list[2])
+    #     # c2 = compute_center_of_mass(traj, select=selection_list[3])
+    #
+    #     distances = []
+    #     # compute distance between elements sam eposiiton in 2 different lists
+    #     for a, b in zip(c1, c2):
+    #         D = np.linalg.norm(a - b) * 10
+    #         distances.append(D)
+    #
+    #     n = len(distances)
+    #     mean_distance = sum(distances) / n
+    #     last_distance = distances[-1]
+    #
+    #     if self.par['NumberCV'] == '1':  # we return the walker score or slope already
+    #         if self.par['Slope'] == 'NO':  # we return the walker score
+    #             distMetric = (mean_distance * last_distance) ** 0.5
+    #             return distMetric
+    #
+    #         elif self.par['Slope'] == 'YES':  # we return the walker slope
+    #             distMetric = self.getSlope(distances, )
+    #             return distMetric
+    #
+    #     elif self.par['NumberCV'] == '2':  # we return all the metric values and the last distance
+    #         return distances, last_distance
+
+    def getDistance(self, sel_1, sel_2):
         import mdtraj
         import numpy as np
-        """Compute distances between COMs"""
-        topology = None
-        if par['MDEngine'] == 'ACEMD':
-            xtc = '%s_%s_wrapped.xtc' % (par['Output'], str(trajCount))
-            if par['Forcefield'] == 'CHARMM':
-                topology = f'../../system/%s.psf' % par['Topology']
-            elif par['Forcefield'] == 'AMBER':
-                topology = '../../system/%s.prmtop' % par['Topology']
 
+        # Construct path to trajectory and topology files
+        xtc = "wrapped.xtc"
+        if self.par['MDEngine'] == 'ACEMD':
+            topology = f"../../system/{self.par['PSF']}" \
+                if self.par['Forcefield'] == 'CHARMM' else f"../../system/{self.par['prmtop']}"
         else:
-            xtc = '%s_%s.xtc' % (par['Output'], str(trajCount))
-            topology = '%s.gro' % par['Topology']
+            topology = f"{self.par['gro']}"
 
+        print(sel_1)
+        print(sel_2)
+        # Load trajectory and compute center of mass
         traj = mdtraj.load(xtc, top=topology)
-        # let's decide what selections to use according to the number of metrics we want to compute
-        # if par['NumberCV'] == '1' and par['Metric_1'] == 'Distance':
         c1 = self.compute_center_of_mass(traj, select=sel_1)
         c2 = self.compute_center_of_mass(traj, select=sel_2)
 
-        # elif par['NumberCV'] == '2' and par['Metric_1'] == 'Distance':
-        # c1 = compute_center_of_mass(traj, select=selection_list[0])
-        # c2 = compute_center_of_mass(traj, select=selection_list[1])
-
-        # elif par['NumberCV'] == '2' and par['Metric_2'] == 'Distance':
-        # c1 = compute_center_of_mass(traj, select=selection_list[2])
-        # c2 = compute_center_of_mass(traj, select=selection_list[3])
-
-        distances = []
-        # compute distance between elements sam eposiiton in 2 different lists
-        for a, b in zip(c1, c2):
-            D = np.linalg.norm(a - b) * 10
-            distances.append(D)
-
-        n = len(distances)
-        mean_distance = sum(distances) / n
+        # Compute distances
+        distances = [np.linalg.norm(a - b) * 10 for a, b in zip(c1, c2)]
+        mean_distance = np.mean(distances)
         last_distance = distances[-1]
 
-        if par['NumberCV'] == '1':  # we return the walker score or slope already
-            if par['Slope'] == 'NO':  # we return the walker score
-                distMetric = (mean_distance * last_distance) ** 0.5
-                return distMetric
-
-            elif par['Slope'] == 'YES':  # we return the walker slope
-                distMetric = self.getSlope(distances, )
-                return distMetric
-
-        elif par['NumberCV'] == '2':  # we return all the metric values and the last distance
+        # Return computed metric(s)
+        if self.par['NumberCV'] == 1:
+            if self.par['Slope'] == 'NO':
+                return (mean_distance * last_distance) ** 0.5
+            else:
+                return self.getSlope(distances)
+        else:
             return distances, last_distance
-

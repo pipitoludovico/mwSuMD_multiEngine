@@ -1,5 +1,4 @@
 # import MDAnalysis
-import os
 
 # bestFrame = 1
 #
@@ -81,11 +80,14 @@ import os
 # print(resu)
 
 # batches gpu
-# lst = [0, 1, 2, 3, 4]
+# lst = [0, 1, 2, 3]
 # walkers = 9
 # quotient, rest = divmod(walkers, len(lst))
 # result = quotient * lst + lst[:rest]
 # batches = [result[i:i + len(lst)] for i in range(0, len(result), len(lst))]
+# print(result)
+# for idx, bat in enumerate(result):
+#     print(idx+1, bat)
 # print(batches)
 
 
@@ -125,15 +127,15 @@ import os
 # while process < len(batch):
 #     walker_number = process + 1
 #     os.chdir(f'walker_' + str(walker_number))
-    # with mp.Pool(processes=len(batch)) as pool:
-    #     pool.map(runGPU, batch)
-    #     pool.close()
-    #     pool.join()
-    # end_time = time.perf_counter()
-    # final_time = end_time - start_time
-    # print(final_time)
-    # command = f'acemd3 --device {batch[process]} input_{walker_number}_{trajCount}.inp 1> acemd.log'
-    # process += 1
+# with mp.Pool(processes=len(batch)) as pool:
+#     pool.map(runGPU, batch)
+#     pool.close()
+#     pool.join()
+# end_time = time.perf_counter()
+# final_time = end_time - start_time
+# print(final_time)
+# command = f'acemd3 --device {batch[process]} input_{walker_number}_{trajCount}.inp 1> acemd.log'
+# process += 1
 # process = 0
 # print("")
 #
@@ -145,3 +147,24 @@ import os
 #     else:
 #         par['MDengine'] = 'GROMACS'
 
+
+# distMetric = minimumRmsd
+# logRMSD(data, mean_rmsd, last_rmsd, distMetric)  # logger da sistemare a parte
+# print("\nFrame " + str(bestFrame) + " had the lowest RMSD: " + str(distMetric))
+# return bestFrame, distMetric, ""
+
+# divisione dei batch e gpu
+# batch = [[0, 1, 2], [0]]
+# walker = 1
+# for x in batch:
+#     gpu = 0
+#     while gpu < len(x):
+#         print(gpu, walker)
+#         gpu += 1
+#         walker += 1
+import MDAnalysis as Mda
+
+xtc = 'tmp/walker_1/wrapped.xtc'
+psf = 'system/NEUTRAL_fis.psf'
+
+uni = Mda.Universe(psf, xtc)

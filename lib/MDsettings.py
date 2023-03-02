@@ -1,37 +1,46 @@
+import os
+
 from .FolderOps import FolderOps
 from .mwParser import mwInputParser
 
 
 class MDsetter(mwInputParser):
-    def __init__(self):
+    def __init__(self, par):
         super(MDsetter, self).__init__()
+        self.par = par
+        print("INIT MD SETTER")
 
-    def createInput(self, walker_number, trajCount):
+    def createInput(self, trajCount):
         savefreq = int((int(self.par['Savefreq']) * 1000) / int(self.par['Timestep']))
-        eq_file = open(f'tmp/walker_{walker_number}/input_{walker_number}_{trajCount}.inp', 'w')
+        for walker in range(1, self.par['Walkers']+1):
+            print("creating walker:" + str(walker))
+            os.makedirs('tmp', exist_ok=True)
+            os.makedirs('tmp/walker_' + str(walker),exist_ok=True)
+            eq_file = open(f'tmp/walker_{walker}/input_{walker}_{trajCount}.inp', 'w')
 
-        if self.par['Forcefield'] == 'CHARMM':
-            txt = FolderOps().getAcemdInputFile(self.par, savefreq, trajCount)
+            if self.par['Forcefield'] == 'CHARMM':
+                txt = FolderOps(self.par).getAcemdInputFile(savefreq)
 
-            for line in txt:
-                eq_file.write(line)
+                for line in txt:
+                    eq_file.write(line)
 
-            if self.par['Parameters'] is not None:
-                for e in self.par['Parameters']:
-                    eq_file.write(f'parameters		{mwInputParser.parPath}/%s\n' % e)
+                if self.par['Parameters'] is not None:
+                    for e in self.par['Parameters']:
+                        eq_file.write(f'parameters		{mwInputParser.parPath}/%s\n' % e)
 
-            if self.par['PLUMED'] is not None:
-                eq_file.write('plumedFile		%s\n' % self.par['PLUMED'])
+                if self.par['PLUMED'] is not None:
+                    eq_file.write('plumedFile		%s\n' % self.par['PLUMED'])
 
-            eq_file.close()
+                eq_file.close()
 
-        if self.par['Forcefield'] == 'AMBER':
-            txt = FolderOps.getAMBERinputFile(self.par, savefreq)
+            # AMBER INPUT NEEDS TO BE DONE WITH THE NEW DICT
+            if self.par['Forcefield'] == 'AMBER':
+                txt = FolderOps(self.par).getAMBERinputFile(savefreq)
 
-            for e in txt:
-                eq_file.write(e)
+                for e in txt:
+                    eq_file.write(e)
 
-            if self.par['PLUMED'] is not None:
-                eq_file.write('plumedFile		%s\n' % self.par['PLUMED'])
+                if self.par['PLUMED'] is not None:
+                    eq_file.write('plumedFile		%s\n' % self.par['PLUMED'])
 
-            eq_file.close()
+                eq_file.close()

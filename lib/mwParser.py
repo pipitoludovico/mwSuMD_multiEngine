@@ -11,31 +11,27 @@ class mwInputParser:
     new_value = 0
     max_value = 0
     slope = 0
+    trajCount = 0
 
     def __init__(self):
-        self.trajCount = 0
         self.outExtensions = ('coor', 'vel', 'xsc')
         self.groExtensions = ('.mpd', '.gro', '.cpt', '.itp', 'top')
         self.paramExt = ('.param', '.prmtop', '.prm')
-        os.makedirs('trajectories', exist_ok=True)
-        self.getSettings()
-        if not os.path.isfile(self.inputFile):
+        if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
             print('Input file for SuMD simulation required')
             quit()
 
-    def getRoot(self):
-        return self.folder
-
     def checkEngine(self):
         engineCheck = ('psf', 'prmtop')
-        self.par = {'MDEngine': 'GROMACS' if file.endswith(engineCheck) else 'ACEMD' for file in os.listdir('system')}
+        self.par = {'MDEngine': 'GROMACS' if file.endswith(engineCheck) else 'ACEMD' for file in
+                    os.listdir(f'{self.folder}/system')}
         if self.par['MDEngine'] == 'GROMACS':
             self.getGromacsSystem()
 
     def getTopology(self):
         self.par['PSF'] = None
         self.par['PDB'] = None
-        for topos in os.listdir('./system'):
+        for topos in os.listdir(f'{self.folder}/system'):
             if topos.endswith('.psf'):
                 self.par['PSF'] = topos
             if topos.endswith('.pdb'):
@@ -47,18 +43,21 @@ class mwInputParser:
                 self.par[f'GROMACS_{str(self.groExtensions).replace(".", "")}'] = groFile
 
     def getParameters(self):
-        self.par['Parameters'] = []
-        for params in os.listdir('./system'):
-            if params.endswith(self.paramExt):
-                self.par['Parameters'].append(params)
-        for dirpath, dirnames, generalParams in os.walk(self.parPath):
-            for filename in [f for f in generalParams if f.endswith(self.paramExt)]:
-                self.par['Parameters'].append(filename)
+        if 'Parameters' not in self.par:
+            self.par['Parameters'] = []
+            for params in os.listdir(f'{self.folder}/system'):
+                if params.endswith(self.paramExt):
+                    self.par['Parameters'].append(params)
+            for dirpath, dirnames, generalParams in os.walk(self.parPath):
+                for filename in [f for f in generalParams if f.endswith(self.paramExt)]:
+                    self.par['Parameters'].append(filename)
+        else:
+            return self.par['Parameters']
 
     def getReferencePDB(self):
         if self.par['Metric_1'] or self.par['Metric_2'] == 'RMSD':
-            if len(os.listdir('./system/reference')) > 0:
-                for reference in os.listdir('./system/reference'):
+            if len(os.listdir(f'{self.folder}/system/reference')) > 0:
+                for reference in os.listdir(f'{self.folder}/system/reference'):
                     if reference.endswith('.pdb'):
                         self.par['REFERENCE'] = reference
             else:
@@ -67,7 +66,7 @@ class mwInputParser:
 
     def getForcefields(self):
         self.par['Forcefield'] = 'CHARMM'
-        for fileSys in os.listdir('./system'):
+        for fileSys in os.listdir(f'{self.folder}/system'):
             if fileSys.endswith('.psf'):
                 self.par['Forcefield'] = 'CHARMM'
             if fileSys.endswith('.prmtop'):
@@ -158,15 +157,15 @@ class mwInputParser:
     def getRestartOutput(self):
         os.makedirs('restarts', exist_ok=True)
         if self.par['Restart'] == 'YES':
-            directory = './restarts'
+            directory = f'{self.folder}/restarts'
         else:
-            directory = './system'
+            directory = f'{self.folder}/system'
         for file in os.listdir(directory):
             for extension in self.outExtensions:
                 if file.endswith(extension):
                     self.par[extension] = file
 
-    def countTraj_logTraj(self, metric=0, slope=0):
+    def countTraj_logTraj(self, metric=0):
         """ At what cycle number mwSuMD was stopped? """
         self.trajCount = len([x for x in os.scandir('trajectories')])
         if self.trajCount == 0:
@@ -174,14 +173,14 @@ class mwInputParser:
                 logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")
         else:
             with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(self.trajCount) + " " + str(metric) + " " + str(slope) + "\n")
+                logF.write(str(self.trajCount) + " " + str(metric) + "\n")
                 logF.close()
         return self.trajCount
 
     def getSettings(self):
+        print("Loading setting parameters...")
         self.checkEngine(), self.getTopology(), self.getParameters(), self.getForcefields()
         self.getMetrics(), self.getReferencePDB(), self.argumentParser(), self.getRestartOutput()
-        self.countTraj_logTraj()
         logF = open("settings.txt", "w")
         for idx, sel in enumerate(self.selection_list):
             logF.write('Metric_%s	%s\n' % (str(idx), sel))

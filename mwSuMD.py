@@ -1,16 +1,14 @@
 from lib import *
 
+pars = mwParser.mwInputParser()
+pars.getSettings()
+print(pars.par)
 
 def main():
-    print("HI")
-
-    if SuMD_1_CV.suMD1().par['NumberCV'] == 1:
-        SuMD_1_CV.suMD1().run_SuMD_1_CV()
-
-    # print("Creating sorting result's folders...")
-    # result_name = parser.par["Output"]
-    # os.makedirs(result_name, exist_ok=True)
-    # os.system(f'mv restarts trajectories nohup.out settings.txt {result_name}')
+    if pars.par['NumberCV'] == 1:
+        sumd = SuMD_1_CV.suMD1(pars.par)
+        sumd.run_SuMD_1_CV()
+        # SuMD_1_CV.suMD1().run_SuMD_1_CV()
 
     # elif par['NumberCV'] == '2':
     #     SuMD_2_CV(par, selection_list, PARPATH)

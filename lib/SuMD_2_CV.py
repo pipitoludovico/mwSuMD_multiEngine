@@ -14,7 +14,7 @@ def metricCompute(par, selection_list, n, mothfolder):
 		os.chdir('walker_%s' %str(r))
 		if (glob.glob('*.xtc') and glob.glob('output.*')) or (glob.glob('*.xtc') and glob.glob('*.gro')):
 # First metric is a distance 
-			if par['Metric_1'] == 'Distance':
+			if par['Metric_1'] == 'DISTANCE':
 # get all the distances and the last one
 				distances, last_distance = distance(par, selection_list[0], selection_list[1], n, mothfolder)
 # add the last distance of the walket to the list

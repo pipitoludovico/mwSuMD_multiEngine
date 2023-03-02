@@ -37,7 +37,7 @@ Sel_1 = segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
 Sel_2 = segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
 
 ## Distance (Sel_1 and Sel_2); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_1 and Sel_2)
-Metric_1 = RMSD
+Metric_1 = Distance
 #value the simulation will stop when reached
 Cutoff_1 = 3
 # positive or negative 

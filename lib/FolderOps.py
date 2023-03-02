@@ -1,15 +1,16 @@
 import os
 
 import GPUtil
+
 from .mwParser import mwInputParser
 
 
 class FolderOps(mwInputParser):
 
-    def __init__(self):
-        super(mwInputParser, self).__init__()
-        self.par = mwInputParser().par
-        self.slope = 0
+    def __init__(self, par):
+        super(FolderOps, self).__init__()
+        print('INIT FOLDEROPS')
+        self.par = par
         self.new_value = None
         self.max_value = None
 
@@ -21,14 +22,13 @@ class FolderOps(mwInputParser):
                     if file.endswith(extension):
                         self.par[extension] = file
 
-    @staticmethod
-    def getAcemdInputFile(par=None, savefreq=None, trajCount=None):
+    def getAcemdInputFile(self, savefreq):
         acemdInput = ['restart off\n',
                       'minimize        0\n',
-                      'run            %sps\n' % par['Timewindow'],
-                      'timeStep        %s\n' % par['Timestep'],
-                      'structure               ../../system/%s\n' % par['PSF'],
-                      'coordinates             ../../system/%s\n' % par['PDB'],
+                      'run            %sps\n' % self.par['Timewindow'],
+                      'timeStep        %s\n' % self.par['Timestep'],
+                      'structure               ../../system/%s\n' % self.par['PSF'],
+                      'coordinates             ../../system/%s\n' % self.par['PDB'],
                       'temperature     310\n',
                       'PME             on\n',
                       'cutoff          9.0\n',
@@ -37,14 +37,14 @@ class FolderOps(mwInputParser):
                       'thermostatDamping       0.1\n',
                       'thermostatTemperature   310\n',
                       'barostat                off\n',
-                      'trajectoryFile          %s_%s.xtc\n' % (par['Output'], str(trajCount)),
+                      'trajectoryFile          %s_%s.xtc\n' % (self.par['Output'], str(self.trajCount)),
                       'trajectoryPeriod               %s\n' % str(savefreq),
-                      f'binCoordinates          ../../system/%s\n' % par['coor'],
-                      f'extendedSystem          ../../system/%s\n' % par['xsc'],
-                      'binVelocities           ../../system/%s\n' % par['vel']]
+                      f'binCoordinates          ../../system/%s\n' % self.par['coor'],
+                      f'extendedSystem          ../../system/%s\n' % self.par['xsc'],
+                      'binVelocities           ../../system/%s\n' % self.par['vel']]
 
         # If we decide to restart, we modify the input file to look straight into the restart folder
-        if par['Restart'] == 'YES' or trajCount != 0:
+        if self.par['Restart'] == 'YES':
             acemdRestartInput = []
             for line in acemdInput:
                 if line.startswith('bin') or line.startswith('extendedSystem'):
@@ -98,4 +98,5 @@ class FolderOps(mwInputParser):
         quotient, rest = divmod(walkers, len(total_gpu_ids))
         result = quotient * total_gpu_ids + total_gpu_ids[:rest]
         batches = [result[i:i + len(total_gpu_ids)] for i in range(0, len(result), len(total_gpu_ids))]
+
         return batches
