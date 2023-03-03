@@ -1,4 +1,7 @@
+import os
+
 import mdtraj
+import MDAnalysis as Mda
 
 from .Parser import mwInputParser
 
@@ -12,8 +15,8 @@ class Getters(mwInputParser):
         self.com = None
 
     def getRMSD(self, sel_1, sel_2):
-        import MDAnalysis as Mda
         import MDAnalysis.analysis.rms
+        print(os.getcwd())
 
         pdb = f'{self.folder}/system/reference/' + str(self.par['REFERENCE'])
         psf = None
@@ -49,12 +52,12 @@ class Getters(mwInputParser):
             return data, last_rmsd
 
     def getHB_score(self, selection_list=list):
-        print(selection_list)
-        psf = None
+        psf = f"{self.folder}/system/{self.par['PSF']}"
         xtc = 'wrapped.xtc'
         sel_water_oxy = None
-        traj = mdtraj.Trajectory(xtc)
+        traj = mdtraj.Trajectory(xtc, topology=psf)
         # to get resnam and atom involved in hydrogen bonds
+
         def label(hbond):
             hbond_label = '%s:%s' % (traj.topology.atom(hbond[0]), traj.topology.atom(hbond[2]))
             return hbond_label
@@ -185,17 +188,15 @@ class Getters(mwInputParser):
 
         if self.par['MDEngine'] == 'ACEMD':
             if self.par['Forcefield'] == 'CHARMM':
-                psf = '%s.psf' % self.par['PSF']
+                psf = f'{self.folder}/system/%s' % self.par['PSF']
             elif self.par['Forcefield'] == 'AMBER':
-                psf = '%s.prmtop' % self.par['Topology']
+                psf = f'{self.folder}/system/%s' % self.par['prmtop']
 
         elif self.par['MDEngine'] == 'GROMACS':
             psf = '%s.gro' % self.par['gro']
 
         u = MDAnalysis.Universe(psf, xtc)
 
-        # let's decide what selections to use according to the number of metrics we want to compute
-        # if self.par['NumberCV'] == '1' and self.par['Metric_1'] == 'Contacts':
         sel_1 = u.select_atoms(sel_1)
         sel_2 = u.select_atoms(sel_2)
 
@@ -245,7 +246,12 @@ class Getters(mwInputParser):
         meanDist = np.array(list(data.keys())).mean()
         self.nume = [(float(value) - meanTime) * (float(key) - meanDist) for key, value in data.items()]
         self.denume = [(float(value) - meanTime) ** 2 for value in data.values()]
-        slope = float(np.sum(self.nume)) / float(np.sum(self.denume))
+        try:
+            slope = float(np.sum(self.nume)) / float(np.sum(self.denume))
+            return slope
+        except:
+            print("Slope denumerator was 0.")
+            slope = 0
         return slope
 
     def compute_center_of_mass(self, select=None):

@@ -1,8 +1,10 @@
-from lib import MDoperations
-from lib import Metrics
+from .MDoperations import MDoperator
+from .Metrics import MetricsParser
 from .MDsettings import MDsetter
 from .Runners import Runner
 from .Parser import mwInputParser
+from .Utilities import ProcessManager
+
 
 
 class suMD1(mwInputParser):
@@ -14,6 +16,7 @@ class suMD1(mwInputParser):
         self.metric = 0
 
     def run_SuMD_1_CV(self):
+        suMD1(self.par).countTraj_logTraj(self.max_value)
         if self.par['Transition_1'] == 'positive':
             if self.par['Slope'] == 'NO':
                 self.max_value = 0
@@ -31,16 +34,21 @@ class suMD1(mwInputParser):
                 self.runSlope()
 
     def runProtocol(self):
-        suMD1(self.par).countTraj_logTraj(self.max_value)
-        MDsetter(self.par).createInput(self.trajCount)
-        Runner(self.par).runMD()
-        self.walker_metrics = Metrics.Metrics(self.par).getChosenMetrics(self.selection_list)
-        self.bestWalker, self.max_value = Metrics.MetricsParser(self.par).getBestWalker(self.walker_metrics)
-        MDoperations.MDoperations(self.par, self.folder, self.trajCount).saveStep(self.bestWalker)
-        self.trajCount += 1
-        print("RUN PROT POST COUNT")
-        print(self.trajCount)
-        return self.max_value
+        # MDsetter(self.par).createInput(self.trajCount)
+
+        manager = ProcessManager()
+        # GPUs = manager.getGPUs()
+        # GPUbatches = manager.createBatches(self.par['Walkers'], GPUs)
+        GPUs = [0, 1, 2, 3]
+        GPUbatches = manager.createBatches(6, GPUs)
+        print(GPUbatches)
+        Runner(self.par).runMD(GPUbatches)
+        exit()
+        # self.walker_metrics = MetricsParser(self.par).getChosenMetrics(self.selection_list)
+        # self.bestWalker, self.max_value = MetricsParser(self.par).getBestWalker(self.walker_metrics)
+        # MDoperator(self.par, self.folder, self.trajCount).saveStep(self.bestWalker)
+        # suMD1(self.par).countTraj_logTraj(self.max_value)
+        # return self.max_value
 
     def runSlope(self):
         max_cycles = 1 / (int(self.par['Timewindow']) / 10 ** 5)  # run for 1 microsecond and then stop

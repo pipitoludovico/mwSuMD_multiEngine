@@ -14,9 +14,9 @@ thermostatTemperature   310
 barostat                off
 trajectoryFile          output_21.xtc
 trajectoryPeriod               5000
-binCoordinates          ../../restarts/NEUTRAL_fis.coor
+binCoordinates          ../../restarts/previous.coor
 extendedSystem          ../../restarts/previous.xsc
-binVelocities           ../../restarts/NEUTRAL_fis.vel
+binVelocities           ../../restarts/previous.vel
 parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/par_all36_cgenff_empty.prm
 parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/par_all36_carb_2.prm
 parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/par_all35_ethers.prm

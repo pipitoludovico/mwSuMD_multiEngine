@@ -1,15 +1,17 @@
+import pandas as pd
+
 from lib import *
 
 pars = Parser.mwInputParser()
 pars.getSettings()
-print(pars.par)
+settings = pd.DataFrame(sorted(list(pars.par.items())), columns=['keys', 'values'])
+print(settings)
 
 
 def main():
     if pars.par['NumberCV'] == 1:
         sumd = SuMD_1_CV.suMD1(pars.par)
         sumd.run_SuMD_1_CV()
-        # SuMD_1_CV.suMD1().run_SuMD_1_CV()
 
     elif pars.par['NumberCV'] == 2:
         print("Coming next...")

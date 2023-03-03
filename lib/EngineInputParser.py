@@ -32,7 +32,6 @@ class EngineInputs(mwInputParser):
 
         # If we decide to restart, we modify the input file to look straight into the restart folder
         if self.par['Restart'] == 'YES' or self.trajCount != 0:
-            print(self.trajCount)
             acemdRestartInput = []
             for line in acemdInput:
                 if line.startswith('bin') or line.startswith('extendedSystem'):

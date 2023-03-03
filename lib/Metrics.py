@@ -16,7 +16,7 @@ class MetricsParser(mwInputParser):
         """Compute single metric and return a list of values per frame"""
         for walkFolderNumber in range(1, int(self.par['Walkers'] + 1)):
             os.chdir(f'tmp/walker_' + str(walkFolderNumber))
-            print(f'walker_' + str(walkFolderNumber))
+            print(f'Walking into walker: ' + str(walkFolderNumber))
             if (glob.glob('*.xtc') and glob.glob('*.coor')) or (glob.glob('*.xtc') and glob.glob('*.gro')):
                 if self.par['Metric_1'] == 'DISTANCE':
                     distMetric = Getters(self.par).getDistance(selection_list[0], selection_list[1])

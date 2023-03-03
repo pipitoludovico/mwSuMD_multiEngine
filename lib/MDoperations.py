@@ -1,7 +1,7 @@
 import os
 
 
-class MDoperations:
+class MDoperator:
     def __init__(self, par, root, trajCount):
         self.par = par
         self.folder = root

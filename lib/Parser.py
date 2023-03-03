@@ -151,8 +151,6 @@ class mwInputParser:
 
                 if line.startswith('ligand_HB'):
                     self.par['ligand_HB'] = line.split('=')[1].strip()
-                    if len(self.par['ligand_HB']) == 0:
-                        self.par['ligand_HB'] = None
 
     def getRestartOutput(self):
         os.makedirs('restarts', exist_ok=True)
@@ -165,18 +163,27 @@ class mwInputParser:
                 if file.endswith(extension):
                     self.par[extension] = file
 
-    def countTraj_logTraj(self, metric='STARTING'):
+    def countTraj_logTraj(self, metric):
         """ At what cycle number mwSuMD was stopped? """
         if self.par['Restart'] == 'NO':
-            if self.trajCount == 0:
+            if self.trajCount == 0 and (metric == 0 or metric == 10 ** 6):
                 with open('walkerSummary.log', 'w') as logF:
                     logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")
+            elif self.trajCount != 0 and (metric == 0 or metric == 10 ** 6):
+                with open('walkerSummary.log', 'a') as logF:
+                    metric = 'RESUMED'
+                    logF.write(str(self.trajCount) + " " + str(metric) + "\n")
             else:
                 with open('walkerSummary.log', 'a') as logF:
                     logF.write(str(self.trajCount) + " " + str(metric) + "\n")
         if self.par['Restart'] == 'YES':
-            with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(self.trajCount) + " " + str(metric) + "\n")
+            if self.trajCount != 0 and (metric == 0 or metric == 10 ** 6):
+                metric = 'RESTART'
+                with open('walkerSummary.log', 'a') as logF:
+                    logF.write(str(self.trajCount) + " " + str(metric) + "\n")
+            else:
+                with open('walkerSummary.log', 'a') as logF:
+                    logF.write(str(self.trajCount) + " " + str(metric) + "\n")
 
     def getSettings(self):
         print("Loading setting parameters...")
