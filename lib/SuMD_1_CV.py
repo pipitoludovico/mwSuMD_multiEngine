@@ -3,8 +3,6 @@ from .Metrics import MetricsParser
 from .MDsettings import MDsetter
 from .Runners import Runner
 from .Parser import mwInputParser
-from .Utilities import ProcessManager
-
 
 
 class suMD1(mwInputParser):
@@ -34,21 +32,23 @@ class suMD1(mwInputParser):
                 self.runSlope()
 
     def runProtocol(self):
-        # MDsetter(self.par).createInput(self.trajCount)
-
-        manager = ProcessManager()
-        # GPUs = manager.getGPUs()
-        # GPUbatches = manager.createBatches(self.par['Walkers'], GPUs)
-        GPUs = [0, 1, 2, 3]
-        GPUbatches = manager.createBatches(6, GPUs)
-        print(GPUbatches)
-        Runner(self.par).runMD(GPUbatches)
-        exit()
-        # self.walker_metrics = MetricsParser(self.par).getChosenMetrics(self.selection_list)
-        # self.bestWalker, self.max_value = MetricsParser(self.par).getBestWalker(self.walker_metrics)
-        # MDoperator(self.par, self.folder, self.trajCount).saveStep(self.bestWalker)
-        # suMD1(self.par).countTraj_logTraj(self.max_value)
-        # return self.max_value
+        # create input files per walker
+        import time
+        begin = time.perf_counter()
+        MDsetter(self.par).createInput(self.trajCount)
+        # running the simulations
+        Runner(self.par).runMD()
+        # getting the metrics and choose the best one
+        self.walker_metrics = MetricsParser(self.par).getChosenMetrics()
+        self.bestWalker, self.max_value = MetricsParser(self.par).getBestWalker(self.walker_metrics)
+        print("best walker: " + str(self.bestWalker, self.max_value))
+        # update values and log them
+        MDoperator(self.par, self.folder, self.trajCount).saveStep(self.bestWalker)
+        suMD1(self.par).countTraj_logTraj(self.max_value)
+        end = time.perf_counter()
+        final = end - begin
+        print("Cycle completed in:" + str(final))
+        return self.max_value
 
     def runSlope(self):
         max_cycles = 1 / (int(self.par['Timewindow']) / 10 ** 5)  # run for 1 microsecond and then stop

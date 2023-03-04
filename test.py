@@ -79,55 +79,61 @@
 # resu = max(x for x in pizza if x < 100)
 # print(resu)
 
-#batches gpu
-# lst = [0, 1, 2]
+# batches gpu
+# lst = [0, 1]
 #
-# walkers = 8
+# walkers = 3
 # quotient, rest = divmod(walkers, len(lst))
 # result = quotient * lst + lst[:rest]
 # batches = [result[i:i + len(lst)] for i in range(0, len(result), len(lst))]
 # for idx, bat in enumerate(result):
 #     print(idx+1, bat)
-
-
+# print(result)
+# print(batches)
 # files = len([x for x in os.scandir('trajectories')])
 # print(files)
 
+##########################################################
 # batch = [[0, 1, 2, 3], [0, 1, 2, 3]]
 # count = sum([len(x) for x in batch])
+# print(count)
+# number_of_walkers = 4
 
-import os
-number_of_walkers = 4
-
-batch = [0, 1, 2, 3]
-trajCount = 0
-process = 0
-while process < len(batch):
-    walker_number = process + 1
-    command = f'acemd3 --device {batch[process]} input_{walker_number}_{trajCount}.inp 1> acemd.log'
-    process += 1
-    print(command)
-process = 0
-print(process)
-
-# import time
 # import multiprocessing as mp
 # import os
-#
-# batch = [0]
-#
-# def runGPU(processID):
-#     command = os.system(f'acemd3 --device {processID}')
-#     print(command)
-#
+# batch = [0, 1, 2, 3]
+# trajCount = 0
 # process = 0
-# start_time = time.perf_counter()
-# print(batch[process])
 # while process < len(batch):
 #     walker_number = process + 1
-#     os.chdir(f'walker_' + str(walker_number))
+#     command = f'acemd3 --device {batch[process]} input_{walker_number}_{trajCount}.inp 1> acemd.log'
+#     process += 1
+#     print(command)
+# process = 0
+# print(process)
+##############################à
+# import time
+# import os
+# import multiprocessing as mp
+#
+# print(os.getcwd())
+# batch = [0, 1, 2, 3]
+#
+#
+# def runGPU(setting):
+#     GPUs = setting[0]
+#     walkers = setting[1]
+#     for walker in range(1, walkers + 1):
+#         os.chdir('tmp/walker_' + str(walker))
+#         os.system(f'echo {GPUs[walker - 1]}')
+#         os.chdir('../../')
+#     command = os.system(f'echo {setting[0]}_{setting[1]} && pwd')
+#
+
+# process = 0
+# start_time = time.perf_counter()
 # with mp.Pool(processes=len(batch)) as pool:
-#     pool.map(runGPU, batch)
+#     pool.map(runGPU, [[batch, len(batch)]])
 #     pool.close()
 #     pool.join()
 # end_time = time.perf_counter()
@@ -185,3 +191,47 @@ print(process)
 # import pandas as pd
 # diz = {'MDEngine': 'ACEMD', 'PSF': 'NEUTRAL_fis.psf', 'PDB': 'NEUTRAL_fis.pdb', 'Parameters': ['par_all36_cgenff_empty.prm', 'par_all36_carb_2.prm', 'par_all35_ethers.prm', 'par_all36_na.prm', 'par_all36m_prot.prm', 'par_all22_prot.prm', 'par_all36_lipid.prm', 'par_all36_cgenff.prm', 'par_all36_prot.prm', 'par_all36_carb.prm', 'parm14sb_all.prm'], 'Forcefield': 'CHARMM', 'Timestep': '4', 'Savefreq': '20', 'Wrap': 'protein and name CA and segid P0 P1', 'NumberCV': 1, 'Metric_1': 'CONTACTS', 'Cutoff_1': 3, 'Transition_1': 'positive', 'Slope': 'YES', 'Metric_2': 'RMSD', 'Cutoff_2': 3, 'Transition_2': 'negative', 'Walkers': 1, 'Timewindow': '500', 'REFERENCE': 'NEUTRAL_fis.pdb', 'PLUMED': None, 'Restart': 'NO', 'Output': 'output', 'ligand_HB': '', 'coor': 'NEUTRAL_fis.coor', 'vel': 'NEUTRAL_fis.vel', 'xsc': 'previous.xsc'}
 # df = pd.DataFrame(list(diz.items()), columns=['keys', 'values'])
+
+# lista = [22, 23, 29, 26, 27, 27, 31, 35, 23, 21, 29, 26, 32, 29, 28, 22, 30, 31, 26, 36, 29, 26, 22, 30, 25]
+#
+# dizio = dict((k,v) for k,v in enumerate(lista))
+# print(dizio)
+# sortDict = sorted(dizio)
+# print(sortDict)
+
+
+# MULTITHREADING
+# import threading
+# import time
+#
+# class Cane:
+#     def __init__(self):
+#         self.val = 0
+#
+#     def paint(self):
+#         print('test' + str(self.val))
+#         self.val += 1
+#
+#     def runT(self):
+#         for x in range(5):
+#             t = threading.Thread(target=self.paint())
+#             t.start()
+#             t.join()
+#
+# a = Cane()
+# start_time_serial = time.perf_counter()
+# a.runT()
+# end_time_serial = time.perf_counter()
+# final_time_serial = end_time_serial - start_time_serial
+# print(final_time_serial)
+# print('b')
+# b = Cane()
+# start = time.perf_counter()
+# b.paint()
+# b.paint()
+# b.paint()
+# b.paint()
+# b.paint()
+# end = time.perf_counter()
+# final_time_serial = end - start
+# print(final_time_serial)

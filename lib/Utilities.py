@@ -24,7 +24,7 @@ class ProcessManager:
         quit()
 
     @staticmethod
-    def getGPUs():
+    def getGPUids():
         max_memory = 0.8
         GPUs = GPUtil.getGPUs()
         freeMemory = 0
@@ -42,5 +42,4 @@ class ProcessManager:
         quotient, rest = divmod(walkers, len(total_gpu_ids))
         result = quotient * total_gpu_ids + total_gpu_ids[:rest]
         batches = [result[i:i + len(total_gpu_ids)] for i in range(0, len(result), len(total_gpu_ids))]
-
-        return batches
+        return batches, result

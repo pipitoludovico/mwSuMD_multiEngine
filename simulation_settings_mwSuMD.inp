@@ -2,11 +2,7 @@
 Restart = NO
 
 ########################################################################
-GROMACS_MDP =  input_files/md.mdp
-### GROMACS topology file
-GROMACS_TOP = input_files/topol.top
-
-### Selection for wrapping (default "protein") - ACEMD only  -
+### Selection for wrapping (default "protein") - ACEMD only  - why is it acemd only?
 Wrap = protein and name CA and segid P0 P1
 
 ########################################################################
@@ -15,15 +11,14 @@ Output = output
 ########################################################################
 # Supervision on one or two metrics?
 NumberCV = 1
-
 ### First metric ######
 #List of selection to work with (MDTraj selection for Distance / MDAnalysis for Contacts  / MDAnalysis for RMSD)
 #RMSD
-Sel_1 = segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA
-Sel_2 = segid P2 and resnum 1:2 and not (name H* or name NT or name NXT)
+Sel_1 = segid P2 and (resnum 3:4)
+Sel_2 = segid P2 and resnum 1:2
 
 ## Distance (Sel_1 and Sel_2); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_1 and Sel_2)
-Metric_1 = RMSD
+Metric_1 = Contacts
 #value the simulation will stop when reached
 Cutoff_1 = 3
 # positive or negative 
@@ -54,11 +49,11 @@ ligand_HB =
 ########################################################################
 ### Algorithm and MD settings
 # number of walkers
-Walkers = 1
+Walkers = 3
 
 #each simulation length in ps  - ACEMD only - 
 Timewindow = 500 
-#fs - ACEMD only - 
+#fs - ACEMD only - why?
 Timestep = 4 
-#ps - ACEMD only - 
+#ps - ACEMD only - same
 Savefreq = 20

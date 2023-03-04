@@ -10,13 +10,12 @@ class Getters(mwInputParser):
     def __init__(self, par):
         super(Getters, self).__init__()
         self.par = par
-        self.denume = None
+        self.deNume = None
         self.nume = None
         self.com = None
 
     def getRMSD(self, sel_1, sel_2):
         import MDAnalysis.analysis.rms
-        print(os.getcwd())
 
         pdb = f'{self.folder}/system/reference/' + str(self.par['REFERENCE'])
         psf = None
@@ -38,6 +37,9 @@ class Getters(mwInputParser):
         data = list(rmsd[3])
         mean_rmsd = sum(data) / len(data)
         last_rmsd = data[-1]
+        print(rmsd)
+        print(data)
+        print(last_rmsd)
 
         if self.par['NumberCV'] == 1:  # we return the walker score or slope already
             if self.par['Slope'] == 'NO':  # we return the walker score
@@ -239,18 +241,19 @@ class Getters(mwInputParser):
         import numpy as np
         """Compute the least square methods on the data
         list provided called by other metrics functions"""
-        data = {k: v for v, k in enumerate(values_metric)}
+        data = dict(enumerate(values_metric))
         # why are you calculating maxes if we don't use them?
-        # maxDist, time_max = max((dist, value) for dist, value in data.items())
+        # togliere time e prendere solo maxDist da loggare
+        maxDist, time_max = max((dist, value) for dist, value in data.items())
         meanTime = np.array(list(data.values())).mean()
         meanDist = np.array(list(data.keys())).mean()
         self.nume = [(float(value) - meanTime) * (float(key) - meanDist) for key, value in data.items()]
-        self.denume = [(float(value) - meanTime) ** 2 for value in data.values()]
+        self.deNume = [(float(value) - meanTime) ** 2 for value in data.values()]
         try:
-            slope = float(np.sum(self.nume)) / float(np.sum(self.denume))
+            slope = float(np.sum(self.nume)) / float(np.sum(self.deNume))
             return slope
         except:
-            print("Slope denumerator was 0.")
+            print("Slope deNumerator was 0.")
             slope = 0
         return slope
 
@@ -272,56 +275,6 @@ class Getters(mwInputParser):
         for ts in Mda.log.ProgressBar(u.trajectory):
             arr[:, ts.frame] = sele.center_of_mass()
         return arr
-
-    # def getDistance_OLD(self, sel_1, sel_2):
-    #     import mdtraj
-    #     import numpy as np
-    #     """Compute distances between COMs"""
-    #     topology = None
-    #     if self.par['MDEngine'] == 'ACEMD':
-    #         xtc = 'wrapped.xtc'
-    #         if self.par['Forcefield'] == 'CHARMM':
-    #             topology = f'../../system/%s.psf' % self.par['Topology']
-    #         elif self.par['Forcefield'] == 'AMBER':
-    #             topology = '../../system/%s.prmtop' % self.par['Topology']
-    #
-    #     else:
-    #         xtc = 'wrapped.xtc'
-    #         topology = '%s.gro' % self.par['mdp']
-    #
-    #     traj = mdtraj.load(xtc, top=topology)
-    #     c1 = self.compute_center_of_mass(traj, select=sel_1)
-    #     c2 = self.compute_center_of_mass(traj, select=sel_2)
-    #
-    #     # elif self.par['NumberCV'] == '2' and self.par['Metric_1'] == 'Distance':
-    #     # c1 = compute_center_of_mass(traj, select=selection_list[0])
-    #     # c2 = compute_center_of_mass(traj, select=selection_list[1])
-    #
-    #     # elif self.par['NumberCV'] == '2' and self.par['Metric_2'] == 'Distance':
-    #     # c1 = compute_center_of_mass(traj, select=selection_list[2])
-    #     # c2 = compute_center_of_mass(traj, select=selection_list[3])
-    #
-    #     distances = []
-    #     # compute distance between elements sam eposiiton in 2 different lists
-    #     for a, b in zip(c1, c2):
-    #         D = np.linalg.norm(a - b) * 10
-    #         distances.append(D)
-    #
-    #     n = len(distances)
-    #     mean_distance = sum(distances) / n
-    #     last_distance = distances[-1]
-    #
-    #     if self.par['NumberCV'] == '1':  # we return the walker score or slope already
-    #         if self.par['Slope'] == 'NO':  # we return the walker score
-    #             distMetric = (mean_distance * last_distance) ** 0.5
-    #             return distMetric
-    #
-    #         elif self.par['Slope'] == 'YES':  # we return the walker slope
-    #             distMetric = self.getSlope(distances, )
-    #             return distMetric
-    #
-    #     elif self.par['NumberCV'] == '2':  # we return all the metric values and the last distance
-    #         return distances, last_distance
 
     def getDistance(self, sel_1, sel_2):
         import numpy as np

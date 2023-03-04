@@ -2,6 +2,7 @@ import pandas as pd
 
 from lib import *
 
+Utilities.ProcessManager()
 pars = Parser.mwInputParser()
 pars.getSettings()
 settings = pd.DataFrame(sorted(list(pars.par.items())), columns=['keys', 'values'])
