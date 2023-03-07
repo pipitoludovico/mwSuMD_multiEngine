@@ -144,8 +144,6 @@ class Getters(mwInputParser):
             return distances, last_distance
 
     def getHB_score(self):
-        import time
-        start = time.perf_counter()
         xtc = "wrapped.xtc"
         if self.par['MDEngine'] == 'ACEMD':
             psf = f"../../system/{self.par['PSF']}" \
@@ -154,7 +152,6 @@ class Getters(mwInputParser):
             psf = f"{self.par['gro']}"
 
         u = Mda.Universe(psf, xtc)
-
         lig_sele = u.select_atoms(f"{self.par['ligand_HB']} and name O* or {self.par['ligand_HB']} and name H*")
         water_sele = u.select_atoms('water')
 
@@ -169,14 +166,12 @@ class Getters(mwInputParser):
 
         distMetric = ((mean_contacts * last_contact) ** 0.5 if self.par['NumberCV'] == 1 and self.par['Slope'] == 'NO'
                       else (((np.mean(waterCont)) * waterCont[-1]) ** 0.5))
-
-        end = time.perf_counter()
-        final = end - start
-        print(final)
         if distMetric != 0:
             return distMetric
         if self.par['NumberCV'] == 2:
             return waterCont, last_contact
+        if self.par['Slope'] == 'YES':
+            return self.getSlope(waterCont)
         else:
             # if no H bond is found, we compute the number of water contacts
             # to determine the degree of solvation of the ligand
