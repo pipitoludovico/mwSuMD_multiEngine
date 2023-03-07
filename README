@@ -19,3 +19,6 @@ Dependencies:
 •	The PID of  the process is stored in the file .mypid_  (use it to kill the process) 
 	
 More detailed instructions on how to fill the input file simulation_settings_mwSuMD.inp and run the code, with examplexes, will follow.
+
+# timeseries = [contacts.contact_matrix(contacts.distance_array(lig.positions, wat.positions), 5).sum() for ts
+    #               in u.trajectory]

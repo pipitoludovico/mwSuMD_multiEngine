@@ -1,9 +1,10 @@
 import csv
+import os
 
 
 class Logger:
     def __init__(self):
-        pass
+        os.makedirs('logs', exist_ok=True)
 
     @staticmethod
     def logRMSD(RMSD_data, RMSD_mean_rmsd, RMSD_last_rmsd, RMSD_distMetric):
@@ -58,9 +59,19 @@ class Logger:
                 str(log_last_distance), str(log_distMetric)))
 
     @staticmethod
-    def HbLogger(logScoreValue, logScoreNumHB_frame, logScoreHBscore):
+    def HbLogger(nContacts, frame, HBscore):
         with open('/HB_scores_crude.log', 'a') as scoreF:
             scoreF.write(
-                'number wat mols: %s, number HB: %s, HB_score: %s\n' % (str(logScoreValue),
-                                                                        str(logScoreNumHB_frame),
-                                                                        str(logScoreHBscore)))
+                'number wat mols: %s, number HB: %s, HB_score: %s\n' % (str(nContacts),
+                                                                        str(frame),
+                                                                        str(HBscore)))
+
+    @staticmethod
+    def logSlope(data):
+        print("Loggers data:")
+        print(data)
+        # maxDist = max((dist, value) for dist, value in data.items())
+        mD = max(dist for dist in data.values())
+        with open('slope_logs', 'w') as slopeLog:
+            for frames in range(1, len(data)):
+                slopeLog.write(str(frames) + "\t" + str(mD))

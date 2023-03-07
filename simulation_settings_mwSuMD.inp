@@ -44,7 +44,7 @@ Transition_2 = negative
 PLUMED =
 #
 # # selction for ligand - needed only if HB_score to be used (not tested)
-ligand_HB =
+ligand_HB = segid P2
 #
 ########################################################################
 ### Algorithm and MD settings
