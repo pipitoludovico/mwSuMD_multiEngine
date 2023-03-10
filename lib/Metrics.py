@@ -69,6 +69,10 @@ class MetricsParser(mwInputParser):
             elif self.par['Metric_1'] == 'RMSD':
                 distMetric = Getters(self.par).getRMSD(selection_list[0], selection_list[1])
                 walkers_metrics.append(distMetric)
+
+            elif self.par['ligand_HB'] is not None:
+                distMetric = Getters(self.par).getHB_score()
+                walkers_metrics.append(distMetric)
             else:
                 print("NO METRICS FOUND")
                 exit()

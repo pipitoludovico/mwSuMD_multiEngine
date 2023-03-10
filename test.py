@@ -242,3 +242,6 @@
 # end = time.perf_counter()
 # final_time_serial = end - start
 # print(final_time_serial)
+
+from mwSuMD import pars
+print(pars)
