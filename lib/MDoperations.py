@@ -30,6 +30,6 @@ class MDoperator:
                     os.system('cp HILLS  %s/restarts/ ' % self.folder)
                     os.system('cp COLVAR  %s/restarts/ ' % self.folder)
                     os.system('cp grid.dat  %s/restarts/ ' % self.folder)
-            print("FINISHED SAVING FRAMES")
+        print("FINISHED SAVING FRAMES")
         os.chdir(self.folder)
         # os.system('rm -r tmp')

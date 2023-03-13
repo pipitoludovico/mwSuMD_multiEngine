@@ -43,7 +43,6 @@ class Runner(mwInputParser):
             start_time_serial = time.perf_counter()
             for GPUbatch in GPUbatches:
                 for GPU in GPUbatch:
-                    print(GPU, len(GPUbatch))
                     os.chdir('tmp/walker_' + str(self.walk_count))
                     print(os.getcwd())
                     # command = f'acemd3 --device {GPUbatch[process]}
