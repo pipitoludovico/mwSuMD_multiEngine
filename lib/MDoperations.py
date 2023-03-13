@@ -32,4 +32,4 @@ class MDoperator:
                     os.system('cp grid.dat  %s/restarts/ ' % self.folder)
             print("FINISHED SAVING FRAMES")
         os.chdir(self.folder)
-        # os.system('rm -r tmp')
+        os.system('rm -r tmp')

@@ -41,7 +41,7 @@ class suMD1(mwInputParser):
         # getting the metrics and choose the best one
         self.walker_metrics = MetricsParser(self.par).getChosenMetrics()
         self.bestWalker, self.max_value = MetricsParser(self.par).getBestWalker(self.walker_metrics)
-        print("best walker: " + str(self.bestWalker, self.max_value))
+        print("best walker: " + str(self.bestWalker) + " " + str(self.max_value))
         # update values and log them
         MDoperator(self.par, self.folder, self.trajCount).saveStep(self.bestWalker)
         suMD1(self.par).countTraj_logTraj(self.max_value)
