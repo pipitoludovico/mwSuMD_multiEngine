@@ -56,7 +56,7 @@ class Runner(mwInputParser):
             final_time_serial = end_time_serial - start_time_serial
             print("Serial Final Time:")
             print(final_time_serial)
-        print("DONE")
+        print("\nMD Runs completed.")
 
     def runGPU(self, GPUbatches):
         start_time_parallel = time.perf_counter()

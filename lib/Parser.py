@@ -10,7 +10,6 @@ class mwInputParser:
     parPath = os.path.abspath('parameters')
     new_value = 0
     max_value = 0
-    slope = 0
 
     def __init__(self):
         self.outExtensions = ('coor', 'vel', 'xsc')
@@ -90,17 +89,12 @@ class mwInputParser:
 
                 if line.startswith('Metric_2'):
                     self.par['Metric_2'] = line.split('=')[1].strip()
-                    if len(self.par['Metric_2']) == 0:
-                        self.par['Metric_2'] = None
 
                 if line.startswith('Cutoff_1'):
                     self.par['Cutoff_1'] = int(line.split('=')[1].strip())
 
                 if line.startswith('Cutoff_2'):
                     self.par['Cutoff_2'] = int(line.split('=')[1].strip())
-
-                if line.startswith('Slope'):
-                    self.par['Slope'] = line.split('=')[1].strip().upper()
 
                 if line.startswith('Walkers'):
                     self.par['Walkers'] = int(line.split('=')[1].strip())

@@ -1,6 +1,6 @@
 from multiprocessing import Process, Queue
-import sys
-from threading import Thread
+
+import numpy as np
 
 from .Getters import *
 from .Parser import *
@@ -15,106 +15,122 @@ class MetricsParser(mwInputParser):
         self.walkers_metrics = []
 
     def getChosenMetrics(self):
-        if sys.argv[1] == 'serial':
-            self.getChosenMetricsSer()
-        else:
-            self.getChosenMetricsMP()
+        self.createMetricList()
         return self.walkers_metrics
 
-    def getChosenMetricsSer(self):
-        """Compute single metric and return a list of values per frame"""
-        threads = []
-        for walkFolderNumber in range(1, int(self.par['Walkers'] + 1)):
-            threads.append(Thread(target=self.calculateMetrics, args=(walkFolderNumber, self.selection_list)))
-        for process in threads:
-            process.start()
-            process.join()
-        print('Serial metrics:')
-        print(self.walkers_metrics)
-
-    def getChosenMetricsMP(self):
+    def createMetricList(self):
+        walker_metrics_1 = []
+        walker_metrics_2 = []
+        all_m_1 = []
+        all_m_2 = []
         q = Queue()
-        processes = []
-        returns = []
-        for walker in range(1, self.par['Walkers'] + 1):
-            p = Process(target=self.calculateMetricsMP, args=(q, walker, self.selection_list))
-            processes.append(p)
-            p.start()
+        processes = [Process(target=self.calculateMetricsMP, args=(q, walker, self.selection_list))
+                     for walker in range(1, self.par['Walkers'] + 1)]
         for process in processes:
-            return_ = q.get()
-            returns.append(return_)
+            process.start()
+        for _ in processes:
+            ret = q.get()
+            if self.par['NumberCV'] == 1:
+                self.walkers_metrics.append(ret[0])
+            else:
+                walker_metrics_1.append(ret[0][0])
+                walker_metrics_2.append(ret[1][0])
+                all_m_1.append(ret[2])
+                all_m_2.append(ret[3])
         for process in processes:
             process.join()
-        print('Parallel metrics:')
-        for ret in returns:
-            self.walkers_metrics.append(ret[0])
-        returns.clear()
+        self.walkers_metrics = walker_metrics_1, walker_metrics_2, all_m_1, all_m_2
 
     def calculateMetricsMP(self, queue, walker, selection_list):
-        walkers_metrics = []
         import glob
+        walker_metric = []
+        walkers_metrics_1 = []
+        walkers_metrics_2 = []
+        allMetric_1 = []
+        allMetric_2 = []
+        HB_1 = []
+        HB_2 = []
+        print(f'\nWalking into walker: ' + str(walker))
         os.chdir(f'tmp/walker_' + str(walker))
-        print("CALCULATED METRICS IN: " + str(os.getcwd()))
-        print(f'Walking into walker: ' + str(walker))
+        print("CALCULATING METRICS IN: " + str(os.getcwd()))
         if (glob.glob('*.xtc') and glob.glob('*.coor')) or (glob.glob('*.xtc') and glob.glob('*.gro')):
             if self.par['Metric_1'] == 'DISTANCE':
-                # AGGIUNGERE LOGGERS PER METRIC
-                distMetric = Getters(self.par).getDistance(selection_list[0], selection_list[1])
-                walkers_metrics.append(distMetric)
+                # AGGIUNGERE LOGGERS Pwalkers_metrics_2ER METRIC
+                distMetric, distances, lastDist = Getters(self.par).getDistance(selection_list[0], selection_list[1])
+                walker_metric.append(distMetric)
+                walkers_metrics_1.append(lastDist)
+                allMetric_1 = allMetric_1 + distances
+            elif self.par['Metric_2'] == 'DISTANCE':
+                distMetric, distances, lastDist = Getters(self.par).getDistance(selection_list[2], selection_list[3])
+                walkers_metrics_2.append(lastDist)
+                allMetric_2 = allMetric_2 + distances
 
-            elif self.par['Metric_1'] == 'CONTACTS':
-                contactMetric = Getters(self.par).contacts_misc(selection_list[0], selection_list[1])
-                walkers_metrics.append(contactMetric)
+            if self.par['Metric_1'] == 'CONTACTS':
+                contactMetric, timeseries, lastContacts = Getters(self.par).getContacts(selection_list[0],
+                                                                                        selection_list[1])
+                walker_metric.append(contactMetric)
+                walkers_metrics_1.append(lastContacts)
+                allMetric_1 = allMetric_1 + timeseries
+            elif self.par['Metric_2'] == 'CONTACTS':
+                contactMetric, timeseries, lastContacts = Getters(self.par).getContacts(selection_list[0],
+                                                                                        selection_list[1])
+                walkers_metrics_2.append(lastContacts)
+                allMetric_2 = allMetric_2 + timeseries
 
-            elif self.par['Metric_1'] == 'RMSD':
-                distMetric = Getters(self.par).getRMSD(selection_list[0], selection_list[1])
-                walkers_metrics.append(distMetric)
+            if self.par['Metric_1'] == 'RMSD':
+                distMetric, data, lastRMSD = Getters(self.par).getRMSD(selection_list[0], selection_list[1])
+                walker_metric.append(distMetric)
+                walkers_metrics_1.append(lastRMSD)
+                allMetric_1 = allMetric_1 + data
+            elif self.par['Metric_2'] == 'RMSD':
+                distMetric, data, lastRMSD = Getters(self.par).getRMSD(selection_list[2], selection_list[3])
+                walkers_metrics_2.append(lastRMSD)
+                allMetric_2 = allMetric_2 + data
 
             elif self.par['ligand_HB'] is not None:
-                distMetric = Getters(self.par).getHB_score()
-                walkers_metrics.append(distMetric)
+                HB_score, last_HB = Getters(self.par).getHB_score()
+                HB_1.append(HB_score)
+                HB_2.append(last_HB)
+                allMetric_2 = allMetric_2 + HB_score
             else:
-                print("NO METRICS FOUND")
+                print("NO METRICS FOUND, please check your setting file")
                 exit()
         os.chdir(self.folder)
-        queue.put(walkers_metrics)
-
-    def calculateMetrics(self, walkFolderNumber, selection_list):
-        import glob
-        os.chdir(f'tmp/walker_' + str(walkFolderNumber))
-        print("CALCULATE METRICS IN")
-        print(os.getcwd())
-        print(f'Walking into walker: ' + str(walkFolderNumber))
-        if (glob.glob('*.xtc') and glob.glob('*.coor')) or (glob.glob('*.xtc') and glob.glob('*.gro')):
-            if self.par['Metric_1'] == 'DISTANCE':
-                # AGGIUNGERE LOGGERS PER METRIC
-                distMetric = Getters(self.par).getDistance(selection_list[0], selection_list[1])
-                self.walkers_metrics.append(distMetric)
-
-            elif self.par['Metric_1'] == 'CONTACTS':
-                contactMetric = Getters(self.par).contacts_misc(selection_list[0], selection_list[1])
-                self.walkers_metrics.append(contactMetric)
-
-            elif self.par['Metric_1'] == 'RMSD':
-                distMetric = Getters(self.par).getRMSD(selection_list[0], selection_list[1])
-                self.walkers_metrics.append(distMetric)
-            else:
-                print("NO METRICS FOUND")
-                exit()
-        os.chdir(self.folder)
+        if self.par['NumberCV'] == 1:
+            queue.put(walker_metric)
+        else:
+            queue.put([walkers_metrics_1, walkers_metrics_2, allMetric_1, allMetric_2])
 
     def getBestWalker(self, walkers_metrics):
-        index = 0
-        value = 0
+        if self.par['NumberCV'] == 1:
+            metric_values = [m for m in walkers_metrics if m is not None]
+            if not metric_values:
+                return None, None
+            if self.par['Transition_1'] == 'positive':
+                best_value = max(metric_values)
+            else:
+                best_value = min(metric_values)
+            best_walker = walkers_metrics.index(best_value) + 1
+            return best_walker, best_value
+        else:
+            # we create the "allMetrics_1 and 2", walking metrics list 1 and 2
+            wmList = (walkers_metrics[i] for i in [0, 1])
+            allMetricLists = (walkers_metrics[i] for i in [2, 3])
+            # we calculate the averages for each element in the sublist
+            metric_averages = [np.average([item for sublist in upperList for item in sublist]) for upperList in
+                               allMetricLists]
 
-        if self.par['Transition_1'] == 'positive':  # we want the metric to increase
-            value = max([i for i in walkers_metrics if i is not None])
-            # max_value = max(walkers_metrics) # so we take the maximum value
-            index = walkers_metrics.index(value)
+            scores_wm = [
+                ([(i - metric_averages[0]) * (100 / metric_averages[0])]) if self.par[
+                                                                                 'Transition_1'] == 'positive' else (
+                        [-(i - metric_averages[0]) * (100 / metric_averages[0])]) for i in walkers_metrics[0]]
+            scores_wm2 = [
+                ([(i - metric_averages[1]) * (100 / metric_averages[1])]) if self.par[
+                                                                                 'Transition_2'] == 'positive' else (
+                        [-(i - metric_averages[1]) * (100 / metric_averages[1])]) for i in walkers_metrics[1]]
 
-        elif self.par['Transition_1'] == 'negative':  # we want the metric to dencrease
-            value = min([i for i in walkers_metrics if i is not None])
-            # max_value = min(walkers_metrics) # so we take the minimum value
-            index = walkers_metrics.index(value)
-
-        return index + 1, value
+            score_sum = [(x[0] + y[0]) for x, y in zip(scores_wm, scores_wm2)]
+            list(score_sum)
+            max_score = max(score_sum)
+            max_index = score_sum.index(max_score) + 1
+            return max_index, max_score
