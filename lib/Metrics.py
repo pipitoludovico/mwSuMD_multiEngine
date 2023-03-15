@@ -1,7 +1,5 @@
 from multiprocessing import Process, Queue
 
-import numpy as np
-
 from .Getters import *
 from .Parser import *
 
@@ -39,7 +37,8 @@ class MetricsParser(mwInputParser):
                 all_m_2.append(ret[3])
         for process in processes:
             process.join()
-        self.walkers_metrics = walker_metrics_1, walker_metrics_2, all_m_1, all_m_2
+        if self.par['NumberCV'] == 2:
+            self.walkers_metrics = walker_metrics_1, walker_metrics_2, all_m_1, all_m_2
 
     def calculateMetricsMP(self, queue, walker, selection_list):
         import glob
@@ -104,6 +103,7 @@ class MetricsParser(mwInputParser):
     def getBestWalker(self, walkers_metrics):
         if self.par['NumberCV'] == 1:
             metric_values = [m for m in walkers_metrics if m is not None]
+            print(metric_values)
             if not metric_values:
                 return None, None
             if self.par['Transition_1'] == 'positive':
@@ -114,7 +114,6 @@ class MetricsParser(mwInputParser):
             return best_walker, best_value
         else:
             # we create the "allMetrics_1 and 2", walking metrics list 1 and 2
-            wmList = (walkers_metrics[i] for i in [0, 1])
             allMetricLists = (walkers_metrics[i] for i in [2, 3])
             # we calculate the averages for each element in the sublist
             metric_averages = [np.average([item for sublist in upperList for item in sublist]) for upperList in
@@ -123,11 +122,11 @@ class MetricsParser(mwInputParser):
             scores_wm = [
                 ([(i - metric_averages[0]) * (100 / metric_averages[0])]) if self.par[
                                                                                  'Transition_1'] == 'positive' else (
-                        [-(i - metric_averages[0]) * (100 / metric_averages[0])]) for i in walkers_metrics[0]]
+                    [-(i - metric_averages[0]) * (100 / metric_averages[0])]) for i in walkers_metrics[0]]
             scores_wm2 = [
                 ([(i - metric_averages[1]) * (100 / metric_averages[1])]) if self.par[
                                                                                  'Transition_2'] == 'positive' else (
-                        [-(i - metric_averages[1]) * (100 / metric_averages[1])]) for i in walkers_metrics[1]]
+                    [-(i - metric_averages[1]) * (100 / metric_averages[1])]) for i in walkers_metrics[1]]
 
             score_sum = [(x[0] + y[0]) for x, y in zip(scores_wm, scores_wm2)]
             list(score_sum)

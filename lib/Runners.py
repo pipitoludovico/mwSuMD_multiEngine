@@ -1,8 +1,7 @@
 import os
 import sys
-import time
 import threading
-from multiprocessing import Queue, Process
+import time
 
 from .Parser import mwInputParser
 from .Utilities import ProcessManager
@@ -23,9 +22,8 @@ class Runner(mwInputParser):
 
     def runACEMD(self, trajCount):
         manager = ProcessManager()
-        # GPUs = manager.getGPUids()
-        GPUs = [0, 1]  # test
-        GPUbatches, idList = manager.createBatches(walkers=3, total_gpu_ids=GPUs)
+        GPUs = manager.getGPUids()
+        GPUbatches, idList = manager.createBatches(walkers=self.par['Walkers'], total_gpu_ids=GPUs)
 
         if sys.argv[1] == 'parallel':
             # Parallel version:

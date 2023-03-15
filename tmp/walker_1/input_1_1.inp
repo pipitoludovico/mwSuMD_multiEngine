@@ -12,7 +12,7 @@ thermostat      on
 thermostatDamping       0.1
 thermostatTemperature   310
 barostat                off
-trajectoryFile          output_1.xtc
+trajectoryFile          output_2.xtc
 trajectoryPeriod               5000
 binCoordinates          ../../restarts/NEUTRAL_fis.coor
 extendedSystem          ../../restarts/previous.xsc
