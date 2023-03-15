@@ -303,7 +303,7 @@
 # test = list(score_sum)
 # max_index = test.index(max_score) + 1
 # print(max_score, max_index)
-
+#
 # import argparse
 #
 # import GPUtil
@@ -326,13 +326,67 @@
 #             freeMemory = GPU.memoryFree
 #             gpu_ids.append(GPU.id)
 #     gpu_ids = [0, 1, 2]
-#     for x in args.exclude:
-#         print(x)
-#         gpu_ids.remove(int(x))
+#     if args.exclude is not None:
+#         for x in args.exclude:
+#             print(x)
+#             gpu_ids.remove(int(x))
 #     print('after')
 #     print(gpu_ids)
 #
 # getGpus()
 
-data = [[13, 13, 13], [2.2666170606145175, 2.2666170606145175, 2.2666170606145175]]
-print(data[0])
+# data = [[13, 13, 13], [2.2666170606145175, 2.2666170606145175, 2.2666170606145175]]
+# print(data[0])
+
+# import argparse
+# def argumentParser():
+#     excludeGPUS = []
+#     ap = argparse.ArgumentParser()
+#     ap.add_argument("-m", '--mode', type=str, default='parallel', required=False,
+#                     help="specify -m parallel or serial mode [Default = parallel]")
+#     ap.add_argument('-e', '--exclude', nargs='*', required=False,
+#                     help=' use -e to exclude a list of GPUs from being used by mwSuMD: e.g. -e 0 3')
+#     args = ap.parse_args()
+#     if 'parallel' in vars(args).values():
+#         mode = 'parallel'
+#     else:
+#         mode = 'serial'
+#     if args.exclude is not None and len(args.exclude) != 0:
+#         excludeGPUS = [x for x in args.exclude]
+#
+#
+# argumentParser()
+
+
+import multiprocessing
+import time
+import os
+
+class YourClass:
+    def __init__(self, walkers, GPUs, GPUbatches, idlist):
+        self.walkers = walkers
+        self.GPUs = GPUs
+        self.GPUbatches = GPUbatches
+        self.idlist = idlist
+        self.walk_count = 0
+        self.trajCount = 0
+        self.folder = 'some_folder'
+
+    def runGPU_batch(self, GPUbatch):
+        for GPU in GPUbatch:
+            os.chdir('tmp/walker_' + str(self.walk_count))
+            print(os.getcwd())
+            # os.system(f'acemd3 --device {GPU} input_{self.walk_count}_{self.trajCount}.inp 1> acemd.log')
+            print(f'acemd3 --device {GPU} input_{self.walk_count}_{self.trajCount}.inp 1> acemd.log')
+            try:
+                os.chdir(self.folder)
+            except:
+                print(f"Walker {self.walk_count} wrapping has failed. No results were produced.")
+            self.walk_count += 1
+
+    def runGPU_batches(self):
+        start_time_parallel = time.perf_counter()
+        with multiprocessing.Pool(processes=len(self.GPUbatches)) as pool:
+            pool.map(self.runGPU_batch, self.GPUbatches)
+        end_time_parallel = time.perf_counter()
+        print(f"Time taken with multiprocessing: {end_time_parallel - start_time_parallel:.2f} seconds")

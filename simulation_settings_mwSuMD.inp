@@ -44,7 +44,7 @@ ligand_HB = segid P2
 ########################################################################
 ### Algorithm and MD settings
 # number of walkers
-Walkers = 3
+Walkers = 7
 
 #each simulation length in ps  - ACEMD only - 
 Timewindow = 500 

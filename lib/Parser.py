@@ -1,4 +1,5 @@
 import os
+import argparse
 
 
 class mwInputParser:
@@ -10,6 +11,8 @@ class mwInputParser:
     parPath = os.path.abspath('parameters')
     new_value = 0
     max_value = 0
+    mode = 'parallel'
+    excludedGPUS = []
 
     def __init__(self):
         self.outExtensions = ('coor', 'vel', 'xsc')
@@ -125,7 +128,24 @@ class mwInputParser:
                     self.par['GPU_ID'] = line.split('=')[1].strip()
 
     def argumentParser(self):
+        ap = argparse.ArgumentParser()
+        ap.add_argument("-m", '--mode', type=str, default='parallel', required=False,
+                        help="specify -m parallel or serial mode [Default = parallel]")
+        ap.add_argument('-e', '--exclude', nargs='*', required=False,
+                        help=' use -e to exclude a list of GPUs from being used by mwSuMD: e.g. -e 0 3')
+        args = ap.parse_args()
+        if 'parallel' in vars(args).values():
+            self.mode = 'parallel'
+        else:
+            self.mode = 'serial'
+        if args.exclude is not None and len(args.exclude) != 0:
+            self.excludedGPUS = [x for x in args.exclude]
+
         self.par['PLUMED'] = None
+        for file in os.listdir(self.folder + "/system"):
+            if file.endswith('.inp'):
+                self.par['PLUMED'] = f'{self.folder}/system/{file}'
+
         with open(self.inputFile, "r") as infile:
             for line in infile:
                 if line.startswith('#'):
@@ -136,13 +156,6 @@ class mwInputParser:
 
                 if line.startswith('Output'):
                     self.par['Output'] = line.split('=')[1].strip()
-
-                if line.startswith('PLUMED'):
-                    if line.split('=')[1].strip() == '':
-                        continue
-                    else:
-                        self.par['PLUMED'] = line.split("=")[1].strip()
-                        self.par['PLUMED'] = os.path.abspath(self.par['PLUMED'])
 
                 if line.startswith('ligand_HB'):
                     self.par['ligand_HB'] = line.split('=')[1].strip()

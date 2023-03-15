@@ -31,6 +31,8 @@ class MetricsParser(mwInputParser):
             if self.par['NumberCV'] == 1:
                 self.walkers_metrics.append(ret[0])
             else:
+                print("RETURNS")
+                print(ret)
                 walker_metrics_1.append(ret[0][0])
                 walker_metrics_2.append(ret[1][0])
                 all_m_1.append(ret[2])
@@ -103,7 +105,6 @@ class MetricsParser(mwInputParser):
     def getBestWalker(self, walkers_metrics):
         if self.par['NumberCV'] == 1:
             metric_values = [m for m in walkers_metrics if m is not None]
-            print(metric_values)
             if not metric_values:
                 return None, None
             if self.par['Transition_1'] == 'positive':

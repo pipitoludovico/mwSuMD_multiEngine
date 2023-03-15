@@ -1,5 +1,4 @@
 import os
-import argparse
 
 import GPUtil
 
@@ -26,10 +25,6 @@ class ProcessManager:
 
     @staticmethod
     def getGPUids():
-        ap = argparse.ArgumentParser()
-        ap.add_argument('-e', '--exclude', nargs='*', required=False,
-                        help=' use -e to exclude a list of GPUs from being used by mwSuMD: e.g. -e 0 3')
-        args = ap.parse_args()
         max_memory = 0.8
         GPUs = GPUtil.getGPUs()
         freeMemory = 0
@@ -40,8 +35,6 @@ class ProcessManager:
             if GPU.memoryFree >= freeMemory:
                 freeMemory = GPU.memoryFree
                 gpu_ids.append(GPU.id)
-        for exclusion in args.exclude:
-            gpu_ids.remove(int(exclusion))
         if len(gpu_ids) != 0:
             return gpu_ids
         else:
