@@ -6,9 +6,9 @@ class MDoperator:
         self.par = par
         self.folder = root
         self.trajCount = trajCount
-        self.walkers_metrics_lists = []
 
     def saveStep(self, best_walker):
+        os.makedirs('trajectories', exist_ok=True)
         """Handle the restart files and the xtc storage"""
         for r in range(1, int(self.par['Walkers']) + 1):
             if r == best_walker:

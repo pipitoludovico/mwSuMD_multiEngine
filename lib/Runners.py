@@ -21,30 +21,28 @@ class Runner(mwInputParser):
             self.runACEMD(self.trajCount)
         else:
             self.runGROMACS(self.trajCount)
+        with mp.Pool(int(self.par['Walkers'])) as p:
+            p.map(self.wrap, [range(1, self.par['Walkers'] + 1)])
+            p.close()
+            p.join()
 
     def runGPU_batch(self, trajCount, walk_count, GPUbatch, queue):
-        print("runGPU_batch")
-        print(GPUbatch)
         processes = []
         for GPU in GPUbatch:
             os.chdir('tmp/walker_' + str(walk_count))
-            print(os.getcwd())
             command = f'acemd3 --device {GPU} input_{walk_count}_{trajCount}.inp 1> acemd.log'
-            print(command)
             process = subprocess.Popen(command, shell=True)
             processes.append(process)
-            try:
-                os.chdir(self.folder)
-            except:
-                print(f"Walker {walk_count} wrapping has failed. No results were produced.")
+
             walk_count += 1
+            os.chdir(self.folder)
 
         # Wait for all subprocesses to finish
         for process in processes:
             process.wait()
-
         for GPU in GPUbatch:
             queue.put((trajCount, walk_count, GPU))  # Notify completion
+
         return walk_count  # Return the updated walk_count value
 
     def runACEMD(self, trajCount):
@@ -53,9 +51,9 @@ class Runner(mwInputParser):
         for excluded in self.excludedGPUS:
             GPUs.remove(excluded)
         GPUbatches, idList = manager.createBatches(walkers=self.par['Walkers'], total_gpu_ids=GPUs)
-        print(GPUbatches)
 
         if self.mode == 'parallel':
+            print("\nRunning parallel mode")
             manager = mp.Manager()
             q = manager.Queue()
             start_time_parallel = time.perf_counter()
@@ -69,6 +67,7 @@ class Runner(mwInputParser):
                 # Wait for all the processes to finish
                 for result in results:
                     walk_count = result.get()
+                    print("walk count is: " + str(walk_count))
 
                 # Consume queue until all batches have finished
                 print(f"Consuming queue...")
@@ -93,7 +92,6 @@ class Runner(mwInputParser):
                 for GPU in GPUbatch:
                     os.chdir('tmp/walker_' + str(self.walk_count))
                     os.system(f'acemd3 --device {GPU} input_{self.walk_count}_{trajCount}.inp 1> acemd.log')
-                    self.wrap()
                     os.chdir(self.folder)
                     self.walk_count += 1
             end_time_serial = time.perf_counter()
@@ -109,23 +107,28 @@ class Runner(mwInputParser):
             if self.par['PLUMED'] is not None:
                 os.system(f'echo test {[walker - 1]} {trajCount}')
 
-    def wrap(self):
-        ext = ('.xtc', '.dcd')
-        psf = None
-        from moleculekit.molecule import Molecule
-        if self.par['Forcefield'] == 'CHARMM':
-            psf = '../../system/%s' % self.par['PSF']
+    def wrap(self, folder):
+        for x in folder:
+            os.chdir(f'{self.folder}/tmp/walker_' + str(x))
+            print(os.getcwd())
+            ext = ('.xtc', '.dcd')
+            psf = None
+            from moleculekit.molecule import Molecule
+            if self.par['Forcefield'] == 'CHARMM':
+                psf = '../../system/%s' % self.par['PSF']
 
-        elif self.par['Forcefield'] == 'AMBER':
-            psf = '../../system/%s' % self.par['PRMTOP']
-        xtc = '%s_%s.xtc' % (self.par['Output'], self.trajCount)
-        for file in os.listdir(os.getcwd()):
-            if file == str(xtc) or file.endswith(ext):  # aggiungere
-                try:
-                    mol = Molecule(psf)
-                    mol.read(file)
-                    mol.wrap()
-                    mol.wrap(self.par['Wrap'])
-                    mol.write('wrapped.xtc')
-                except:
-                    print(f"{file} was used for wrapping")
+            elif self.par['Forcefield'] == 'AMBER':
+                psf = '../../system/%s' % self.par['PRMTOP']
+            xtc = '%s_%s.xtc' % (self.par['Output'], self.trajCount)
+
+            for file in os.listdir(os.getcwd()):
+                if file == str(xtc) or file.endswith(ext):  # aggiungere
+                    try:
+                        mol = Molecule(psf)
+                        mol.read(file)
+                        mol.wrap()
+                        mol.wrap(self.par['Wrap'])
+                        mol.write('wrapped.xtc')
+                    except:
+                        print(f"{file} was used for wrapping")
+            os.chdir(self.folder)

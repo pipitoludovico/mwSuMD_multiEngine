@@ -357,36 +357,29 @@
 #
 # argumentParser()
 
-
-import multiprocessing
-import time
+import multiprocessing as mp
 import os
 
-class YourClass:
-    def __init__(self, walkers, GPUs, GPUbatches, idlist):
-        self.walkers = walkers
-        self.GPUs = GPUs
-        self.GPUbatches = GPUbatches
-        self.idlist = idlist
-        self.walk_count = 0
-        self.trajCount = 0
-        self.folder = 'some_folder'
 
-    def runGPU_batch(self, GPUbatch):
-        for GPU in GPUbatch:
-            os.chdir('tmp/walker_' + str(self.walk_count))
-            print(os.getcwd())
-            # os.system(f'acemd3 --device {GPU} input_{self.walk_count}_{self.trajCount}.inp 1> acemd.log')
-            print(f'acemd3 --device {GPU} input_{self.walk_count}_{self.trajCount}.inp 1> acemd.log')
-            try:
-                os.chdir(self.folder)
-            except:
-                print(f"Walker {self.walk_count} wrapping has failed. No results were produced.")
-            self.walk_count += 1
+class Test:
+    def __init__(self):
+        pass
 
-    def runGPU_batches(self):
-        start_time_parallel = time.perf_counter()
-        with multiprocessing.Pool(processes=len(self.GPUbatches)) as pool:
-            pool.map(self.runGPU_batch, self.GPUbatches)
-        end_time_parallel = time.perf_counter()
-        print(f"Time taken with multiprocessing: {end_time_parallel - start_time_parallel:.2f} seconds")
+    def wrap(self, fold_num):
+        for x in fold_num:
+            os.chdir('tmp/walker_' + str(x))
+            print("I'm into " + str(os.getcwd()))
+            for file in os.listdir(os.getcwd()):
+                if file.endswith('.xtc'):
+                    print(file)
+            os.chdir('../../')
+
+    def run(self):
+        print("pooling")
+        with mp.Pool(7) as p:
+            p.map(self.wrap, [range(1, 8)])
+            p.close()
+            p.join()
+
+test = Test()
+test.run()

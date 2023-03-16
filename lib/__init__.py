@@ -1,2 +1,2 @@
-__all__ = ['Getters', 'Loggers', 'MDoperations', 'MDsettings', 'Runners', 'SuMDProtocol', 'SuMD_2_CV', 'Metrics',
+__all__ = ['Getters', 'Loggers', 'MDoperations', 'MDsettings', 'Runners', 'SuMDProtocol', 'Metrics',
            'EngineInputParser', 'Parser', 'Utilities']

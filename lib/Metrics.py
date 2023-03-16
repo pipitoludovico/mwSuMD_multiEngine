@@ -96,11 +96,11 @@ class MetricsParser(mwInputParser):
             else:
                 print("NO METRICS FOUND, please check your setting file")
                 exit()
-        os.chdir(self.folder)
         if self.par['NumberCV'] == 1:
             queue.put(walker_metric)
         else:
             queue.put([walkers_metrics_1, walkers_metrics_2, allMetric_1, allMetric_2])
+        os.chdir(self.folder)
 
     def getBestWalker(self, walkers_metrics):
         if self.par['NumberCV'] == 1:

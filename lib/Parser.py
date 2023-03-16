@@ -18,7 +18,7 @@ class mwInputParser:
         self.outExtensions = ('coor', 'vel', 'xsc')
         self.groExtensions = ('.mpd', '.gro', '.cpt', '.itp', 'top')
         self.paramExt = ('.param', '.prmtop', '.prm')
-        os.makedirs('trajectories', exist_ok=True)
+        os.makedirs(f'{self.folder}/trajectories', exist_ok=True)
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
             print('Input file for SuMD simulation required')
@@ -92,7 +92,7 @@ class mwInputParser:
                     self.par['Metric_1'] = line.split('=')[1].strip().upper()
 
                 if line.startswith('Metric_2'):
-                    self.par['Metric_2'] = line.split('=')[1].strip()
+                    self.par['Metric_2'] = line.split('=')[1].strip().upper()
 
                 if line.startswith('Cutoff_1'):
                     self.par['Cutoff_1'] = int(line.split('=')[1].strip())
