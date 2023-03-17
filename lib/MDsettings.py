@@ -10,6 +10,12 @@ class MDsetter(mwInputParser):
         self.par = par
 
     def createInput(self, trajCount):
+        walkers = self.par['Walkers']
+        if self.par['Relax'] is True:
+            self.par['Walkers'] = 1
+        else:
+            self.par['Walkers'] = walkers
+
         savefreq = int((int(self.par['Savefreq']) * 1000) / int(self.par['Timestep']))
         for walker in range(1, self.par['Walkers'] + 1):
             os.makedirs('tmp', exist_ok=True)

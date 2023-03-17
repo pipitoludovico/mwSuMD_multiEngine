@@ -38,6 +38,7 @@ class ProcessManager:
         if len(gpu_ids) != 0:
             return gpu_ids
         else:
+            # return [0,1,2] # test purposes
             print("Please leave at least one GPU to run mwSuMD and run again.")
             exit()
 

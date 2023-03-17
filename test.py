@@ -245,7 +245,7 @@
 
 # from mwSuMD import pars
 # print(pars)
-#
+
 # def getSlope(self, values_metric):
 #     """Compute the least square methods on the data
 #     list provided called by other metrics functions"""
@@ -357,29 +357,151 @@
 #
 # argumentParser()
 
-import multiprocessing as mp
-import os
+# import multiprocessing as mp
+# from multiprocessing import Manager, Queue
+# import os
+#
+#
+# class Test:
+#     def __init__(self):
+#         pass
+#
+#     def wrap(self, fold_num, q):
+#         os.chdir('tmp/walker_' + str(fold_num))
+#         print("I'm into " + str(os.getcwd()))
+#         for file in os.listdir(os.getcwd()):
+#             if file.endswith('.xtc'):
+#                 print(file)
+#         q.put(fold_num)
+#         os.chdir('../../')
+#
+#     def run(self):
+#         print("pooling")
+#         manager = Manager()
+#         q = manager.Queue()
+#         with mp.Pool() as pool:
+#             results = pool.starmap(self.wrap, [(x, q) for x in range(1, 8)])
+#             for x in results:
+#                 print(q.get())
+
+# processes = [mp.Process(target=self.wrap, args=(x, q)) for x in range(1, 8)]
+# for proc in processes:
+#     proc.start()
+# for proc in processes:
+#     proc.join()
+# while not q.empty():
+#     print(q.get())
 
 
-class Test:
-    def __init__(self):
-        pass
+# test = Test()
+# test.run()
+#
+# import numpy as np
+#
+# k2 = ([13, 13, 13], [13, 13, 13],
+#       [[13, 17, 15, 12, 16, 16, 16, 18, 13, 14, 14, 14, 16, 12, 15, 11, 14, 15, 14, 15, 14, 13, 13, 16, 13],
+#        [13, 17, 15, 12, 16, 16, 16, 18, 13, 14, 14, 14, 16, 12, 15, 11, 14, 15, 14, 15, 14, 13, 13, 16, 13],
+#        [13, 17, 15, 12, 16, 16, 16, 18, 13, 14, 14, 14, 16, 12, 15, 11, 14, 15, 14, 15, 14, 13, 13, 16, 13]],
+#       [[13, 17, 15, 12, 16, 16, 16, 18, 13, 14, 14, 14, 16, 12, 15, 11, 14, 15, 14, 15, 14, 13, 13, 16, 13],
+#        [13, 17, 15, 12, 16, 16, 16, 18, 13, 14, 14, 14, 16, 12, 15, 11, 14, 15, 14, 15, 14, 13, 13, 16, 13],
+#        [13, 17, 15, 12, 16, 16, 16, 18, 13, 14, 14, 14, 16, 12, 15, 11, 14, 15, 14, 15, 14, 13, 13, 16, 13]])
+#
+#
+# def getBestWalker(walkers_metrics):
+#     par = {'Walkers': 3, 'Transition_1': 'positive', 'Transition_2': 'negative'}
+#     # we create the "allMetrics_1 and 2", walking metrics list 1 and 2
+#     print("METRICS FROM GETBEST")
+#     print(walkers_metrics)
+#     # we create the "allMetrics_1 and 2", walking metrics list 1 and 2
+#     allMetricLists = (walkers_metrics[i] for i in [2, 3])
+#     # we calculate the averages for each element in the sublist
+#     metric_averages = [np.average([item for sublist in upperList for item in sublist]) for upperList in
+#                        allMetricLists]
+#
+#     scores_wm = [
+#         ([(i - metric_averages[0]) * (100 / metric_averages[0])]) if par[
+#                                                                          'Transition_1'] == 'positive' else (
+#             [-(i - metric_averages[0]) * (100 / metric_averages[0])]) for i in walkers_metrics[0]]
+#     scores_wm2 = [
+#         ([(i - metric_averages[1]) * (100 / metric_averages[1])]) if par[
+#                                                                          'Transition_2'] == 'positive' else (
+#             [-(i - metric_averages[1]) * (100 / metric_averages[1])]) for i in walkers_metrics[1]]
+#
+#     score_sum = [(x[0] + y[0]) for x, y in zip(scores_wm, scores_wm2)]
+#     list(score_sum)
+#     print(score_sum)
+#     max_score = max(score_sum)
+#     max_index = score_sum.index(max_score) + 1
+#     print("BEST RESULTS FROM INSIDE")
+#     print(max_index, max_score)
+#     return max_index, max_score
+#
+#
+# getBestWalker(k2)
 
-    def wrap(self, fold_num):
-        for x in fold_num:
-            os.chdir('tmp/walker_' + str(x))
-            print("I'm into " + str(os.getcwd()))
-            for file in os.listdir(os.getcwd()):
-                if file.endswith('.xtc'):
-                    print(file)
-            os.chdir('../../')
+# import numpy as np
+#
+# values = [np.random.uniform(low=5.5, high=10, size=(100,))]
+#
+#
+# def check(values):
+#         print(np.std(values))
+#         if np.std(values) < 0.6:
+#             print('done')
+#             return True
+#
+#
+# check(values)
 
-    def run(self):
-        print("pooling")
-        with mp.Pool(7) as p:
-            p.map(self.wrap, [range(1, 8)])
-            p.close()
-            p.join()
+# x = 90.94356089922285
+# y = 113.44331582425268
+# s1 = 3
+# s2 = 200
+#
+# k = 0
+# while x > s1 and y < s2:
+#     print('OK')
+#     k += 1
+#     if k == 10:
+#         break
 
-test = Test()
-test.run()
+# import MDAnalysis as Mda
+#
+# u = Mda.Universe('system/NEUTRAL_fis.psf', 'system/output_0_wrapped.xtc')
+# lig_sele = u.select_atoms('segid P2')
+# print(lig_sele.n_atoms)
+
+# def wrapMDA():
+# #     import MDAnalysis as Mda
+# #     from MDAnalysis import transformations
+# #     u = Mda.Universe('system/NEUTRAL_fis.psf', 'system/output_0.xtc')
+# #     prot = u.select_atoms("segid P0")
+# #     ag = u.atoms
+# #     workflow = (transformations.unwrap(ag),
+# #                 transformations.center_in_box(prot),
+# #                 transformations.wrap(ag, compound='fragments'))
+# #     u.trajectory.add_transformations(*workflow)
+# #
+# #     with Mda.Writer('wrapped_MDA.xtc', ag) as w:
+# #         for ts in u.trajectory:
+# #             w.write(ag)
+# #
+# #
+# # wrapMDA()
+
+
+par = {'Relax': True, 'TW': 400}
+
+_tw = par['TW']
+
+for x in range(1, 11):
+    if par['Relax'] is True:
+        par['TW'] = 999
+    if x == 5:
+        par['Relax'] = False
+        par['TW'] = _tw
+        # par['TW'] = 999999999
+
+print(par['TW'])
+
+

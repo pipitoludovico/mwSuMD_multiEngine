@@ -1,54 +1,50 @@
 ### Is this a restart? YES or NO
 Restart = NO
 ########################################################################
-### Selection for wrapping (default "protein") - ACEMD only  - why is it acemd only?
+### Selection for wrapping (default "protein")
 Wrap = protein and name CA and segid P0 P1
 ########################################################################
-### Output root of the files
-Output = output 
+# Relaxation protocol time in case of stuck condition [Default = 5 ns]
+RelaxTime = 
+# Output name of the files
+Output = test_CV2_DIST_DIST
 ########################################################################
 # Supervision on one or two metrics?
 NumberCV = 2
-### First metric ######
-#List of selection to work with (MDTraj selection for Distance / MDAnalysis for Contacts  / MDAnalysis for RMSD)
-#RMSD
+
+# List of selection to work with (MDAnalysis selection language)
+# Distance (Sel_1 and Sel_2); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_1 and Sel_2)
+# Transition_1 or 2 can only be set to positive or negative
+# The Cutoff is the value at which the simulation will stop once the metric has reached this number
+
+Metric_1 = Distance
 Sel_1 = segid P2 and resnum 3:4
 Sel_2 = segid P2 and resnum 1:2
-
-## Distance (Sel_1 and Sel_2); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_1 and Sel_2)
-Metric_1 = Contacts
-#value the simulation will stop when reached
 Cutoff_1 = 3
-# positive or negative 
-Transition_1 = positive
-## Second metric #####
-# List of selection to work with (MDAnalysis* CAMBIATO DA MDTRaj per problemi nella selezione/ selection for Distance / MDAnalysis for Contacts  / MDAnalysis for RMSD)
-#RMSD
-Sel_3 =  segid P1
-Sel_4 =  segid P1
+Transition_1 = negative
 
-##  Distance (Sel_3 and Sel_4); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_3 and Sel_4) ; HB_score (just fill 'ligand_HB')
 Metric_2 = RMSD
-# value the simulation will stop when reached
-Cutoff_2 = 5
-# positive or negative 
-Transition_2 = negative
+Sel_3 = segid P2 and resnum 3:4
+Sel_4 = segid P1 and name CA
+Cutoff_2 = 20
+Transition_2 = positive
 
-###########################à
-# # plumed input file for metadynamics etc during  mwSuMD
+#####################################################################
+# plumed input file for metadynamics etc during  mwSuMD
 PLUMED =
-#
-# # selction for ligand - needed only if HB_score to be used (not tested)
-ligand_HB = segid P2
-#
-########################################################################
+
+# selction for ligand - needed only if HB_score to be used (not tested)
+ligand_HB =
+######################################################################
+
 ### Algorithm and MD settings
 # number of walkers
-Walkers = 7
+Walkers = 3
 
-#each simulation length in ps  - ACEMD only - 
-Timewindow = 500 
+#each simulation length in ps  - ACEMD only -
+Timewindow = 40
 #fs - ACEMD only - why?
-Timestep = 4 
+Timestep = 4
 #ps - ACEMD only - same
 Savefreq = 20
+

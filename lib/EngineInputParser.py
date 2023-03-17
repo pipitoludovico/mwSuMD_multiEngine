@@ -10,6 +10,17 @@ class EngineInputs(mwInputParser):
         self.max_value = None
 
     def getAcemdInputFile(self, savefreq):
+        _timeWindow = self.par['Timewindow']
+        if self.par['Relax'] is True:
+            self.par['Timewindow'] = self.par['RelaxTime']*1000
+        else:
+            self.par['Timewindow'] = _timeWindow
+
+        if self.trajCount != 0 or self.par['Restart'] == 'YES':
+            self.par['coor'] = 'previous.coor'
+            self.par['xsc'] = 'previous.xsc'
+            self.par['vel'] = 'previous.vel'
+
         acemdInput = ['restart off\n',
                       'minimize        0\n',
                       'run            %sps\n' % self.par['Timewindow'],

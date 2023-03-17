@@ -1,4 +1,5 @@
-from multiprocessing import Process, Queue
+import multiprocessing as mp
+from multiprocessing import Manager
 
 from .Getters import *
 from .Parser import *
@@ -14,31 +15,34 @@ class MetricsParser(mwInputParser):
 
     def getChosenMetrics(self):
         self.createMetricList()
+        print(self.walkers_metrics)
         return self.walkers_metrics
 
     def createMetricList(self):
+        _walker = self.par['Walkers']
+        if self.par['Relax'] is True:
+            self.par['Walkers'] = 1
+        else:
+            self.par['Walkers'] = _walker
         walker_metrics_1 = []
         walker_metrics_2 = []
         all_m_1 = []
         all_m_2 = []
-        q = Queue()
-        processes = [Process(target=self.calculateMetricsMP, args=(q, walker, self.selection_list))
-                     for walker in range(1, self.par['Walkers'] + 1)]
-        for process in processes:
-            process.start()
-        for _ in processes:
-            ret = q.get()
-            if self.par['NumberCV'] == 1:
-                self.walkers_metrics.append(ret[0])
-            else:
-                print("RETURNS")
-                print(ret)
-                walker_metrics_1.append(ret[0][0])
-                walker_metrics_2.append(ret[1][0])
-                all_m_1.append(ret[2])
-                all_m_2.append(ret[3])
-        for process in processes:
-            process.join()
+        manager = Manager()
+        q = manager.Queue()
+        with mp.Pool() as pool:
+            results = pool.starmap(self.calculateMetricsMP,
+                                   [(q, walker, self.selection_list) for walker in range(1, self.par['Walkers'] + 1)])
+            for _ in results:
+                ret = q.get()
+                if self.par['NumberCV'] == 1:
+                    self.walkers_metrics.append(ret[0])
+                else:
+                    walker_metrics_1.append(ret[0][0])
+                    walker_metrics_2.append(ret[1][0])
+                    all_m_1.append(ret[2])
+                    all_m_2.append(ret[3])
+        pool.join()
         if self.par['NumberCV'] == 2:
             self.walkers_metrics = walker_metrics_1, walker_metrics_2, all_m_1, all_m_2
 
@@ -49,57 +53,56 @@ class MetricsParser(mwInputParser):
         walkers_metrics_2 = []
         allMetric_1 = []
         allMetric_2 = []
-        HB_1 = []
-        HB_2 = []
         print(f'\nWalking into walker: ' + str(walker))
         os.chdir(f'tmp/walker_' + str(walker))
         print("CALCULATING METRICS IN: " + str(os.getcwd()))
         if (glob.glob('*.xtc') and glob.glob('*.coor')) or (glob.glob('*.xtc') and glob.glob('*.gro')):
             if self.par['Metric_1'] == 'DISTANCE':
-                # AGGIUNGERE LOGGERS Pwalkers_metrics_2ER METRIC
                 distMetric, distances, lastDist = Getters(self.par).getDistance(selection_list[0], selection_list[1])
                 walker_metric.append(distMetric)
                 walkers_metrics_1.append(lastDist)
-                allMetric_1 = allMetric_1 + distances
-            elif self.par['Metric_2'] == 'DISTANCE':
+                allMetric_1.append(distances)
+            if self.par['Metric_2'] == 'DISTANCE':
                 distMetric, distances, lastDist = Getters(self.par).getDistance(selection_list[2], selection_list[3])
                 walkers_metrics_2.append(lastDist)
-                allMetric_2 = allMetric_2 + distances
+                allMetric_2.append(distances)
 
             if self.par['Metric_1'] == 'CONTACTS':
                 contactMetric, timeseries, lastContacts = Getters(self.par).getContacts(selection_list[0],
                                                                                         selection_list[1])
                 walker_metric.append(contactMetric)
                 walkers_metrics_1.append(lastContacts)
-                allMetric_1 = allMetric_1 + timeseries
-            elif self.par['Metric_2'] == 'CONTACTS':
+                allMetric_1.append(timeseries)
+            if self.par['Metric_2'] == 'CONTACTS':
                 contactMetric, timeseries, lastContacts = Getters(self.par).getContacts(selection_list[0],
                                                                                         selection_list[1])
                 walkers_metrics_2.append(lastContacts)
-                allMetric_2 = allMetric_2 + timeseries
+                allMetric_2.append(timeseries)
 
             if self.par['Metric_1'] == 'RMSD':
                 distMetric, data, lastRMSD = Getters(self.par).getRMSD(selection_list[0], selection_list[1])
                 walker_metric.append(distMetric)
                 walkers_metrics_1.append(lastRMSD)
-                allMetric_1 = allMetric_1 + data
-            elif self.par['Metric_2'] == 'RMSD':
+                allMetric_1.append(data)
+            if self.par['Metric_2'] == 'RMSD':
                 distMetric, data, lastRMSD = Getters(self.par).getRMSD(selection_list[2], selection_list[3])
                 walkers_metrics_2.append(lastRMSD)
-                allMetric_2 = allMetric_2 + data
+                allMetric_2.append(data)
 
-            elif self.par['ligand_HB'] is not None:
-                HB_score, last_HB = Getters(self.par).getHB_score()
-                HB_1.append(HB_score)
-                HB_2.append(last_HB)
-                allMetric_2 = allMetric_2 + HB_score
-            else:
-                print("NO METRICS FOUND, please check your setting file")
-                exit()
-        if self.par['NumberCV'] == 1:
-            queue.put(walker_metric)
-        else:
-            queue.put([walkers_metrics_1, walkers_metrics_2, allMetric_1, allMetric_2])
+            if self.par['Metric_1'] == 'HB':
+                HB_score, hbData, last_HB = Getters(self.par).getHB_score(selection_list[0], selection_list[1])
+                walker_metric.append(HB_score)
+                walkers_metrics_1.append(HB_score)
+                allMetric_1.append(hbData)
+            if self.par['Metric_2'] == 'HB':
+                HB_score, hbData, last_HB = Getters(self.par).getHB_score(selection_list[2], selection_list[3])
+                walkers_metrics_2.append(last_HB)
+                allMetric_2.append(hbData)
+            # wrapping up all the computed metrics into shared memory values
+            if self.par['NumberCV'] == 1:
+                queue.put(walker_metric)
+            if self.par['NumberCV'] == 2:
+                queue.put([walkers_metrics_1, walkers_metrics_2, allMetric_1, allMetric_2])
         os.chdir(self.folder)
 
     def getBestWalker(self, walkers_metrics):
@@ -112,7 +115,7 @@ class MetricsParser(mwInputParser):
             else:
                 best_value = min(metric_values)
             best_walker = walkers_metrics.index(best_value) + 1
-            return best_walker, best_value
+            return best_walker, best_value, walkers_metrics[-1], walkers_metrics[-1]
         else:
             # we create the "allMetrics_1 and 2", walking metrics list 1 and 2
             allMetricLists = (walkers_metrics[i] for i in [2, 3])
@@ -132,5 +135,8 @@ class MetricsParser(mwInputParser):
             score_sum = [(x[0] + y[0]) for x, y in zip(scores_wm, scores_wm2)]
             list(score_sum)
             max_score = max(score_sum)
+            if max_score is 'nan':
+                raise ZeroDivisionError("The reference value you chose did not produce results (averages = 0)."
+                                        "Please try a different selection and start again")
             max_index = score_sum.index(max_score) + 1
-            return max_index, max_score
+            return max_index, max_score, walkers_metrics[0][-1], walkers_metrics[1][-1]

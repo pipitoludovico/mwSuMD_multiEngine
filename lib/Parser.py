@@ -1,5 +1,5 @@
-import os
 import argparse
+import os
 
 
 class mwInputParser:
@@ -11,6 +11,8 @@ class mwInputParser:
     parPath = os.path.abspath('parameters')
     new_value = 0
     max_value = 0
+    metric_1 = 0
+    metric_2 = 0
     mode = 'parallel'
     excludedGPUS = []
 
@@ -82,9 +84,13 @@ class mwInputParser:
         self.par['Wrap'] = 'protein and name CA'
 
         with open(self.inputFile, "r") as infile:
+            self.par['RelaxTime'] = 5
             for line in infile:
                 if line.startswith('#'):
                     continue
+                if line.startswith('RelaxTime'):
+                    self.par['RelaxTime'] = int(line.split('=')[1].strip())
+
                 if line.startswith('NumberCV'):
                     self.par['NumberCV'] = int(line.split('=')[1].strip())
 
@@ -162,17 +168,25 @@ class mwInputParser:
 
     def getRestartOutput(self):
         os.makedirs('restarts', exist_ok=True)
-        if self.par['Restart'] == 'YES':
+        if self.trajCount == 0:
+            if self.par['Restart'] == 'YES':
+                directory = f'{self.folder}/restarts'
+            else:
+                directory = f'{self.folder}/system'
+            for file in os.listdir(directory):
+                for extension in self.outExtensions:
+                    if file.endswith(extension):
+                        self.par[extension] = file
+        if self.trajCount != 0:
             directory = f'{self.folder}/restarts'
-        else:
-            directory = f'{self.folder}/system'
-        for file in os.listdir(directory):
-            for extension in self.outExtensions:
-                if file.endswith(extension):
-                    self.par[extension] = file
+            for file in os.listdir(directory):
+                for extension in self.outExtensions:
+                    if file.endswith(extension):
+                        self.par[extension] = file
 
     def countTraj_logTraj(self, metric):
         """ At what cycle number mwSuMD was stopped? """
+        self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
         if self.par['Restart'] == 'NO':
             if self.trajCount == 0 and (metric == 0 or metric == 10 ** 6):
                 with open('walkerSummary.log', 'w') as logF:
@@ -184,6 +198,9 @@ class mwInputParser:
             else:
                 with open('walkerSummary.log', 'a') as logF:
                     logF.write(str(self.trajCount) + " " + str(metric) + "\n")
+        if self.par['Relax'] is True:
+            with open('walkerSummary.log', 'a') as logF:
+                logF.write(str(self.trajCount) + " RELAXATION PROTOCOL  " + str(metric) + "\n")
         if self.par['Restart'] == 'YES':
             if self.trajCount != 0 and (metric == 0 or metric == 10 ** 6):
                 metric = 'RESTART'
@@ -197,9 +214,4 @@ class mwInputParser:
         print("Loading setting parameters...")
         self.checkEngine(), self.getTopology(), self.getParameters(), self.getForcefields()
         self.getMetrics(), self.getReferencePDB(), self.argumentParser(), self.getRestartOutput()
-        logF = open("settings.txt", "w")
-        for idx, sel in enumerate(self.selection_list):
-            logF.write('Metric_%s	%s\n' % (str(idx), sel))
-        print(self.par, file=logF)
-        logF.close()
         return self.par, self.selection_list, self.parPath

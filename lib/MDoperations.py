@@ -1,5 +1,7 @@
 import os
 
+import numpy as np
+
 
 class MDoperator:
     def __init__(self, par, root, trajCount):
@@ -8,6 +10,11 @@ class MDoperator:
         self.trajCount = trajCount
 
     def saveStep(self, best_walker):
+        _best_walker = best_walker
+        if self.par['Relax'] is True:
+            best_walker = 1
+        else:
+            best_walker = _best_walker
         os.makedirs('trajectories', exist_ok=True)
         """Handle the restart files and the xtc storage"""
         for r in range(1, int(self.par['Walkers']) + 1):
@@ -32,4 +39,20 @@ class MDoperator:
                     os.system('cp grid.dat  %s/restarts/ ' % self.folder)
         print("FINISHED SAVING FRAMES")
         os.chdir(self.folder)
-        # os.system('rm -r tmp')
+        os.system('rm -r tmp')
+
+
+def checkIfStuck(values, fails):
+    if fails > 5:
+        with open('walkerSummary.log') as logFile:
+            logFile.write('\nSimulation seemed stuck and it has been terminated')
+        exit()
+    else:
+        # we check if the simulation did not change much,
+        # and we run the relaxation protocol
+        if np.std(values) < 0.6:
+            print('\nSimulation might be stuck. Running the relaxation protocol.')
+            return True
+        else:
+            # if it did not, we continue as usual
+            return False

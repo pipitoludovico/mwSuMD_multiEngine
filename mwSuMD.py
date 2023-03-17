@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 
 from lib import *
@@ -7,7 +5,7 @@ from lib import *
 Utilities.ProcessManager()
 pars = Parser.mwInputParser()
 pars.getSettings()
-settings = pd.DataFrame(sorted(list(pars.par.items())), columns=['keys', 'values'])
+settings = pd.DataFrame(sorted(list(pars.par.items())), columns=['Setting', 'Parameter'])
 print(settings)
 
 
@@ -18,6 +16,7 @@ def main():
     else:
         sumd = SuMDProtocol.suMD1(pars.par)
         sumd.run_mwSuMD()
+    exit()
 
 
 if __name__ == '__main__':

@@ -5,12 +5,11 @@ setup(
     name='mwSuMD',
     version='1.1',
     description='mwSuMD dependencies',
-    author='Giuseppe Deganutti',
+    author='Giuseppe Deganutti, Ludovico Pipitò',
     packages=find_packages(),
     install_requires=[
         'MDAnalysis',
-        'mdtraj',
-        'moleculekit',
+        'GPUtil',
         'numpy',
         'pandas',
         'setuptools'

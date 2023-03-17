@@ -1,3 +1,5 @@
+import os
+
 import MDAnalysis as Mda
 import numpy as np
 from MDAnalysis.analysis.hydrogenbonds import HydrogenBondAnalysis
@@ -81,7 +83,8 @@ class Getters(mwInputParser):
         distMetric = (mean_rmsd * last_rmsd) ** 0.5
         return distMetric, data, last_rmsd
 
-    def getHB_score(self):
+    def getHB_score(self, sel_1, sel_2):
+        print("getting HB in folder in: " + str(os.getcwd()))
         xtc = "wrapped.xtc"
         if self.par['MDEngine'] == 'ACEMD':
             psf = f"../../system/{self.par['PSF']}" \
@@ -90,29 +93,38 @@ class Getters(mwInputParser):
             psf = f"{self.par['gro']}"
 
         u = Mda.Universe(psf, xtc)
-        lig_sele = u.select_atoms(f"{self.par['ligand_HB']} and name O* or {self.par['ligand_HB']} and name H*")
-        water_sele = u.select_atoms('water')
+        if sel_1 or sel_2 is not None:
+            lig_sele = u.select_atoms(f"(({str(sel_1)} and type O) or ({str(sel_1)} and type H)) "
+                                      f"or (({str(sel_2)} and type O) or ({str(sel_2)} and type H))")
+            water_sele = u.select_atoms('(resname SOL and name OW) or (type OH2) or (type H1) or (type H2)')
+            if lig_sele.n_atoms == 0:
+                print("Your ligand selection produced 0 atoms"
+                      "Check if your selection is correct or present in the psf/pdb")
+                exit()
+            if water_sele.n_atoms == 0:
+                print("Warning: no molecule waters were detected."
+                      "Make sure your system doesn't have implicit solvent or has not been filtered")
 
-        waterCont = [(distance_array(lig_sele.positions, water_sele.positions, box=u.dimensions) < 3).sum() for ts in
-                     u.trajectory if ts is not None]
+            waterCont = [(distance_array(lig_sele.positions, water_sele.positions, box=u.dimensions) < 3).sum() for ts
+                         in
+                         u.trajectory if ts is not None]
 
-        hbonds = HydrogenBondAnalysis(universe=u, between=['protein', f'{self.par["ligand_HB"]}'], d_a_cutoff=3,
-                                      d_h_a_angle_cutoff=120, update_selections=False)
-        hbonds.run(verbose=True)
-        mean_contacts = hbonds.count_by_time().mean()
-        last_contact = hbonds.count_by_time()[-1]
+            hbonds = HydrogenBondAnalysis(universe=u, between=[f'{sel_1}', f'{sel_2}'], d_a_cutoff=3,
+                                          d_h_a_angle_cutoff=120, update_selections=False)
+            hbonds.run(verbose=False)
+            mean_contacts = hbonds.count_by_time().mean()
+            last_contact = hbonds.count_by_time()[-1]
 
-        distMetric = ((mean_contacts * last_contact) ** 0.5 if self.par['NumberCV'] == 1
-                      else (((np.mean(waterCont)) * waterCont[-1]) ** 0.5))
-        if distMetric != 0:
-            return distMetric, last_contact
-        if self.par['NumberCV'] == 2:
-            return waterCont, last_contact
-        else:
-            # if no H bond is found, we compute the number of water contacts
-            # to determine the degree of solvation of the ligand
-            distMetric = (((np.mean(waterCont)) * waterCont[-1]) ** 0.5)
-            return distMetric, last_contact
+            distMetric = ((mean_contacts * last_contact) ** 0.5)  # if self.par['NumberCV'] == 1
+            # else (((np.mean(waterCont)) * waterCont[-1]) ** 0.5))
+
+            if distMetric != 0:
+                return distMetric, hbonds.count_by_time(), last_contact
+            else:
+                # if no H bond is found, we compute the number of water contacts
+                # to determine the degree of solvation of the ligand
+                distMetric = (((np.mean(waterCont)) * waterCont[-1]) ** 0.5)
+                return distMetric, waterCont, last_contact
 
     def compute_center_of_mass(self, select=None):
         if self.par['MDEngine'] == 'ACEMD':
@@ -126,6 +138,7 @@ class Getters(mwInputParser):
         sele = u.select_atoms(select)
         arr = np.empty((sele.n_residues, u.trajectory.n_frames, 3))
 
-        for ts in Mda.log.ProgressBar(u.trajectory):
+        # for ts in Mda.log.ProgressBar(u.trajectory):
+        for ts in u.trajectory:
             arr[:, ts.frame] = sele.center_of_mass()
         return arr

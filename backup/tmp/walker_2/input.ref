@@ -1,0 +1,57 @@
+
+# Forcefield configuration
+
+           parameters /scratch/ludovico3/mwsumd/parameters/toppar_c36_jul20/par_all36_prot.prm
+           parameters /scratch/ludovico3/mwsumd/parameters/toppar_c36_jul20/par_all36_lipid.prm
+
+# Initial State
+
+            structure ../../system/NEUTRAL_fis.psf
+          coordinates ../../system/NEUTRAL_fis.pdb
+       binCoordinates ../../system/NEUTRAL_fis.coor
+        binVelocities ../../system/NEUTRAL_fis.vel
+       extendedSystem ../../system/NEUTRAL_fis.xsc
+#          temperature 310.00 # Explicit velocity field provided
+
+# Output
+
+       trajectoryFile output_0.xtc
+     trajectoryPeriod 5000
+
+# Electrostatics 
+
+                  PME on
+               cutoff 9.00 # A
+            switching on
+       switchDistance 7.50 # A
+      implicitSolvent off
+
+# Temperature Control 
+
+           thermostat on
+ thermostatTemperature 310.00 # K
+    thermostatDamping 0.10 # /ps
+
+# Pressure Control 
+
+             barostat off
+     barostatPressure 1.0000 # bar
+  barostatAnisotropic off
+   barostatConstRatio off
+      barostatConstXY off
+
+# Integration
+
+             timeStep 4.00 # fs
+           slowPeriod 4.00 # fs
+
+# External forces
+
+
+# Restraints
+
+
+# Run Configuration
+
+              restart off
+                  run 125000
