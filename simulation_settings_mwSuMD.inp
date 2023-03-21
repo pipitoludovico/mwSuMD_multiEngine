@@ -7,7 +7,7 @@ Wrap = protein and name CA and segid P0 P1
 # Relaxation protocol time in case of stuck condition [Default = 5 ns]
 RelaxTime = 
 # Output name of the files
-Output = test_CV2_DIST_DIST
+Output = output
 ########################################################################
 # Supervision on one or two metrics?
 NumberCV = 2

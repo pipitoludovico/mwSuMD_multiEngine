@@ -4,6 +4,7 @@ import os
 
 class mwInputParser:
     folder = os.getcwd()
+    os.makedirs(f'{folder}/trajectories', exist_ok=True)
     inputFile = 'simulation_settings_mwSuMD.inp'
     par = {}
     selection_list = []
@@ -18,49 +19,40 @@ class mwInputParser:
 
     def __init__(self):
         self.outExtensions = ('coor', 'vel', 'xsc')
-        self.groExtensions = ('.mpd', '.gro', '.cpt', '.itp', 'top')
-        self.paramExt = ('.param', '.prmtop', '.prm')
-        os.makedirs(f'{self.folder}/trajectories', exist_ok=True)
+        self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', '.itp', 'top', '.prmtop')
+        self.charmmParamExt = ('.param', '.prmtop', '.prm')
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
             print('Input file for SuMD simulation required')
             quit()
 
     def checkEngine(self):
-        engineCheck = ('psf', 'prmtop')
-        self.par = {'MDEngine': 'GROMACS' if file.endswith(engineCheck) else 'ACEMD' for file in
-                    os.listdir(f'{self.folder}/system')}
-        if self.par['MDEngine'] == 'GROMACS':
-            self.getGromacsSystem()
+        self.par['MDEngine'] = 'GROMACS' if any(file.endswith('.gro') for file in os.listdir('./system')) else 'ACEMD'
+        self.getSystem()
 
-    def getTopology(self):
-        self.par['PSF'] = None
-        self.par['PDB'] = None
-        for topos in os.listdir(f'{self.folder}/system'):
-            if topos.endswith('.psf'):
-                self.par['PSF'] = topos
-            if topos.endswith('.pdb'):
-                self.par['PDB'] = topos
-
-    def getGromacsSystem(self):
-        for groFile in os.listdir('./system'):
-            if groFile.endswith(self.groExtensions):
-                self.par[f'GROMACS_{str(self.groExtensions).replace(".", "")}'] = groFile
+    def getSystem(self):
+        for ext in self.fileExtensions:
+            for file in os.listdir('./system'):
+                if file.endswith(ext):
+                    self.par[ext.replace('.', '').upper()] = file
 
     def getParameters(self):
         if 'Parameters' not in self.par:
             self.par['Parameters'] = []
             for params in os.listdir(f'{self.folder}/system'):
-                if params.endswith(self.paramExt):
+                if params.endswith(self.charmmParamExt):
                     self.par['Parameters'].append(params)
             for dirpath, dirnames, generalParams in os.walk(self.parPath):
-                for filename in [f for f in generalParams if f.endswith(self.paramExt)]:
+                for filename in [f for f in generalParams if f.endswith(self.charmmParamExt)]:
                     self.par['Parameters'].append(filename)
         else:
             return self.par['Parameters']
 
     def getReferencePDB(self):
         if self.par['Metric_1'] or self.par['Metric_2'] == 'RMSD':
+            if not os.path.isdir(f'{self.folder}/system/reference'):
+                print('You need a reference folder with a reference pdb in it if you use the RMSD as a metric.')
+                exit()
             if len(os.listdir(f'{self.folder}/system/reference')) > 0:
                 for reference in os.listdir(f'{self.folder}/system/reference'):
                     if reference.endswith('.pdb'):
@@ -85,11 +77,13 @@ class mwInputParser:
 
         with open(self.inputFile, "r") as infile:
             self.par['RelaxTime'] = 5
+            self.par['Relax'] = False
             for line in infile:
                 if line.startswith('#'):
                     continue
                 if line.startswith('RelaxTime'):
-                    self.par['RelaxTime'] = int(line.split('=')[1].strip())
+                    if line.split('=')[1].strip() != '':
+                        self.par['RelaxTime'] = float(line.split('=')[1].strip())
 
                 if line.startswith('NumberCV'):
                     self.par['NumberCV'] = int(line.split('=')[1].strip())
@@ -101,22 +95,22 @@ class mwInputParser:
                     self.par['Metric_2'] = line.split('=')[1].strip().upper()
 
                 if line.startswith('Cutoff_1'):
-                    self.par['Cutoff_1'] = int(line.split('=')[1].strip())
+                    self.par['Cutoff_1'] = float(line.split('=')[1].strip())
 
                 if line.startswith('Cutoff_2'):
-                    self.par['Cutoff_2'] = int(line.split('=')[1].strip())
+                    self.par['Cutoff_2'] = float(line.split('=')[1].strip())
 
                 if line.startswith('Walkers'):
                     self.par['Walkers'] = int(line.split('=')[1].strip())
 
                 if line.startswith('Timewindow'):
-                    self.par['Timewindow'] = line.split('=')[1].strip()
+                    self.par['Timewindow'] = int(line.split('=')[1].strip())
 
                 if line.startswith('Timestep'):
-                    self.par['Timestep'] = line.split('=')[1].strip()
+                    self.par['Timestep'] = int(line.split('=')[1].strip())
 
                 if line.startswith('Savefreq'):
-                    self.par['Savefreq'] = line.split('=')[1].strip()
+                    self.par['Savefreq'] = int(line.split('=')[1].strip())
 
                 if line.startswith('Sel_'):
                     self.selection_list.append(line.split('=')[1].strip())
@@ -129,9 +123,6 @@ class mwInputParser:
 
                 if line.startswith('Wrap'):
                     self.par['Wrap'] = line.split('=')[1].strip()
-
-                if line.startswith('GPU_ID'):  # could go as argv...
-                    self.par['GPU_ID'] = line.split('=')[1].strip()
 
     def argumentParser(self):
         ap = argparse.ArgumentParser()
@@ -147,10 +138,12 @@ class mwInputParser:
         if args.exclude is not None and len(args.exclude) != 0:
             self.excludedGPUS = [x for x in args.exclude]
 
-        self.par['PLUMED'] = None
-        for file in os.listdir(self.folder + "/system"):
-            if file.endswith('.inp'):
-                self.par['PLUMED'] = f'{self.folder}/system/{file}'
+        if not os.path.isdir(f'{self.folder}/plumed'):
+            self.par['PLUMED'] = None
+        else:
+            for file in os.listdir(self.folder + "/plumed"):
+                if file.endswith('.inp'):
+                    self.par['PLUMED'] = f'{self.folder}/plumed/{file}'
 
         with open(self.inputFile, "r") as infile:
             for line in infile:
@@ -212,6 +205,6 @@ class mwInputParser:
 
     def getSettings(self):
         print("Loading setting parameters...")
-        self.checkEngine(), self.getTopology(), self.getParameters(), self.getForcefields()
+        self.checkEngine(), self.getParameters(), self.getForcefields()
         self.getMetrics(), self.getReferencePDB(), self.argumentParser(), self.getRestartOutput()
         return self.par, self.selection_list, self.parPath

@@ -472,36 +472,140 @@
 # print(lig_sele.n_atoms)
 
 # def wrapMDA():
-# #     import MDAnalysis as Mda
-# #     from MDAnalysis import transformations
-# #     u = Mda.Universe('system/NEUTRAL_fis.psf', 'system/output_0.xtc')
-# #     prot = u.select_atoms("segid P0")
-# #     ag = u.atoms
-# #     workflow = (transformations.unwrap(ag),
-# #                 transformations.center_in_box(prot),
-# #                 transformations.wrap(ag, compound='fragments'))
-# #     u.trajectory.add_transformations(*workflow)
-# #
-# #     with Mda.Writer('wrapped_MDA.xtc', ag) as w:
-# #         for ts in u.trajectory:
-# #             w.write(ag)
-# #
-# #
-# # wrapMDA()
+#     os.chdir('tmp/walker_1')
+#     import MDAnalysis as Mda
+#     from MDAnalysis import transformations
+#     ext = ('xtc', 'dcd')
+#     traj_name = 'output'
+#     for trajectory in os.listdir(os.getcwd()):
+#         if trajectory.startswith(traj_name) and trajectory.endswith(ext):
+#             u = Mda.Universe('../../system/NEUTRAL_fis.psf', trajectory)
+#             prot = u.select_atoms("segid P0")
+#             ag = u.atoms
+#             workflow = (transformations.unwrap(ag),
+#                         transformations.center_in_box(prot),
+#                         transformations.wrap(ag, compound='fragments'))
+#             u.trajectory.add_transformations(*workflow)
+#
+#             with Mda.Writer('wrapped_MDA.xtc', ag) as w:
+#                 for ts in u.trajectory:
+#                     if ts is not None:
+#                         w.write(ag)
+#
+#
+# wrapMDA()
 
 
-par = {'Relax': True, 'TW': 400}
+# par = {'Relax': True, 'TW': 400}
+#
+# _tw = par['TW']
+#
+# for x in range(1, 11):
+#     if par['Relax'] is True:
+#         par['TW'] = 999
+#     if x == 5:
+#         par['Relax'] = False
+#         par['TW'] = _tw
+#         # par['TW'] = 999999999
+#
+# print(par['TW'])
 
-_tw = par['TW']
+# Autoext getter
+# par = {}
+# groExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', '.itp', 'top')
+#
+# def getThings():
+#     for ext in groExtensions:
+#         for file in os.listdir('./system'):
+#             if file.endswith(ext):
+#                 par[ext.replace('.', '').upper()] = file
+#
+# getThings()
+# print(par['MDP'])
 
-for x in range(1, 11):
-    if par['Relax'] is True:
-        par['TW'] = 999
-    if x == 5:
-        par['Relax'] = False
-        par['TW'] = _tw
-        # par['TW'] = 999999999
+# wrapping AMBER
+# def wrapMDA():
+#     import MDAnalysis as Mda
+#     from MDAnalysis import transformations
+#     ext = ('xtc', 'dcd')
+#     traj_name = 'neutral'
+#     for trajectory in os.listdir(os.getcwd()):
+#         if trajectory.startswith(traj_name) and trajectory.endswith(ext):
+#             print(trajectory)
+#             u = Mda.Universe('neutral.prmtop', trajectory)
+#             prot = u.select_atoms("segid P0")
+#             if len(prot.atoms) == 0:
+#                 print("your wrapping selection selected 0 atoms! using protein and name CA instead...")
+#                 prot = u.select_atoms('protein and name CA')
+#             ag = u.atoms
+#             workflow = (transformations.unwrap(ag),
+#                         transformations.center_in_box(prot),
+#                         transformations.wrap(ag, compound='fragments'))
+#             u.trajectory.add_transformations(*workflow)
+#
+#             with Mda.Writer('wrapped_MDA.xtc', ag) as w:
+#                 for ts in u.trajectory:
+#                     if ts is not None:
+#                         w.write(ag)
+#
+# wrapMDA()
 
-print(par['TW'])
+import numpy as np
 
+#
+# class Test:
+#     def __init__(self):
+#         self.par = {}
+#
+#     def getDistance(self, sel_1, sel_2):
+#         print("getting c1")
+#         c1 = self.compute_center_of_mass(select=sel_1)
+#         print("getting c2")
+#         c2 = self.compute_center_of_mass(select=sel_2)
+#         print("sel 1")
+#         print(sel_1)
+#         print(len(c1))
+#         print("sel 2")
+#         print(sel_2)
+#         print(len(c2))
+#
+#         if len(c1) == 0 or len(c2) == 0:
+#             print(
+#                 f"Your selection {sel_1 + ' ' + sel_2} resulted in 0 atoms."
+#                 f" Please check your selection in the settings and rerun")
+#             exit()
+#
+#         # Compute distances
+#         distances = [np.linalg.norm(a - b) * 10 for a, b in zip(c1, c2)]
+#         mean_distance = np.mean(distances)
+#         last_distance = distances[-1]
+#         print('results')
+#         print((mean_distance * last_distance) ** 0.5, distances, last_distance)
+#         return (mean_distance * last_distance) ** 0.5, distances, last_distance
+#
+#     def compute_center_of_mass(self, select=None):
+#         xtc = "wrapped.xtc"
+#         u = Mda.Universe('neutral.prmtop', xtc)
+#         sele = u.select_atoms(select)
+#         arr = np.empty((sele.n_residues, u.trajectory.n_frames, 3))
+#
+#         for ts in u.trajectory:
+#             arr[:, ts.frame] = sele.center_of_mass()
+#         return arr
+#
+#
+# a = Test()
+# a.getDistance('resname MOL', 'protein and resnum 90')
+
+# x = 0
+#
+# if x % 3 == 0:
+#     print('ok')
+
+vals = [6.4415219420149965, 1.4936400458098136, 4.8526007560352316]
+fails = 0
+
+from lib.MDoperations import checkIfStuck
+
+print(checkIfStuck(vals, fails))
 

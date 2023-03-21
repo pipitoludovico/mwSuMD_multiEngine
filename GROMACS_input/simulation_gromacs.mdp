@@ -1,0 +1,69 @@
+; Run control
+integrator               = md
+dt                       = 0.002
+nsteps                   = 100000
+nstxout                  = 1000
+nstvout                  = 1000
+nstenergy                = 1000
+nstlog                   = 1000
+continuation             = no
+; Output control
+nstxout-compressed       = 1000
+compressed-x-precision   = 1000
+compressed-x-grps        = System
+; Bond parameters
+constraint_algorithm     = lincs
+constraints              = all-bonds
+lincs_iter               = 1
+lincs_order              = 4
+; Neighbor searching
+ns_type                  = grid
+nstlist                  = 20
+rlist                    = 1.0
+rcoulomb                 = 1.0
+rvdw                     = 1.0
+; Electrostatics
+coulombtype              = PME
+pme_order                = 4
+fourierspacing           = 0.16
+ewald_rtol               = 1e-5
+; Temperature coupling
+tcoupl                   = v-rescale
+tc-grps                  = System
+tau_t                    = 0.1
+ref_t                    = 300
+; Pressure coupling
+pcoupl                   = no
+; Periodic boundary conditions
+pbc                      = xyz
+; Dispersion correction
+DispCorr                 = EnerPres
+; Velocity generation
+gen_vel                  = yes
+gen_temp                 = 300
+gen_seed                 = -1
+; Simulation box
+box                      = cubic
+; Input files
+coulombtype              = PME
+pme_order                = 4
+fourierspacing           = 0.16
+ewald_rtol               = 1e-5
+; Topology file
+include                  = -I../top
+define                   = -DPOSRES
+; Coordinates
+; Note that you need to replace "input.gro" and "input.top" with your own filenames
+; as well as adjust the number of molecules and solvent
+; according to your system.
+refcoord_scaling         = com
+refcoord_scaling_group   = System
+refcoord_scaling_file    = none
+refcoord_scaling_x       = 1
+refcoord_scaling_y       = 1
+refcoord_scaling_z       = 1
+refcoord_scaling_r       = 1
+continuation             = no
+; Run parameters
+gen_seed                 = 473529
+title                    = NVT simulation

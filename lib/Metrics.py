@@ -6,30 +6,29 @@ from .Parser import *
 
 
 class MetricsParser(mwInputParser):
-    def __init__(self, par):
-        self.par = par
+    def __init__(self):
         super(MetricsParser, self).__init__()
         import warnings
         warnings.filterwarnings(action='ignore')
         self.walkers_metrics = []
+        self.walkers_number_snapshot = self.par['Walkers']
 
     def getChosenMetrics(self):
         self.createMetricList()
         print(self.walkers_metrics)
+        print("METRIC RETURNIN IN FOLDER" + os.getcwd())
         return self.walkers_metrics
 
     def createMetricList(self):
-        _walker = self.par['Walkers']
         if self.par['Relax'] is True:
             self.par['Walkers'] = 1
-        else:
-            self.par['Walkers'] = _walker
         walker_metrics_1 = []
         walker_metrics_2 = []
         all_m_1 = []
         all_m_2 = []
         manager = Manager()
         q = manager.Queue()
+        print("Calculating Metrics:")
         with mp.Pool() as pool:
             results = pool.starmap(self.calculateMetricsMP,
                                    [(q, walker, self.selection_list) for walker in range(1, self.par['Walkers'] + 1)])
@@ -38,6 +37,8 @@ class MetricsParser(mwInputParser):
                 if self.par['NumberCV'] == 1:
                     self.walkers_metrics.append(ret[0])
                 else:
+                    print("PRINTING RETS")
+                    print(ret)
                     walker_metrics_1.append(ret[0][0])
                     walker_metrics_2.append(ret[1][0])
                     all_m_1.append(ret[2])
@@ -45,6 +46,7 @@ class MetricsParser(mwInputParser):
         pool.join()
         if self.par['NumberCV'] == 2:
             self.walkers_metrics = walker_metrics_1, walker_metrics_2, all_m_1, all_m_2
+        self.par['Walkers'] = self.walkers_number_snapshot
 
     def calculateMetricsMP(self, queue, walker, selection_list):
         import glob
@@ -53,9 +55,7 @@ class MetricsParser(mwInputParser):
         walkers_metrics_2 = []
         allMetric_1 = []
         allMetric_2 = []
-        print(f'\nWalking into walker: ' + str(walker))
         os.chdir(f'tmp/walker_' + str(walker))
-        print("CALCULATING METRICS IN: " + str(os.getcwd()))
         if (glob.glob('*.xtc') and glob.glob('*.coor')) or (glob.glob('*.xtc') and glob.glob('*.gro')):
             if self.par['Metric_1'] == 'DISTANCE':
                 distMetric, distances, lastDist = Getters(self.par).getDistance(selection_list[0], selection_list[1])
@@ -108,8 +108,6 @@ class MetricsParser(mwInputParser):
     def getBestWalker(self, walkers_metrics):
         if self.par['NumberCV'] == 1:
             metric_values = [m for m in walkers_metrics if m is not None]
-            if not metric_values:
-                return None, None
             if self.par['Transition_1'] == 'positive':
                 best_value = max(metric_values)
             else:

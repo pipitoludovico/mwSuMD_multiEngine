@@ -15,10 +15,17 @@ class Getters(mwInputParser):
         self.deNume = None
         self.nume = None
         self.com = None
+        self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
 
     def getDistance(self, sel_1, sel_2):
         c1 = self.compute_center_of_mass(select=sel_1)
         c2 = self.compute_center_of_mass(select=sel_2)
+
+        if len(c1) == 0 or len(c2) == 0:
+            print(
+                f"Your selection {sel_1 + ' ' + sel_2} resulted in 0 atoms."
+                f" Please check your selection in the settings and rerun")
+            exit()
 
         # Compute distances
         distances = [np.linalg.norm(a - b) * 10 for a, b in zip(c1, c2)]
@@ -37,7 +44,7 @@ class Getters(mwInputParser):
             if self.par['Forcefield'] == 'CHARMM':
                 psf = f'{self.folder}/system/%s' % self.par['PSF']
             elif self.par['Forcefield'] == 'AMBER':
-                psf = f'{self.folder}/system/%s' % self.par['prmtop']
+                psf = f'{self.folder}/system/%s' % self.par['PRMTOP']
 
         elif self.par['MDEngine'] == 'GROMACS':
             psf = '%s.gro' % self.par['gro']
@@ -66,10 +73,10 @@ class Getters(mwInputParser):
             if self.par['Forcefield'] == 'CHARMM':
                 psf = f'{self.folder}/system/%s' % self.par['PSF']
             elif self.par['Forcefield'] == 'AMBER':
-                psf = f'{self.folder}/system/%s.prmtop' % self.par['Topology']
+                psf = f'{self.folder}/system/%s' % self.par['PRMTOP']
         else:
             xtc = '%s_%s.xtc' % (self.par['Output'], str(self.trajCount))
-            psf = '%s.gro' % self.par['Topology']
+            psf = '%s' % self.par['PRMTOP']
         u = Mda.Universe(psf, xtc)
         ref = Mda.Universe(pdb)
         R = Mda.analysis.rms.RMSD(u, ref, select="%s" % sel_1, groupselections=["%s" % sel_2])
@@ -88,7 +95,7 @@ class Getters(mwInputParser):
         xtc = "wrapped.xtc"
         if self.par['MDEngine'] == 'ACEMD':
             psf = f"../../system/{self.par['PSF']}" \
-                if self.par['Forcefield'] == 'CHARMM' else f"../../system/{self.par['prmtop']}"
+                if self.par['Forcefield'] == 'CHARMM' else f"../../system/{self.par['PRMTOP']}"
         else:
             psf = f"{self.par['gro']}"
 
@@ -129,15 +136,16 @@ class Getters(mwInputParser):
     def compute_center_of_mass(self, select=None):
         if self.par['MDEngine'] == 'ACEMD':
             psf = f"../../system/{self.par['PSF']}" \
-                if self.par['Forcefield'] == 'CHARMM' else f"../../system/{self.par['prmtop']}"
+                if self.par['Forcefield'] == 'CHARMM' else f"../../system/{self.par['PRMTOP']}"
         else:
-            psf = f"{self.par['gro']}"
+            psf = f"../../system{self.par['GRO']}"
 
         xtc = "wrapped.xtc"
         u = Mda.Universe(psf, xtc)
         sele = u.select_atoms(select)
         arr = np.empty((sele.n_residues, u.trajectory.n_frames, 3))
 
+        # substitute this line if you want to see fancy progress bar
         # for ts in Mda.log.ProgressBar(u.trajectory):
         for ts in u.trajectory:
             arr[:, ts.frame] = sele.center_of_mass()

@@ -1,2 +1,2 @@
 __all__ = ['Getters', 'Loggers', 'MDoperations', 'MDsettings', 'Runners', 'SuMDProtocol', 'Metrics',
-           'EngineInputParser', 'Parser', 'Utilities']
+           'EngineInputParser', 'Parser', 'Utilities', 'Protocol', 'SimulationChecker']
