@@ -16,7 +16,6 @@ class MetricsParser(mwInputParser):
     def getChosenMetrics(self):
         self.createMetricList()
         print(self.walkers_metrics)
-        print("METRIC RETURNIN IN FOLDER" + os.getcwd())
         return self.walkers_metrics
 
     def createMetricList(self):
