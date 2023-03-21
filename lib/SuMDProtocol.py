@@ -50,6 +50,7 @@ class suMD1(mwInputParser):
                     self.metric_1, self.metric_2 = self.runProtocol()
 
     def runProtocol(self):
+        mwInputParser().getRestartOutput()
         self.bestWalker, self.max_value, self.metric_1, self.metric_2 = ProtocolRunner().runStandardProtocol()
         self.cycle += 1
         self.checkVals_1.append(self.metric_1)

@@ -12,9 +12,8 @@ class EngineInputs(mwInputParser):
         self.max_value = None
         self.savefreq = int((int(self.par['Savefreq']) * 1000) / int(self.par['Timestep']))
         self.timewindow = self.par['Timewindow']
-        print("QUESTO E' IL TIMEWINDOW")
-        print(self.timewindow)
         self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
+        mwInputParser().getRestartOutput()
         if 'coor' not in self.par:
             self.par['coor'] = ''
         if 'vel' not in self.par:

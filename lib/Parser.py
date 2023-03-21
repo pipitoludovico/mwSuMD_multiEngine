@@ -161,21 +161,13 @@ class mwInputParser:
 
     def getRestartOutput(self):
         os.makedirs('restarts', exist_ok=True)
-        if self.trajCount == 0:
-            if self.par['Restart'] == 'YES':
-                directory = f'{self.folder}/restarts'
-            else:
-                directory = f'{self.folder}/system'
-            for file in os.listdir(directory):
-                for extension in self.outExtensions:
-                    if file.endswith(extension):
-                        self.par[extension] = file
-        if self.trajCount != 0:
+        if self.trajCount != 0 or self.par['Restart'] == 'YES':
             directory = f'{self.folder}/restarts'
-            for file in os.listdir(directory):
-                for extension in self.outExtensions:
-                    if file.endswith(extension):
-                        self.par[extension] = file
+        else:
+            directory = f'{self.folder}/system'
+
+        self.par.update({extension: file for file in os.listdir(directory) for extension in self.outExtensions if
+                         file.endswith(extension)})
 
     def countTraj_logTraj(self, metric):
         """ At what cycle number mwSuMD was stopped? """
