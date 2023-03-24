@@ -1,0 +1,71 @@
+structure               neutral.psf
+coordinates             neutral.pdb
+set xscfile [open ../../system/previous.xsc]
+proc get_first_ts { xscfile } {
+  set fd [open $xscfile r]
+  gets $fd
+  gets $fd
+  gets $fd line
+  set ts [lindex $line 0]
+  close $fd
+  return $ts
+}
+set firsttime [get_first_ts /home/pipitoludovico/PycharmProjects/mwSuMD-main/system/previous.restart.xsc]
+firsttimestep	   $firsttime
+set temp                310;
+outputName              output
+binCoordinates          ../../system/previous.coor 
+binVelocities           ../../system/previous.vel;     # velocities from last run (binary)
+extendedSystem          ../../system/previous.xsc;     # cell dimensions from last run (binary)
+restartfreq             4000;               
+dcdfreq                 50000;
+dcdUnitCell             yes;                # the file will contain unit cell info
+xstFreq	    4000;               
+outputEnergies          4000;               
+outputTiming	    4000;               
+# Force-Field Parameters
+paraTypeCharmm          on;                 
+# FF PARAMETERS - These are specified by CHARMM
+exclude                 scaled1-4           # non-bonded exclusion policy"
+1-4scaling              1.0
+switching               on
+vdwForceSwitching       on;                 # New option for force-based switching of vdW
+cutoff                  12.0;               # may use smaller, maybe 10., with PME
+switchdist              10.0;               # cutoff - 2.
+pairlistdist            16.0;               # stores the all the pairs with in the distance
+stepspercycle           5;                  # SET TO 5 (or lower than 20 if HMR)
+pairlistsPerCycle       2;                  # 2 is the default
+timestep                2.0;                # fs/step SET 4 is you use HMR
+rigidBonds              all;                # Bound constraint
+nonbondedFreq           1;                  # nonbonded forces every step
+fullElectFrequency      1;                  # PME every step
+
+wrapWater               on;                 # wrap water to central cell
+wrapAll                 on;                 # wrap other molecules too
+# PME (for full-system periodic electrostatics)
+PME                     yes;
+PMEInterpOrder          6;                  # interpolation order (spline order 6 in charmm)
+PMEGridSpacing          1.0;                # maximum PME grid space / used to calculate grid size
+
+# Constant Pressure Control (variable volume)
+useGroupPressure        yes;                # use a hydrogen-group based pseudo-molecular viral
+useFlexibleCell         yes;                 # yes for anisotropic system like membrane
+useConstantRatio        yes;                 # keeps the ratio of the unit cell.
+
+# Constant Temperature Control
+langevin                on;                 # langevin dynamics
+langevinDamping         1.0;                # damping coefficient of 1/ps (keep low) 0.5 if HMR
+langevinTemp            $temp;              # random noise at this level
+langevinHydrogen        off;                # don't couple bath to hydrogens
+
+# Constant pressure
+langevinPiston          off;                # Nose-Hoover Langevin piston pressure control
+langevinPistonTarget    1.01325;            # target pressure in bar 1atm = 1.01325bar
+langevinPistonPeriod    50.0;               # oscillation period in fs
+langevinPistonDecay     25.0;               # oscillation decay time.
+langevinPistonTemp      $temp;              # coupled to heat bath
+
+margin 1
+
+numsteps                10000000;             
+run                     10000000;             

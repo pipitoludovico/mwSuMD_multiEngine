@@ -1,23 +1,3 @@
-restart off
-minimize        0
-run            40ps
-timeStep        4
-parmfile               ../../system/neutral.prmtop
-coordinates             ../../system/neutral.pdb
-temperature     310
-PME             on
-cutoff          9.0
-switchDistance  7.5
-thermostat      on
-thermostatDamping       0.1
-thermostatTemperature   310
-barostat                off
-trajectoryFile          output_1.xtc
-trajectoryPeriod               5000
-binCoordinates          ../../system/previous.coor
-extendedSystem          ../../system/previous.xsc
-binVelocities           ../../system/previous.vel
-parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/neutral.prmtop
 parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/par_all36_cgenff_empty.prm
 parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/par_all36_carb_2.prm
 parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/par_all35_ethers.prm
@@ -29,3 +9,23 @@ parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/par_all3
 parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/par_all36_prot.prm
 parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/par_all36_carb.prm
 parameters		/home/pipitoludovico/PycharmProjects/mwSuMD-main/parameters/parm14sb_all.prm
+restart on
+
+minimize        0
+run            40ps
+timeStep        4
+
+coordinates             ../../system/None
+temperature     310
+PME             on
+cutoff          9.0
+switchDistance  7.5
+thermostat      on
+thermostatDamping       0.1
+thermostatTemperature   310
+barostat                off
+trajectoryFile          test_DIS_n_RMSD_p_1.xtc
+trajectoryPeriod               5000
+binCoordinates          ../../restarts/previous.coor
+extendedSystem          ../../restarts/previous.xsc
+binVelocities           ../../restarts/previous.vel

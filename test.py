@@ -465,29 +465,28 @@
 #     if k == 10:
 #         break
 
-# import MDAnalysis as Mda
-#
 # u = Mda.Universe('system/NEUTRAL_fis.psf', 'system/output_0_wrapped.xtc')
 # lig_sele = u.select_atoms('segid P2')
 # print(lig_sele.n_atoms)
 
+# tested with xtc and dcd and it works.
 # def wrapMDA():
-#     os.chdir('tmp/walker_1')
+#     os.chdir('system')
 #     import MDAnalysis as Mda
 #     from MDAnalysis import transformations
-#     ext = ('xtc', 'dcd')
-#     traj_name = 'output'
+#     ext = ('dcd', 'xtc')
+#     traj_name = 'NEUTRAL_fis'
 #     for trajectory in os.listdir(os.getcwd()):
 #         if trajectory.startswith(traj_name) and trajectory.endswith(ext):
-#             u = Mda.Universe('../../system/NEUTRAL_fis.psf', trajectory)
-#             prot = u.select_atoms("segid P0")
+#             u = Mda.Universe('NEUTRAL_fis.psf', trajectory)
+#             prot = u.select_atoms("protein and name CA")
 #             ag = u.atoms
 #             workflow = (transformations.unwrap(ag),
 #                         transformations.center_in_box(prot),
 #                         transformations.wrap(ag, compound='fragments'))
 #             u.trajectory.add_transformations(*workflow)
 #
-#             with Mda.Writer('wrapped_MDA.xtc', ag) as w:
+#             with Mda.Writer('wrapped_MDA_TEST_DCD.xtc', ag) as w:
 #                 for ts in u.trajectory:
 #                     if ts is not None:
 #                         w.write(ag)
@@ -550,8 +549,6 @@
 #
 # wrapMDA()
 
-import numpy as np
-
 #
 # class Test:
 #     def __init__(self):
@@ -602,10 +599,181 @@ import numpy as np
 # if x % 3 == 0:
 #     print('ok')
 
-vals = [6.4415219420149965, 1.4936400458098136, 4.8526007560352316]
-fails = 0
+# vals = [6.4415219420149965, 1.4936400458098136, 4.8526007560352316]
+# fails = 0
+#
+# from lib.MDoperations import checkIfStuck
+#
+# print(checkIfStuck(vals, fails))
 
-from lib.MDoperations import checkIfStuck
+# extrapolating namd input file to list
+# namdInputFile = []
+#
+# with open('./production.inp', 'r') as file:
+#     for line in file.readlines():
+#         namdInputFile.append(line)
+#
+# print(namdInputFile)
+# setting NAMD input file for PRODUCTION
+# folder = os.getcwd()
+# par = {'MDEngine': 'NAMD', 'PDB': 'neutral.pdb', 'PSF': 'neutral.psf', 'TOP': 'neutral.prmtop',
+#        'PRMTOP': 'neutral.prmtop',
+#        'Parameters': ['neutral.prmtop', 'par_all36_cgenff_empty.prm', 'par_all36_carb_2.prm', 'par_all35_ethers.prm',
+#                       'par_all36_na.prm', 'par_all36m_prot.prm', 'par_all22_prot.prm', 'par_all36_lipid.prm',
+#                       'par_all36_cgenff.prm', 'par_all36_prot.prm', 'par_all36_carb.prm', 'parm14sb_all.prm'],
+#        'Forcefield': 'CHARMM', 'Timestep': 4, 'Savefreq': 20, 'Wrap': 'protein and name CA and segid P0 P1',
+#        'RelaxTime': 5, 'Relax': False, 'NumberCV': 2, 'Metric_1': 'DISTANCE', 'Cutoff_1': 3.0,
+#        'Transition_1': 'negative', 'Metric_2': 'RMSD', 'Cutoff_2': 20.0, 'Transition_2': 'positive', 'Walkers': 3,
+#        'Timewindow': 40, 'REFERENCE': 'neutral.pdb', 'PLUMED': None, 'Restart': 'NO', 'Output': 'output',
+#        'ligand_HB': '', 'coor': 'previous.coor', 'vel': 'previous.vel', 'xsc': 'previous.xsc'}
+#
+# print((len(os.listdir(f"{folder}/trajectories"))))
+# saveFrequency = 40
+#
+# inputFile = ['structure               %s\n' % par['PSF'],
+#              'coordinates             %s\n' % par['PDB'],
+#              'set xscfile [open %s]\n' % f"../../system/{par['xsc']}" if par['Restart'] == 'NO'
+#              else f"../../restart/{par['xsc']}" if (len(os.listdir(f'{folder}/trajectories'))) != 0
+#              else f"../../restart/{par['xsc']}",
+#              'proc get_first_ts { xscfile } {\n',
+#              '  set fd [open $xscfile r]\n',
+#              '  gets $fd\n',
+#              '  gets $fd\n',
+#              '  gets $fd line\n',
+#              '  set ts [lindex $line 0]\n',
+#              '  close $fd\n',
+#              '  return $ts\n',
+#              '}\n',
+#              'set firsttime [get_first_ts %s]\n' % f"{folder}/system/{par['xsc'].replace('.xsc','')}.restart.xsc",
+#              'firsttimestep\t   $firsttime\n',
+#              'set temp                310;\n',
+#              'outputName              %s\n' % par['Output'],
+#              f'binCoordinates          %s{par["coor"]} \n' % '../../system/',
+#              'binVelocities           ../../system/%s;     # velocities from last run (binary)\n' % par['vel'],
+#              'extendedSystem          ../../system/%s;     # cell dimensions from last run (binary)\n' % par['xsc'],
+#              'restartfreq             %s;               \n' % str(saveFrequency*100),
+#              'dcdfreq                 50000;\n',
+#              'dcdUnitCell             yes;                # the file will contain unit cell info\n',
+#              'xstFreq\t    %s;               \n' % str(saveFrequency*100),
+#              'outputEnergies          %s;               \n' % str(saveFrequency*100),
+#              'outputTiming\t    %s;               \n' % str(saveFrequency*100),
+#              '# Force-Field Parameters\n',
+#              "%s;                 \n" % 'paraTypeCharmm          on' if par['Forcefield'] == 'CHARMM' else 'amber on',
+#              '# FF PARAMETERS - These are specified by CHARMM\n',
+#              'exclude                 scaled1-4           # non-bonded exclusion policy"\n',
+#              '1-4scaling              1.0\n', 'switching               on\n',
+#              'vdwForceSwitching       on;                 # New option for force-based switching of vdW\n',
+#              'cutoff                  12.0;               # may use smaller, maybe 10., with PME\n',
+#              'switchdist              10.0;               # cutoff - 2.\n',
+#              'pairlistdist            16.0;               # stores the all the pairs with in the distance\n',
+#              'stepspercycle           5;                  # SET TO 5 (or lower than 20 if HMR)\n',
+#              'pairlistsPerCycle       2;                  # 2 is the default\n',
+#              'timestep                2.0;                # fs/step SET 4 is you use HMR\n',
+#              'rigidBonds              all;                # Bound constraint\n',
+#              'nonbondedFreq           1;                  # nonbonded forces every step\n',
+#              'fullElectFrequency      1;                  # PME every step\n', '\n',
+#              'wrapWater               on;                 # wrap water to central cell\n',
+#              'wrapAll                 on;                 # wrap other molecules too\n',
+#              '# PME (for full-system periodic electrostatics)\n',
+#              'PME                     yes;\n',
+#              'PMEInterpOrder          6;                  # interpolation order (spline order 6 in charmm)\n',
+#              'PMEGridSpacing          1.0;                # maximum PME grid space / used to calculate grid size\n',
+#              '\n', '# Constant Pressure Control (variable volume)\n',
+#              'useGroupPressure        yes;                # use a hydrogen-group based pseudo-molecular viral\n',
+#              'useFlexibleCell         yes;                 # yes for anisotropic system like membrane\n',
+#              'useConstantRatio        yes;                 # keeps the ratio of the unit cell.\n',
+#              '\n', '# Constant Temperature Control\n',
+#              'langevin                on;                 # langevin dynamics\n',
+#              'langevinDamping         1.0;                # damping coefficient of 1/ps (keep low) 0.5 if HMR\n',
+#              'langevinTemp            $temp;              # random noise at this level\n',
+#              "langevinHydrogen        off;                # don't couple bath to hydrogens\n", '\n',
+#              '# Constant pressure\n',
+#              'langevinPiston          off;                # Nose-Hoover Langevin piston pressure control\n',
+#              'langevinPistonTarget    1.01325;            # target pressure in bar 1atm = 1.01325bar\n',
+#              'langevinPistonPeriod    50.0;               # oscillation period in fs\n',
+#              'langevinPistonDecay     25.0;               # oscillation decay time.\n',
+#              'langevinPistonTemp      $temp;              # coupled to heat bath\n', '\n',
+#              'margin 1\n',
+#              '\n', 'numsteps                %s;             \n' % int(par['Timewindow'] / (par['Timestep'] / 1000000)),
+#              'run                     %s;             \n' % int(par['Timewindow'] / (par['Timestep'] / 1000000))]
 
-print(checkIfStuck(vals, fails))
+# gro = ['title                   = OPLS Lysozyme NPT equilibration \n',
+#        '; Run parameters\n',
+#        'integrator              = md        ; leap-frog integrator\n',
+#        'nsteps                  = 500000    ; 2 * 500000 = 1000 ps (1 ns)\n',
+#        'dt                      = 0.002     ; 2 fs\n',
+#        '; Output control\n',
+#        'nstxout                 = 0         ; suppress bulky .trr file by specifying \n',
+#        'nstvout                 = 0         ; 0 for output frequency of nstxout,\n',
+#        'nstfout                 = 0         ; nstvout, and nstfout\n',
+#        'nstenergy               = 5000      ; save energies every 10.0 ps\n',
+#        'nstlog                  = 5000      ; update log file every 10.0 ps\n',
+#        'nstxout-compressed      = 5000      ; save compressed coordinates every 10.0 ps\n',
+#        'compressed-x-grps       = System    ; save the whole system\n', '; Bond parameters\n',
+#        'continuation            = yes       ; Restarting after NPT \n',
+#        'constraint_algorithm    = lincs     ; holonomic constraints \n',
+#        'constraints             = h-bonds   ; bonds involving H are constrained\n',
+#        'lincs_iter              = 1         ; accuracy of LINCS\n',
+#        'lincs_order             = 4         ; also related to accuracy\n',
+#        '; Neighborsearching\n',
+#        'cutoff-scheme           = Verlet    ; Buffered neighbor searching\n',
+#        'ns_type                 = grid      ; search neighboring grid cells\n',
+#        'nstlist                 = 10        ; 20 fs, largely irrelevant with Verlet scheme\n',
+#        'rcoulomb                = 1.0       ; short-range electrostatic cutoff (in nm)\n',
+#        'rvdw                    = 1.0       ; short-range van der Waals cutoff (in nm)\n',
+#        '; Electrostatics\n',
+#        'coulombtype             = PME       ; Particle Mesh Ewald for long-range electrostatics\n',
+#        'pme_order               = 4         ; cubic interpolation\n',
+#        'fourierspacing          = 0.16      ; grid spacing for FFT\n',
+#        '; Temperature coupling is on\n',
+#        'tcoupl                  = V-rescale             ; modified Berendsen thermostat\n',
+#        'tc-grps                 = Protein Non-Protein   ; two coupling groups - more accurate\n',
+#        'tau_t                   = 0.1     0.1           ; time constant, in ps\n',
+#        'ref_t                   = 300     300           ; reference temperature, one for each group, in K\n',
+#        '; Pressure coupling is on\n',
+#        'pcoupl                  = Parrinello-Rahman     ; Pressure coupling on in NPT\n',
+#        'pcoupltype              = isotropic             ; uniform scaling of box vectors\n',
+#        'tau_p                   = 2.0                   ; time constant, in ps\n',
+#        'ref_p                   = 1.0                   ; reference pressure, in bar\n',
+#        'compressibility         = 4.5e-5                ; isothermal compressibility of water, bar^-1\n',
+#        '; Periodic boundary conditions\n',
+#        'pbc                     = xyz       ; 3-D PBC\n',
+#        '; Dispersion correction\n',
+#        'DispCorr                = EnerPres  ; account for cut-off vdW scheme\n',
+#        '; Velocity generation\n',
+#        'gen_vel                 = no        ; Velocity generation is off \n']
+#
+# with open('prod.mdp', 'r') as test:
+#     for line in test.readlines():
+#         gro.append(line)
+#
+# print(gro)
 
+# wrapping GROMACS
+
+import os
+def wrapMDA():
+    import MDAnalysis as Mda
+    from MDAnalysis import transformations
+    ext = ('xtc', 'dcd')
+    traj_name = '1'
+    for trajectory in os.listdir(os.getcwd()):
+        if trajectory.startswith(traj_name) and trajectory.endswith(ext):
+            print(trajectory)
+            u = Mda.Universe('1.tpr', trajectory)
+            prot = u.select_atoms("protein")
+            if len(prot.atoms) == 0:
+                print("your wrapping selection selected 0 atoms! using protein and name CA instead...")
+                prot = u.select_atoms('protein and name CA')
+            ag = u.atoms
+            workflow = (transformations.unwrap(ag),
+                        transformations.center_in_box(prot),
+                        transformations.wrap(ag, compound='fragments'))
+            u.trajectory.add_transformations(*workflow)
+
+            with Mda.Writer('wrapped_MDA.xtc', ag) as w:
+                for ts in u.trajectory:
+                    if ts is not None:
+                        w.write(ag)
+
+wrapMDA()

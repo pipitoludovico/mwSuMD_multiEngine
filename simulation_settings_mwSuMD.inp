@@ -2,12 +2,12 @@
 Restart = NO
 ########################################################################
 ### Selection for wrapping (default "protein")
-Wrap = protein and name CA and segid P0 P1
+Wrap = protein
 ########################################################################
 # Relaxation protocol time in case of stuck condition [Default = 5 ns]
 RelaxTime = 
 # Output name of the files
-Output = output
+Output = test_DIS_n_RMSD_p
 ########################################################################
 # Supervision on one or two metrics?
 NumberCV = 2
@@ -18,14 +18,14 @@ NumberCV = 2
 # The Cutoff is the value at which the simulation will stop once the metric has reached this number
 
 Metric_1 = Distance
-Sel_1 = segid P2 and resnum 3:4
-Sel_2 = segid P2 and resnum 1:2
+Sel_1 = protein and resid 1
+Sel_2 = protein and resid 2
 Cutoff_1 = 3
 Transition_1 = negative
 
-Metric_2 = RMSD
-Sel_3 = segid P2 and resnum 3:4
-Sel_4 = segid P1 and name CA
+Metric_2 = Contacts
+Sel_3 = protein and resid 1
+Sel_4 = protein and resid 2
 Cutoff_2 = 20
 Transition_2 = positive
 

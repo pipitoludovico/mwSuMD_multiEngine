@@ -1,12 +1,9 @@
 import multiprocessing as mp
 import os
-import subprocess
 import time
 
-import MDAnalysis as Mda
-from MDAnalysis import transformations
-
-from .Parser import mwInputParser
+from .MDoperations import *
+from .TrajectoryOperator import *
 from .Utilities import ProcessManager
 
 
@@ -17,67 +14,41 @@ class Runner(mwInputParser):
         super(Runner, self).__init__()
         self.walk_count = 1
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
+        self.customProductionFile = None
 
     def runMD(self):
-        # we set the initial trajectory count:
-        print('runMD working in ' + os.getcwd())
+        for file in os.listdir(f'{self.folder}/system'):
+            if file == 'production.mdp' or file == 'production.namd' or file == 'production.inp':
+                self.customProductionFile = file
+        print('mwSuMD is working in ' + os.getcwd())
         print("Trajectory count: " + str(self.trajCount))
-        if self.par['MDEngine'] == 'ACEMD':
-            self.runSimulation()
-        if self.par['MDEngine'] == 'GROMACS':
-            self.prepareTPR()
-            self.runSimulation()
-        print("Wrapping results...")
-        with mp.Pool() as p:
-            p.map(self.wrap, range(1, self.par['Walkers'] + 1))
+        self.runSimulation()
 
-    def prepareTPR(self):
-        if self.par['MDEngine'] == 'GROMACS' and self.par['MDP'] is not None:
-            command = (f'gmx grompp -f {self.folder}/system/{(self.par["MDP"])}'
-                       f' -c {self.folder}/system/{self.par["GRO"]}'
-                       f' -t {self.folder}/system/{self.par["CPT"]}'
-                       f' -p {self.folder}/system/{self.par["TOP"]} '
-                       f'-o tmp/{self.par["Output"]}_{self.trajCount}.tpr')
-            # subprocess.Popen(command)
-            print(command)
+        print("Wrapping results...")
+        trajOperator = TrajectoryOperator()
+
+        with mp.Pool() as p:
+            p.map(trajOperator.wrap, range(1, self.par['Walkers'] + 1))
+            p.terminate()
+            p.join()
 
     def runGPU_batch(self, trajCount, walk_count, GPUbatch, queue):
+        command = ''
         processes = []
         for GPU in GPUbatch:
             os.chdir('tmp/walker_' + str(walk_count))
-            if self.par['MDEngine'] == 'ACEMD':
-                command = f'acemd3 --device {GPU} input_{walk_count}_{trajCount}.inp 1> acemd.log'
-                print(command)
-                process = subprocess.Popen(command, shell=True)
-                processes.append(process)
-                walk_count += 1
-                os.chdir(self.folder)
-            if self.par['MDEngine'] == 'GROMACS':
-                # questo si fa in tmp fuori dai walker
-                if self.par['MDP'] is not None:
-                    command = f'gmx grompp -f {self.folder}/system/{(self.par["MDP"])}' \
-                              f' -c {self.par["GRO"]} -t {self.par["CPT"]} -p {self.par["TOP"]}' \
-                              f' -o {self.par["Output"]}_{self.trajCount}.tpr'
-                    process = subprocess.Popen(command, shell=True)
-                    print(process)
-                    print(command)
-                    process = subprocess.Popen(command, shell=True)
-                    processes.append(process)
-                    walk_count += 1
-                    os.chdir(self.folder)
-                # usare l'mdp come templato ma va in NVT e aggiustato il ts, + altri parametri da aggiustare
-                if self.par['PLUMED'] is not None:
-                    os.system(f'gmx mdrun -plumed {self.par["PLUMED"]} -deffnm {self.par["Output"]}_{self.trajCount}')
-                else:
-                    os.system(f'gmx mdrun -deffnm ../{self.par["Output"]}_{self.trajCount}')
-                    # path out
-
+            command = self.lauchEngine(trajCount, walk_count, GPU,
+                                       self.customProductionFile)
+            process = subprocess.Popen(command, shell=True)
+            processes.append(process)
+            walk_count += 1
+            os.chdir(self.folder)
+        print(command)
         # Wait for all subprocesses to finish
         for process in processes:
             process.wait()
         for GPU in GPUbatch:
             queue.put((trajCount, walk_count, GPU))  # Notify completion
-
         return walk_count  # Return the updated walk_count value
 
     def runSimulation(self):
@@ -89,9 +60,10 @@ class Runner(mwInputParser):
             GPUs.remove(excluded)
         GPUbatches, idList = manager.createBatches(walkers=self.par['Walkers'], total_gpu_ids=GPUs)
 
-        if self.mode == 'parallel':
-            print("")
-            print('#' * 200)
+        print('#' * 200)
+        if self.initialParameters['Mode'] == 'parallel':
+            print("\n\n")
+            print('*' * 200)
             print("Running parallel mode")
             manager = mp.Manager()
             q = manager.Queue()
@@ -102,72 +74,69 @@ class Runner(mwInputParser):
                 for GPUbatch in GPUbatches:
                     results.append(pool.apply_async(self.runGPU_batch, args=(self.trajCount, walk_count, GPUbatch, q)))
                     walk_count += len(GPUbatch)
-
                 for result in results:
                     result.get()
                 print(f"Waiting for all processes to finish...")
                 while not q.empty():
                     q.get()
                 print(f"All batches finished.")
-
             pool.close()
             pool.terminate()
             self.trajCount += 1
             end_time_parallel = time.perf_counter()
             print(f"Time taken with multiprocessing: {end_time_parallel - start_time_parallel:.2f} seconds")
-
         else:
-            # serial version
+            print("Running serial mode")
             start_time_serial = time.perf_counter()
             for GPUbatch in GPUbatches:
                 for GPU in GPUbatch:
                     os.chdir('tmp/walker_' + str(self.walk_count))
-                    os.system(f'acemd3 --device {GPU} input_{self.walk_count}_{self.trajCount}.inp 1> acemd.log')
-                    os.chdir(self.folder)
+                    print("we are in " + os.getcwd())
+                    command = self.lauchEngine(self.trajCount, self.walk_count, GPU,
+                                               self.customProductionFile)
+                    subprocess.Popen(command, shell=True).wait()
                     self.walk_count += 1
+                    os.chdir(self.folder)
             end_time_serial = time.perf_counter()
             final_time_serial = end_time_serial - start_time_serial
             print("Serial Final Time:")
             print(final_time_serial)
+            self.trajCount += 1
+
         print("\nMD Runs completed.")
-        print("")
         print('#' * 200)
 
-    def wrap(self, folder):
-        os.chdir(f'{self.folder}/tmp/walker_' + str(folder))
-        ext = ('xtc', 'dcd')
-        psf = None
-
-        if self.par['MDEngine'] == 'ACEMD':
-            if self.par['Forcefield'] == 'CHARMM':
-                psf = '../../system/%s' % self.par['PSF']
-
-            if self.par['Forcefield'] == 'AMBER':
-                psf = '../../system/%s' % self.par['PRMTOP']
-
-            for trajectory in os.listdir(os.getcwd()):
-                if trajectory.startswith(self.par['Output']) and trajectory.endswith(ext):
-                    u = Mda.Universe(psf, trajectory)
-                    prot = u.select_atoms(f"{self.par['Wrap']}")
-                    if len(prot.atoms) == 0:
-                        print("your wrapping selection selected 0 atoms! using protein and name CA instead...")
-                        prot = u.select_atoms('protein and name CA')
-                    ag = u.atoms
-                    workflow = (transformations.unwrap(ag),
-                                transformations.center_in_box(prot),
-                                transformations.wrap(ag, compound='fragments'))
-                    u.trajectory.add_transformations(*workflow)
-
-                    with Mda.Writer('wrapped.xtc', ag) as w:
-                        for ts in u.trajectory:
-                            if ts is not None:
-                                w.write(ag)
-            os.chdir(self.folder)
-
+    def lauchEngine(self, trajCount, walk_count, GPU, customFile=None):
+        command = ''
         if self.par['MDEngine'] == 'GROMACS':
-            for trajectory in os.listdir(os.getcwd()):
-                if trajectory.startswith(self.par['Output']) and trajectory.endswith(ext):
-                    wrapCommand = f"gmx trjconv -s tmp/{self.par['Output']}_{self.trajCount}.tpr" \
-                                  f" -f {trajectory} -o wrapped.xtc -pbc atom -center -select {self.par['Wrap']}"
-                    subprocess.Popen(wrapCommand, shell=True)
-            os.chdir(self.folder)
+            if customFile is not None:
+                MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount, customFile)
+                if self.par['PLUMED'] is not None:
+                    command = f'gmx mdrun -plumed {self.par["PLUMED"]} -deffnm production'
+                else:
+                    command = f'gmx mdrun -deffnm production'
+            else:
+                MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount)
+                if self.par['PLUMED'] is not None:
+                    command = f'gmx mdrun ' \
+                              f'-plumed {self.par["PLUMED"]} ' \
+                              f'-deffnm {self.par["Output"]}_{trajCount}_{walk_count}'
+                else:
+                    command = f'gmx mdrun -deffnm {self.par["Output"]}_{trajCount}_{walk_count}'
+
+        elif self.par['MDEngine'] == 'ACEMD':
+            if customFile is not None:
+                command = f'acemd3 --device {GPU} production.inp 2&1> acemd.log'
+            else:
+                command = f'acemd3 --device {GPU} input_{walk_count}_{trajCount}.inp 2&1> acemd.log'
+
+        elif self.par['MDEngine'] == 'NAMD':
+            if customFile is not None:
+                command = f'namd3 ' \
+                          f'+auto-provision +setcpuaffinity ' \
+                          f'+devices {GPU} production.namd 2&1> namd.log'
+            else:
+                command = f'namd3 ' \
+                          f'+auto-provision +setcpuaffinity ' \
+                          f'+devices {GPU} input_{walk_count}_{trajCount}.inp 2&1> namd.log'
+        return command

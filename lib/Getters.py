@@ -40,14 +40,15 @@ class Getters(mwInputParser):
         psf = None
         xtc = 'wrapped.xtc'
 
-        if self.par['MDEngine'] == 'ACEMD':
-            if self.par['Forcefield'] == 'CHARMM':
-                psf = f'{self.folder}/system/%s' % self.par['PSF']
-            elif self.par['Forcefield'] == 'AMBER':
-                psf = f'{self.folder}/system/%s' % self.par['PRMTOP']
-
-        elif self.par['MDEngine'] == 'GROMACS':
-            psf = '%s.gro' % self.par['gro']
+        if self.initialParameters['Forcefield'] == 'CHARMM':
+            if self.initialParameters['PSF'] is not None:
+                psf = '../../system/%s' % self.initialParameters['PSF']
+        elif self.initialParameters['Forcefield'] == 'AMBER':
+            psf = '../../system/%s' % self.initialParameters['PRMTOP']
+        elif self.initialParameters['Forcefield'] == 'GROMOS':
+            for tpr in os.listdir(os.getcwd()):
+                if tpr.startswith(self.initialParameters['Output']) and tpr.endswith('.tpr'):
+                    psf = tpr
 
         u = MDAnalysis.Universe(psf, xtc)
 
@@ -68,11 +69,11 @@ class Getters(mwInputParser):
 
         pdb = f'{self.folder}/system/reference/' + str(self.par['REFERENCE'])
         psf = None
-        if self.par['MDEngine'] == 'ACEMD':
+        if self.par['MDEngine'] != 'GROMACS':
             xtc = 'wrapped.xtc'
             if self.par['Forcefield'] == 'CHARMM':
                 psf = f'{self.folder}/system/%s' % self.par['PSF']
-            elif self.par['Forcefield'] == 'AMBER':
+            if self.par['Forcefield'] == 'AMBER':
                 psf = f'{self.folder}/system/%s' % self.par['PRMTOP']
         else:
             xtc = '%s_%s.xtc' % (self.par['Output'], str(self.trajCount))
@@ -134,12 +135,15 @@ class Getters(mwInputParser):
                 return distMetric, waterCont, last_contact
 
     def compute_center_of_mass(self, select=None):
-        if self.par['MDEngine'] == 'ACEMD':
-            psf = f"../../system/{self.par['PSF']}" \
-                if self.par['Forcefield'] == 'CHARMM' else f"../../system/{self.par['PRMTOP']}"
-        else:
-            psf = f"../../system{self.par['GRO']}"
-
+        psf = None
+        if self.initialParameters['Forcefield'] == 'CHARMM':
+            psf = '../../system/%s' % self.initialParameters['PSF']
+        elif self.initialParameters['Forcefield'] == 'AMBER':
+            psf = '../../system/%s' % self.initialParameters['PRMTOP']
+        elif self.initialParameters['Forcefield'] == 'GROMOS':
+            for tpr in os.listdir(os.getcwd()):
+                if tpr.startswith(self.initialParameters['Output']) and tpr.endswith('.tpr'):
+                    psf = tpr
         xtc = "wrapped.xtc"
         u = Mda.Universe(psf, xtc)
         sele = u.select_atoms(select)

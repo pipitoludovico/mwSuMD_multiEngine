@@ -4,17 +4,20 @@ from lib import *
 
 Utilities.ProcessManager()
 pars = Parser.mwInputParser()
-pars.getSettings()
-settings = pd.DataFrame(sorted(list(pars.par.items())), columns=['Setting', 'Parameter'])
-print(settings)
+settings, selection_list, parameterFolderPath = pars.getSettings()
+settings_df = pd.DataFrame(sorted(list(settings.items())), columns=['Setting', 'Parameter'])
+print(settings_df)
+print("If you want to use your personal NAMD setting file, \n "
+      "please, put your custom production file in the system folder and call it production.inp/namd/mdp\n"
+      "and mwSuMD will use that instead of the default file.\n")
 
 
 def main():
-    if pars.par['NumberCV'] is None:
+    if settings['NumberCV'] is None:
         print('Check the number of metrics in the setting input file')
         quit()
     else:
-        sumd = SuMDProtocol.suMD1(pars.par)
+        sumd = SuMDProtocol.suMD1(settings)
         sumd.run_mwSuMD()
     exit()
 

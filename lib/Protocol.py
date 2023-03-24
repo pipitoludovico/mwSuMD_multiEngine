@@ -19,20 +19,17 @@ class ProtocolRunner(mwInputParser):
         print('#' * 200)
         # create input files per walker
         begin = time.perf_counter()
-        if self.par['MDEngine'] == 'ACEMD':
-            MDsetter(self.par).createACEMDinputFile()
+        MDsetter(self.initialParameters).createInputFile()
         # if no user-defined mdp file is provided, we will create a default one
-        if self.par['MDEngine'] == 'GROMACS' and self.par['MDP'] is None:
-            MDsetter(self.par).createGROMACSinputFile()
         # running the simulations
-        Runner(self.par).runMD()
+        Runner(self.initialParameters).runMD()
         # getting the metrics and choose the best one
         self.walker_metrics = MetricsParser().getChosenMetrics()
         self.bestWalker, self.max_value, self.metric_1, self.metric_2 = MetricsParser().getBestWalker(
             self.walker_metrics)
         print("best walker: " + str(self.bestWalker) + " " + str(self.max_value))
         # update values and log them
-        MDoperator(self.par, self.folder).saveStep(self.bestWalker)
+        MDoperator(self.initialParameters, self.folder).saveStep(self.bestWalker)
         mwInputParser().countTraj_logTraj(self.max_value)
         end = time.perf_counter()
         final = end - begin
