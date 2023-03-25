@@ -1,5 +1,4 @@
 import multiprocessing as mp
-import os
 import time
 
 from .MDoperations import *
@@ -33,7 +32,6 @@ class Runner(mwInputParser):
             p.join()
 
     def runGPU_batch(self, trajCount, walk_count, GPUbatch, queue):
-        command = ''
         processes = []
         for GPU in GPUbatch:
             os.chdir('tmp/walker_' + str(walk_count))
@@ -43,7 +41,7 @@ class Runner(mwInputParser):
             processes.append(process)
             walk_count += 1
             os.chdir(self.folder)
-        print(command)
+            print(command)
         # Wait for all subprocesses to finish
         for process in processes:
             process.wait()
@@ -122,21 +120,21 @@ class Runner(mwInputParser):
                               f'-plumed {self.par["PLUMED"]} ' \
                               f'-deffnm {self.par["Output"]}_{trajCount}_{walk_count}'
                 else:
-                    command = f'gmx mdrun -deffnm {self.par["Output"]}_{trajCount}_{walk_count}'
+                    command = f'gmx mdrun -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count}'
 
         elif self.par['MDEngine'] == 'ACEMD':
             if customFile is not None:
-                command = f'acemd3 --device {GPU} production.inp 2&1> acemd.log'
+                command = f'acemd3 --device {GPU} production.inp 1> acemd.log'
             else:
-                command = f'acemd3 --device {GPU} input_{walk_count}_{trajCount}.inp 2&1> acemd.log'
+                command = f'acemd3 --device {GPU} input_{walk_count}_{trajCount}.inp 1> acemd.log'
 
         elif self.par['MDEngine'] == 'NAMD':
             if customFile is not None:
                 command = f'namd3 ' \
                           f'+auto-provision +setcpuaffinity ' \
-                          f'+devices {GPU} production.namd 2&1> namd.log'
+                          f'+devices {GPU} production.namd 1> namd.log'
             else:
                 command = f'namd3 ' \
                           f'+auto-provision +setcpuaffinity ' \
-                          f'+devices {GPU} input_{walk_count}_{trajCount}.inp 2&1> namd.log'
+                          f'+devices {GPU} input_{walk_count}_{trajCount}.inp 1> namd.log'
         return command

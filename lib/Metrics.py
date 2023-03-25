@@ -58,7 +58,6 @@ class MetricsParser(mwInputParser):
         print(os.getcwd())
         for productions in os.listdir(os.getcwd()):
             if productions == 'wrapped.xtc':
-
                 if self.initialParameters['Metric_1'] == 'DISTANCE':
                     distMetric, distances, lastDist = Getters(self.initialParameters).getDistance(selection_list[0],
                                                                                                   selection_list[1])
@@ -143,10 +142,13 @@ class MetricsParser(mwInputParser):
             score_sum = [(x[0] + y[0]) for x, y in zip(scores_wm, scores_wm2)]
             list(score_sum)
             max_score = max(score_sum)
-            if max_score is 'nan':
-                raise ZeroDivisionError("The reference value you chose did not produce results (averages = 0)."
-                                        "Please try a different selection and start again")
             max_index = score_sum.index(max_score) + 1
+
+            if any(np.isnan(val).any for val in [scores_wm, scores_wm2]):
+                print("The reference value you chose did not produce results yet (averages = 0)."
+                      f"First metric scores:{scores_wm}\tsecond metric scores:{scores_wm2}")
+                max_score, max_index = 0, 1
+
             return max_index, max_score, walkers_metrics[0][-1], walkers_metrics[1][-1]
 
     @staticmethod

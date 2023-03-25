@@ -69,8 +69,6 @@ class mwInputParser:
 
     def getSettingsFromInputFile(self):
         # Default settings:
-        self.initialParameters['PDB'] = None
-        self.initialParameters['PSF'] = None
         self.initialParameters['Timestep'] = 2
         self.initialParameters['Savefreq'] = 20
         self.initialParameters['Wrap'] = 'protein and name CA'
@@ -183,9 +181,12 @@ class mwInputParser:
                 with open('walkerSummary.log', 'a') as logF:
                     metric = 'RESUMED'
                     logF.write(str(self.trajCount) + " " + str(metric) + "\n")
+            elif metric == '' and self.trajCount != 0:
+                pass
             else:
                 with open('walkerSummary.log', 'a') as logF:
                     logF.write(str(self.trajCount) + " " + str(metric) + "\n")
+
         if self.initialParameters['Relax'] is True:
             with open('walkerSummary.log', 'a') as logF:
                 logF.write(str(self.trajCount) + " RELAXATION PROTOCOL  " + str(metric) + "\n")

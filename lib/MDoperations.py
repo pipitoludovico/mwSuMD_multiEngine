@@ -37,7 +37,7 @@ class MDoperator:
         print("FINISHED SAVING FRAMES")
         self.cycle += 1
         os.chdir(self.folder)
-        # os.system('rm -r tmp')
+        os.system('rm -r tmp')
         self.par['Relax'] = False
 
     def prepareTPR(self, walk_count, trajcount, customFile=None):

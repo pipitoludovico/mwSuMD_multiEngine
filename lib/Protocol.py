@@ -30,7 +30,10 @@ class ProtocolRunner(mwInputParser):
         print("best walker: " + str(self.bestWalker) + " " + str(self.max_value))
         # update values and log them
         MDoperator(self.initialParameters, self.folder).saveStep(self.bestWalker)
-        mwInputParser().countTraj_logTraj(self.max_value)
+        if self.max_value != 0:
+            mwInputParser().countTraj_logTraj(self.max_value)
+        else:
+            mwInputParser().countTraj_logTraj('')
         end = time.perf_counter()
         final = end - begin
         print("Cycle completed in:" + str(final))

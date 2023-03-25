@@ -18,25 +18,6 @@ class Getters(mwInputParser):
         self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
 
     def getDistance(self, sel_1, sel_2):
-        c1 = self.compute_center_of_mass(select=sel_1)
-        c2 = self.compute_center_of_mass(select=sel_2)
-
-        if len(c1) == 0 or len(c2) == 0:
-            print(
-                f"Your selection {sel_1 + ' ' + sel_2} resulted in 0 atoms."
-                f" Please check your selection in the settings and rerun")
-            exit()
-
-        # Compute distances
-        distances = [np.linalg.norm(a - b) * 10 for a, b in zip(c1, c2)]
-        mean_distance = np.mean(distances)
-        last_distance = distances[-1]
-
-        return (mean_distance * last_distance) ** 0.5, distances, last_distance
-
-    def getContacts(self, sel_1, sel_2):
-        import MDAnalysis
-
         psf = None
         xtc = 'wrapped.xtc'
 
@@ -50,18 +31,57 @@ class Getters(mwInputParser):
                 if tpr.startswith(self.initialParameters['Output']) and tpr.endswith('.tpr'):
                     psf = tpr
 
-        u = MDAnalysis.Universe(psf, xtc)
+        u = Mda.Universe(psf, xtc)
 
-        sel_1 = u.select_atoms(sel_1)
-        sel_2 = u.select_atoms(sel_2)
+        sel1 = u.select_atoms(sel_1)
+        sel2 = u.select_atoms(sel_2)
 
-        timeseries = [(distance_array(sel_1.positions, sel_2.positions, box=u.dimensions) < 3).sum() for ts in
+        # Compute the center of mass of each selection
+        com1 = sel1.center_of_mass()
+        com2 = sel2.center_of_mass()
+        distances = [np.linalg.norm(a - b) * 10 for a, b in zip(com1, com2)]
+        last_distance = distances[-1]
+        mean_distance = np.mean(distances)
+        # sel1_pos = [sel1.positions for ts in u.trajectory if ts is not None]
+        # sel2_pos = [sel2.positions for ts in u.trajectory if ts is not None]
+
+        # Compute the distance between the centers of mass
+        distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
+        distMetric = (mean_distance * last_distance) ** 0.5
+        # print(distance, distances, last_distance, mean_distance, (mean_distance * last_distance) ** 0.5)
+        return distMetric, distances, last_distance
+
+    def getContacts(self, sel_1, sel_2):
+        psf = None
+        xtc = 'wrapped.xtc'
+
+        if self.initialParameters['Forcefield'] == 'CHARMM':
+            if self.initialParameters['PSF'] is not None:
+                psf = '../../system/%s' % self.initialParameters['PSF']
+        elif self.initialParameters['Forcefield'] == 'AMBER':
+            psf = '../../system/%s' % self.initialParameters['PRMTOP']
+        elif self.initialParameters['Forcefield'] == 'GROMOS':
+            for tpr in os.listdir(os.getcwd()):
+                if tpr.startswith(self.initialParameters['Output']) and tpr.endswith('.tpr'):
+                    psf = tpr
+
+        u = Mda.Universe(psf, xtc)
+
+        selection_1 = u.select_atoms(sel_1)
+        selection_2 = u.select_atoms(sel_2)
+
+        timeseries = [(distance_array(selection_1.positions, selection_2.positions, box=u.dimensions) < 3).sum() for ts in
                       u.trajectory if ts is not None]
 
         mean_contacts = sum(timeseries) / len(timeseries)
         last_contacts = timeseries[-1]
 
         distMetric = (mean_contacts * last_contacts) ** 0.5
+
+        if any(output == 0 for output in (distMetric, timeseries, last_contacts)):
+            distMetric, distances, last_distance = self.getDistance(sel_1, sel_2)
+            print(f"\nNo contacts were spotted between the selection."
+                  f"The distance between the centers of mass of the two selections is {last_distance:.3f} Å.\n")
         return distMetric, timeseries, last_contacts
 
     def getRMSD(self, sel_1, sel_2):
@@ -133,24 +153,3 @@ class Getters(mwInputParser):
                 # to determine the degree of solvation of the ligand
                 distMetric = (((np.mean(waterCont)) * waterCont[-1]) ** 0.5)
                 return distMetric, waterCont, last_contact
-
-    def compute_center_of_mass(self, select=None):
-        psf = None
-        if self.initialParameters['Forcefield'] == 'CHARMM':
-            psf = '../../system/%s' % self.initialParameters['PSF']
-        elif self.initialParameters['Forcefield'] == 'AMBER':
-            psf = '../../system/%s' % self.initialParameters['PRMTOP']
-        elif self.initialParameters['Forcefield'] == 'GROMOS':
-            for tpr in os.listdir(os.getcwd()):
-                if tpr.startswith(self.initialParameters['Output']) and tpr.endswith('.tpr'):
-                    psf = tpr
-        xtc = "wrapped.xtc"
-        u = Mda.Universe(psf, xtc)
-        sele = u.select_atoms(select)
-        arr = np.empty((sele.n_residues, u.trajectory.n_frames, 3))
-
-        # substitute this line if you want to see fancy progress bar
-        # for ts in Mda.log.ProgressBar(u.trajectory):
-        for ts in u.trajectory:
-            arr[:, ts.frame] = sele.center_of_mass()
-        return arr

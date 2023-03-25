@@ -8,12 +8,12 @@ class EngineInputs(mwInputParser):
     def __init__(self, par):
         super(EngineInputs, self).__init__()
         self.par = par
-        self.timewindow = self.par['Timewindow']
+        self.timewindow = self.initialParameters['Timewindow']
         self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
         mwInputParser().getRestartOutput()
 
     def getInputFile(self):
-        if self.par['Relax'] is True:
+        if self.initialParameters['Relax'] is True:
             self.par['Timewindow'] = self.par['RelaxTime'] * 1000
             print("\nTemporary changing the timewindow for relaxation protocol to: " + str(self.par['Timewindow']))
 

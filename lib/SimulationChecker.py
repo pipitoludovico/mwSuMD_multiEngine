@@ -19,24 +19,21 @@ class Checker(mwInputParser):
         print('Checking if trajectory is stuck with values: ' + str(vals) +
               ". Total fails accumulated: " + str(accumulatedFails))
         if MDoperator.checkIfStuck(vals, accumulatedFails) is True:
-            self.runRelaxationProtocol()
+            self.relaxSystem()
             accumulatedFails += 1
             print("Number of fails accumulated: " + str(accumulatedFails))
         return accumulatedFails
 
-    def runRelaxationProtocol(self):
-        print("")
-        print('#' * 200)
+    def relaxSystem(self):
         print('Relaxation Protocol begins now:')
         print('#' * 200)
-        print("")
         # The relaxation protocol starts here
         self.initialParameters['Relax'] = True
         # we create a special input file that has a longer runtime (5ns default or user-defined)
         MDsetter(self.initialParameters).createInputFile()
         # we run this inside walker_1 for convenience
         os.chdir('tmp/walker_1')
-        for file in os.getcwd():
+        for file in os.listdir(os.getcwd()):
             if file.endswith('.inp'):
                 subprocess.Popen(f'acemd3 --device 0 {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.namd'):

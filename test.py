@@ -1,5 +1,5 @@
 # import MDAnalysis
-
+import numpy
 # bestFrame = 1
 #
 # universe = MDAnalysis.Universe('NEUTRAL_fis.pdb', 'output_0_wrapped.xtc')
@@ -750,30 +750,160 @@
 # print(gro)
 
 # wrapping GROMACS
+#
+# import os
+# def wrapMDA():
+#     import MDAnalysis as Mda
+#     from MDAnalysis import transformations
+#     ext = ('xtc', 'dcd')
+#     traj_name = '1'
+#     for trajectory in os.listdir(os.getcwd()):
+#         if trajectory.startswith(traj_name) and trajectory.endswith(ext):
+#             print(trajectory)
+#             u = Mda.Universe('1.tpr', trajectory)
+#             prot = u.select_atoms("protein")
+#             if len(prot.atoms) == 0:
+#                 print("your wrapping selection selected 0 atoms! using protein and name CA instead...")
+#                 prot = u.select_atoms('protein and name CA')
+#             ag = u.atoms
+#             workflow = (transformations.unwrap(ag),
+#                         transformations.center_in_box(prot),
+#                         transformations.wrap(ag, compound='fragments'))
+#             u.trajectory.add_transformations(*workflow)
+#
+#             with Mda.Writer('wrapped_MDA.xtc', ag) as w:
+#                 for ts in u.trajectory:
+#                     if ts is not None:
+#                         w.write(ag)
+#
+# wrapMDA()
+# import numpy as np
+#
+# arr1 = np.full((9, 2, 3), 16.62242288)
+# arr1[:, :, 1] = 66.61325028
+# arr1[:, :, 2] = 132.32931789
+#
+# arr2 = np.full((9, 2, 3), 14.36602568)
+# arr2[:, :, 1] = 62.69833784
+# arr2[:, :, 2] = 131.89819077
+#
+# c1 = arr1
+# c2 = arr2
+#
+# distances = [np.linalg.norm(a - b) * 10 for a, b in zip(c1, c2)]
+# mean_distance = np.mean(distances)
+# last_distance = distances[-1]
+#
+# print(distances, mean_distance, last_distance)
 
-import os
-def wrapMDA():
-    import MDAnalysis as Mda
-    from MDAnalysis import transformations
-    ext = ('xtc', 'dcd')
-    traj_name = '1'
-    for trajectory in os.listdir(os.getcwd()):
-        if trajectory.startswith(traj_name) and trajectory.endswith(ext):
-            print(trajectory)
-            u = Mda.Universe('1.tpr', trajectory)
-            prot = u.select_atoms("protein")
-            if len(prot.atoms) == 0:
-                print("your wrapping selection selected 0 atoms! using protein and name CA instead...")
-                prot = u.select_atoms('protein and name CA')
-            ag = u.atoms
-            workflow = (transformations.unwrap(ag),
-                        transformations.center_in_box(prot),
-                        transformations.wrap(ag, compound='fragments'))
-            u.trajectory.add_transformations(*workflow)
 
-            with Mda.Writer('wrapped_MDA.xtc', ag) as w:
-                for ts in u.trajectory:
-                    if ts is not None:
-                        w.write(ag)
+# def compute_center_of_mass(select=None):
+#     import MDAnalysis as Mda
+#     psf = 'NEUTRAL_fis.psf'
+#     xtc = "wrapped.xtc"
+#     u = Mda.Universe(psf, xtc)
+#     sele = u.select_atoms(select)
+#     arr = np.empty((sele.n_residues, u.trajectory.n_frames, 3))
+#
+#     # substitute this line if you want to see fancy progress bar
+#     # for ts in Mda.log.ProgressBar(u.trajectory):
+#     for ts in u.trajectory:
+#         arr[:, ts.frame] = sele.center_of_mass()
+#     print(arr)
+#     return arr
+#
+#
+# def getDistance(sel_1='segid P0', sel_2='segid P2'):
+#     c1 = compute_center_of_mass(select=sel_1)
+#     c2 = compute_center_of_mass(select=sel_2)
+#
+#     if len(c1) == 0 or len(c2) == 0:
+#         print(
+#             f"Your selection {sel_1 + ' ' + sel_2} resulted in 0 atoms."
+#             f" Please check your selection in the settings and rerun")
+#         exit()
+#
+#     # Compute distances
+#     distances_a = [np.linalg.norm(a - b) * 10 for a, b in zip(c1, c2)]
+#     mean_distance_a = np.mean(distances)
+#     last_distance_a = distances[-1]
+#
+#     print((mean_distance_a * last_distance_a) ** 0.5, distances_a, last_distance_a)
 
-wrapMDA()
+
+# def comp2():
+#     import MDAnalysis as mda
+#     import numpy as np
+#
+#     # Load your trajectory and topology
+#     u = mda.Universe("NEUTRAL_fis.psf", "wrapped.xtc")
+#
+#     # Define your two selections
+#     sel1 = u.select_atoms("segid P0")
+#     sel2 = u.select_atoms("segid P2")
+#
+#     # Compute the center of mass of each selection
+#     com1 = sel1.center_of_mass()
+#     com2 = sel2.center_of_mass()
+#     distances = [np.linalg.norm(a - b) * 10 for a, b in zip(com1, com2)]
+#     last_distance = distances[-1]
+#     mean_distance = np.mean(distances)
+#     sel1_pos = [sel1.positions for ts in u.trajectory if ts is not None]
+#     sel2_pos = [sel2.positions for ts in u.trajectory if ts is not None]
+#
+#     # Compute the distance between the centers of mass
+#     distance = mda.lib.distances.distance_array(com1, com2)[0][0]
+#     print(distance, distances, last_distance, mean_distance, (mean_distance * last_distance) ** 0.5)
+#
+#     print(f"The distance between the centers of mass of the two selections is {distance:.3f} Å.")
+#
+#
+# print("COMP2 ")
+# comp2()
+
+# TEST STDV for checker
+# vals = [1042.1788427529493, 1188.3683748604185, 1231.2038868066752, 1257.244082669362, 1249.1861324877304,
+#         1272.7317349357868, 1225.9001828756932, 1227.6679315096676, 1344.876566152387, 671.7112380960203,
+#         1595.517741891683, 1621.003152386816, 1568.7403368719906, 1579.8772863631048, 1576.051984570963,
+#         1578.0473450206298, 1545.6718431715312, 1295.4830651306302, 1424.487573827727, 1425.1332176774808,
+#         1436.2839044548994, 1403.1385924102328, 1397.7928848689737, 1459.6992362493745, 1422.2882951690428]
+#
+# import numpy as np
+#
+# std = np.std(vals)
+# avg = np.average(vals)
+# print(std, avg)
+import numpy as np
+
+initialParameters = {'Transition_1': 'positive', 'Transition_2': 'positive'}
+
+test = ([666.6166123583164, 728.0935421312167, 726.8064722293553], [0, 0, 0],
+        [[[86.48604948230368, 56.14707281802907, 666.6166123583164]],
+         [[64.74193515110267, 60.36174557705699, 728.0935421312167]],
+         [[90.40869781133853, 77.98607617612205, 726.8064722293553]]], [[[0, 0]], [[0, 0]], [[0, 0]]])
+
+allMetricLists = (test[i] for i in [2, 3])
+# we calculate the averages for each element in the sublist
+metric_averages = [np.average([item for sublist in upperList for item in sublist]) for upperList in
+                   allMetricLists]
+# print(metric_averages)
+scores_wm = [
+    ([(i - metric_averages[0]) * (100 / metric_averages[0])]) if initialParameters[
+                                                                     'Transition_1'] == 'positive' else (
+        [-(i - metric_averages[0]) * (100 / metric_averages[0])]) for i in test[0]]
+scores_wm2 = [
+    ([(i - metric_averages[1]) * (100 / metric_averages[1])]) if initialParameters[
+                                                                     'Transition_2'] == 'positive' else (
+        [-(i - metric_averages[1]) * (100 / metric_averages[1])]) for i in test[1]]
+
+import numpy as np
+
+if any(np.isnan(val).any for val in [scores_wm, scores_wm2]):
+    print("nan")
+
+
+# score_sum = [(x[0] + y[0]) for x, y in zip(scores_wm, scores_wm2)]
+# list(score_sum)
+# max_score = max(score_sum)
+# max_index = score_sum.index(max_score) + 1
+#
