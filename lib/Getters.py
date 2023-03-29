@@ -32,24 +32,29 @@ class Getters(mwInputParser):
                     psf = tpr
 
         u = Mda.Universe(psf, xtc)
-
         sel1 = u.select_atoms(sel_1)
         sel2 = u.select_atoms(sel_2)
 
-        # Compute the center of mass of each selection
-        com1 = sel1.center_of_mass()
-        com2 = sel2.center_of_mass()
-        distances = [np.linalg.norm(a - b) * 10 for a, b in zip(com1, com2)]
-        last_distance = distances[-1]
-        mean_distance = np.mean(distances)
-        # sel1_pos = [sel1.positions for ts in u.trajectory if ts is not None]
-        # sel2_pos = [sel2.positions for ts in u.trajectory if ts is not None]
+        distances = []
+        eucl_distances = []
+        for ts in u.trajectory:
+            # Compute the center of mass of each selection
+            com1 = sel1.center_of_mass()
+            com2 = sel2.center_of_mass()
 
-        # Compute the distance between the centers of mass
-        distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
-        distMetric = (mean_distance * last_distance) ** 0.5
-        # print(distance, distances, last_distance, mean_distance, (mean_distance * last_distance) ** 0.5)
-        return distMetric, distances, last_distance
+            # MDA linear dist (1D array)
+            distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
+            distances.append(distance)
+
+            # Euclidean distances 3D array
+            eucl_dist = [np.linalg.norm(a - b) * 10 for a, b in zip(com1, com2)]
+            eucl_distances.append(eucl_dist)
+
+        mean_eucl = np.mean(eucl_distances)
+        mean_lin = np.mean(distances)
+        exit(print('WE NEED TO UNDERSTAND WHAT TO USE'))
+
+#        return distMetric, distances, last_distance
 
     def getContacts(self, sel_1, sel_2):
         psf = None
@@ -70,7 +75,8 @@ class Getters(mwInputParser):
         selection_1 = u.select_atoms(sel_1)
         selection_2 = u.select_atoms(sel_2)
 
-        timeseries = [(distance_array(selection_1.positions, selection_2.positions, box=u.dimensions) < 3).sum() for ts in
+        timeseries = [(distance_array(selection_1.positions, selection_2.positions, box=u.dimensions) < 3).sum() for ts
+                      in
                       u.trajectory if ts is not None]
 
         mean_contacts = sum(timeseries) / len(timeseries)

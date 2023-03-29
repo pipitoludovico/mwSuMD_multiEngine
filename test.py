@@ -1,5 +1,6 @@
 # import MDAnalysis
-import numpy
+
+
 # bestFrame = 1
 #
 # universe = MDAnalysis.Universe('NEUTRAL_fis.pdb', 'output_0_wrapped.xtc')
@@ -831,35 +832,55 @@ import numpy
 #     print((mean_distance_a * last_distance_a) ** 0.5, distances_a, last_distance_a)
 
 
-# def comp2():
-#     import MDAnalysis as mda
-#     import numpy as np
-#
-#     # Load your trajectory and topology
-#     u = mda.Universe("NEUTRAL_fis.psf", "wrapped.xtc")
-#
-#     # Define your two selections
-#     sel1 = u.select_atoms("segid P0")
-#     sel2 = u.select_atoms("segid P2")
-#
-#     # Compute the center of mass of each selection
-#     com1 = sel1.center_of_mass()
-#     com2 = sel2.center_of_mass()
-#     distances = [np.linalg.norm(a - b) * 10 for a, b in zip(com1, com2)]
-#     last_distance = distances[-1]
-#     mean_distance = np.mean(distances)
-#     sel1_pos = [sel1.positions for ts in u.trajectory if ts is not None]
-#     sel2_pos = [sel2.positions for ts in u.trajectory if ts is not None]
-#
-#     # Compute the distance between the centers of mass
-#     distance = mda.lib.distances.distance_array(com1, com2)[0][0]
-#     print(distance, distances, last_distance, mean_distance, (mean_distance * last_distance) ** 0.5)
-#
-#     print(f"The distance between the centers of mass of the two selections is {distance:.3f} Å.")
-#
-#
-# print("COMP2 ")
-# comp2()
+def comp2():
+    import MDAnalysis as Mda
+    import numpy as np
+
+    # Load your trajectory and topology
+    u = Mda.Universe("NEUTRAL_fis.psf", "wrapped.xtc")
+
+    # Define your two selections
+    sel1 = u.select_atoms("segid P0")
+    sel2 = u.select_atoms("segid P2")
+
+    distances = []
+    distanceS_np = []
+    for ts in u.trajectory:
+        # Compute the center of mass of each selection
+        com1 = sel1.center_of_mass()
+        com2 = sel2.center_of_mass()
+
+        distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
+
+        distances_np = [np.linalg.norm(a - b) * 10 for a, b in zip(com1, com2)]
+        distanceS_np.append(distances_np)
+
+        distances.append(distance)
+    # distances = np.array(distances)
+    mean_distance = np.mean(distances)
+    last_distance = distances[-1]
+    print(distances)
+    print(last_distance)
+    print(distanceS_np)
+    print(mean_distance)
+
+    # mean_distance = np.mean(distances)
+    # sel1_pos = [sel1.positions for ts in u.trajectory if ts is not None]
+    # sel2_pos = [sel2.positions for ts in u.trajectory if ts is not None]
+
+    # Compute the distance between the centers of mass
+
+    # distance = mda.lib.distances.distance_array(com1, com2)
+    # print(distance)
+    # print(sel1_pos)
+    # print(sel2_pos)
+    # print(distances, last_distance, mean_distance, (mean_distance * last_distance) ** 0.5)
+
+    # print(f"The distance between the centers of mass of the two selections is {distance:.3f} Å.")
+
+
+print("COMP2 ")
+comp2()
 
 # TEST STDV for checker
 # vals = [1042.1788427529493, 1188.3683748604185, 1231.2038868066752, 1257.244082669362, 1249.1861324877304,
@@ -873,33 +894,33 @@ import numpy
 # std = np.std(vals)
 # avg = np.average(vals)
 # print(std, avg)
-import numpy as np
-
-initialParameters = {'Transition_1': 'positive', 'Transition_2': 'positive'}
-
-test = ([666.6166123583164, 728.0935421312167, 726.8064722293553], [0, 0, 0],
-        [[[86.48604948230368, 56.14707281802907, 666.6166123583164]],
-         [[64.74193515110267, 60.36174557705699, 728.0935421312167]],
-         [[90.40869781133853, 77.98607617612205, 726.8064722293553]]], [[[0, 0]], [[0, 0]], [[0, 0]]])
-
-allMetricLists = (test[i] for i in [2, 3])
-# we calculate the averages for each element in the sublist
-metric_averages = [np.average([item for sublist in upperList for item in sublist]) for upperList in
-                   allMetricLists]
-# print(metric_averages)
-scores_wm = [
-    ([(i - metric_averages[0]) * (100 / metric_averages[0])]) if initialParameters[
-                                                                     'Transition_1'] == 'positive' else (
-        [-(i - metric_averages[0]) * (100 / metric_averages[0])]) for i in test[0]]
-scores_wm2 = [
-    ([(i - metric_averages[1]) * (100 / metric_averages[1])]) if initialParameters[
-                                                                     'Transition_2'] == 'positive' else (
-        [-(i - metric_averages[1]) * (100 / metric_averages[1])]) for i in test[1]]
-
-import numpy as np
-
-if any(np.isnan(val).any for val in [scores_wm, scores_wm2]):
-    print("nan")
+# import numpy as np
+#
+# initialParameters = {'Transition_1': 'positive', 'Transition_2': 'positive'}
+#
+# test = ([666.6166123583164, 728.0935421312167, 726.8064722293553], [0, 0, 0],
+#         [[[86.48604948230368, 56.14707281802907, 666.6166123583164]],
+#          [[64.74193515110267, 60.36174557705699, 728.0935421312167]],
+#          [[90.40869781133853, 77.98607617612205, 726.8064722293553]]], [[[0, 0]], [[0, 0]], [[0, 0]]])
+#
+# allMetricLists = (test[i] for i in [2, 3])
+# # we calculate the averages for each element in the sublist
+# metric_averages = [np.average([item for sublist in upperList for item in sublist]) for upperList in
+#                    allMetricLists]
+# # print(metric_averages)
+# scores_wm = [
+#     ([(i - metric_averages[0]) * (100 / metric_averages[0])]) if initialParameters[
+#                                                                      'Transition_1'] == 'positive' else (
+#         [-(i - metric_averages[0]) * (100 / metric_averages[0])]) for i in test[0]]
+# scores_wm2 = [
+#     ([(i - metric_averages[1]) * (100 / metric_averages[1])]) if initialParameters[
+#                                                                      'Transition_2'] == 'positive' else (
+#         [-(i - metric_averages[1]) * (100 / metric_averages[1])]) for i in test[1]]
+#
+# import numpy as np
+#
+# if any(np.isnan(val).any for val in [scores_wm, scores_wm2]):
+#     print("nan")
 
 
 # score_sum = [(x[0] + y[0]) for x, y in zip(scores_wm, scores_wm2)]

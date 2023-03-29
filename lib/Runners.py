@@ -110,31 +110,36 @@ class Runner(mwInputParser):
             if customFile is not None:
                 MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount, customFile)
                 if self.par['PLUMED'] is not None:
-                    command = f'gmx mdrun -plumed {self.par["PLUMED"]} -deffnm production'
+                    command = f'%s {self.par["PLUMED"]} -deffnm production' % "gmx mdrun -plumed" \
+                        if self.initialParameters['COMMAND'] is None else f'{self.initialParameters["COMMAND"]}'
                 else:
-                    command = f'gmx mdrun -deffnm production'
+                    command = f'%s -deffnm production' % "gmx mdrun " \
+                        if self.initialParameters['COMMAND'] is None else f'{self.initialParameters["COMMAND"]}'
             else:
                 MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount)
                 if self.par['PLUMED'] is not None:
-                    command = f'gmx mdrun ' \
+                    command = f'%s ' \
                               f'-plumed {self.par["PLUMED"]} ' \
-                              f'-deffnm {self.par["Output"]}_{trajCount}_{walk_count}'
+                              f'-deffnm {self.par["Output"]}_{trajCount}_{walk_count}' % "gmx mdrun" \
+                        if self.initialParameters['COMMAND'] is None else f'{self.initialParameters["COMMAND"]}'
                 else:
-                    command = f'gmx mdrun -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count}'
+                    command = f'%s -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count}' % "gmx mdrun" \
+                        if self.initialParameters['COMMAND'] is None else f'{self.initialParameters["COMMAND"]}'
 
         elif self.par['MDEngine'] == 'ACEMD':
             if customFile is not None:
-                command = f'acemd3 --device {GPU} production.inp 1> acemd.log'
+                command = f'%s --device {GPU} production.inp 1> acemd.log' % "acemd3" \
+                    if self.initialParameters['COMMAND'] is None else f'{self.initialParameters["COMMAND"]}'
             else:
-                command = f'acemd3 --device {GPU} input_{walk_count}_{trajCount}.inp 1> acemd.log'
+                command = f'%s --device {GPU} input_{walk_count}_{trajCount}.inp 1> acemd.log' % "acemd3" \
+                    if self.initialParameters['COMMAND'] is None else f'{self.initialParameters["COMMAND"]}'
 
         elif self.par['MDEngine'] == 'NAMD':
             if customFile is not None:
-                command = f'namd3 ' \
-                          f'+auto-provision +setcpuaffinity ' \
-                          f'+devices {GPU} production.namd 1> namd.log'
+                command = f'%s +devices {GPU} production.namd 1> namd.log' % "namd3 +auto-provision +setcpuaffinity" \
+                    if self.initialParameters['COMMAND'] is None else f'{self.initialParameters["COMMAND"]}'
             else:
-                command = f'namd3 ' \
-                          f'+auto-provision +setcpuaffinity ' \
-                          f'+devices {GPU} input_{walk_count}_{trajCount}.inp 1> namd.log'
+                command = f'%s +devices {GPU} input_{walk_count}_{trajCount}.inp 1> namd.log' % \
+                          "namd3 +auto-provision +setcpuaffinity" \
+                    if self.initialParameters['COMMAND'] is None else f'{self.initialParameters["COMMAND"]}'
         return command
