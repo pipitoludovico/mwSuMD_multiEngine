@@ -128,10 +128,10 @@ class mwInputParser:
                         help="specify -m parallel or serial mode [Default = parallel]")
         ap.add_argument('-e', '--exclude', nargs='*', required=False,
                         help=' use -e to exclude a list of GPUs from being used by mwSuMD: e.g. -e 0 3')
-        ap.add_argument('--command', type=str, nargs='?', required=False,
+        ap.add_argument('-c', '--command', type=str, nargs='?', required=False,
                         help=' use -c to define a specific command you want to use to run your engine.'
-                             'Use "" to define the command. E.g.: "gmx mdrun -deffnm npt -bonded gpu". '
-                             'Be aware of the GPU batch division.')
+                             'Use "" to define the command: "gmx mdrun -deffnm npt -bonded gpu". '
+                             'Be aware of the GPU batch division and let mwSuMD sort the GPUs.')
         args = ap.parse_args()
 
         if 'parallel' in vars(args).values():
