@@ -36,25 +36,18 @@ class Getters(mwInputParser):
         sel2 = u.select_atoms(sel_2)
 
         distances = []
-        eucl_distances = []
         for ts in u.trajectory:
-            # Compute the center of mass of each selection
-            com1 = sel1.center_of_mass()
-            com2 = sel2.center_of_mass()
+            if ts is not None:
+                # Compute the center of mass of each selection
+                com1 = sel1.center_of_mass()
+                com2 = sel2.center_of_mass()
 
-            # MDA linear dist (1D array)
-            distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
-            distances.append(distance)
-
-            # Euclidean distances 3D array
-            eucl_dist = [np.linalg.norm(a - b) * 10 for a, b in zip(com1, com2)]
-            eucl_distances.append(eucl_dist)
-
-        mean_eucl = np.mean(eucl_distances)
+                distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
+                distances.append(distance)
+        # USARE AVG
         mean_lin = np.mean(distances)
-        exit(print('WE NEED TO UNDERSTAND WHAT TO USE'))
-
-#        return distMetric, distances, last_distance
+        distMetric = (mean_lin * distances[-1]) ** 0.5
+        return distMetric, distances, distances[-1]
 
     def getContacts(self, sel_1, sel_2):
         psf = None
@@ -84,11 +77,7 @@ class Getters(mwInputParser):
 
         distMetric = (mean_contacts * last_contacts) ** 0.5
 
-        if any(output == 0 for output in (distMetric, timeseries, last_contacts)):
-            distMetric, distances, last_distance = self.getDistance(sel_1, sel_2)
-            print(f"\nNo contacts were spotted between the selection."
-                  f"The distance between the centers of mass of the two selections is {last_distance:.3f} Å.\n")
-        return distMetric, timeseries, last_contacts
+        return distMetric, timeseries, timeseries[-1]
 
     def getRMSD(self, sel_1, sel_2):
         import MDAnalysis.analysis.rms
@@ -108,14 +97,13 @@ class Getters(mwInputParser):
         ref = Mda.Universe(pdb)
         R = Mda.analysis.rms.RMSD(u, ref, select="%s" % sel_1, groupselections=["%s" % sel_2])
         R.run()
-
         rmsd = R.rmsd.T
         data = list(rmsd[3])
         mean_rmsd = sum(data) / len(data)
         last_rmsd = data[-1]
 
         distMetric = (mean_rmsd * last_rmsd) ** 0.5
-        return distMetric, data, last_rmsd
+        return distMetric, data, data[-1]
 
     def getHB_score(self, sel_1, sel_2):
         print("getting HB in folder in: " + str(os.getcwd()))
@@ -153,9 +141,9 @@ class Getters(mwInputParser):
             # else (((np.mean(waterCont)) * waterCont[-1]) ** 0.5))
 
             if distMetric != 0:
-                return distMetric, hbonds.count_by_time(), last_contact
+                return distMetric, hbonds.count_by_time(), mean_contacts
             else:
                 # if no H bond is found, we compute the number of water contacts
                 # to determine the degree of solvation of the ligand
                 distMetric = (((np.mean(waterCont)) * waterCont[-1]) ** 0.5)
-                return distMetric, waterCont, last_contact
+                return distMetric, waterCont, mean_contacts

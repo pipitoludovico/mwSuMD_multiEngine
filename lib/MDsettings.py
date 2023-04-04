@@ -36,7 +36,7 @@ class MDsetter(mwInputParser):
                 # adding parameters lines to input files != GROMACS
                 if self.setterParameters['Parameters'] is not None:
                     for e in self.setterParameters['Parameters']:
-                        mw_file.write(f'parameters		{mwInputParser.parameterFolderPath}/%s\n' % e)
+                        mw_file.write(f'parameters		%s\n' % e)
 
             # writing the input file
             for line in txt:

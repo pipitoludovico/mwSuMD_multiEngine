@@ -11,6 +11,9 @@ from .TrajectoryOperator import TrajectoryOperator
 class Checker(mwInputParser):
     def __init__(self):
         super(Checker).__init__()
+        self.averages = None
+        self.scores = None
+        self.best_value = None
         self.bestWalker = None
         self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
 
@@ -21,6 +24,8 @@ class Checker(mwInputParser):
         if MDoperator.checkIfStuck(vals, accumulatedFails) is True:
             self.relaxSystem()
             accumulatedFails += 1
+        else:
+            accumulatedFails -= 1
             print("Number of fails accumulated: " + str(accumulatedFails))
         return accumulatedFails
 
@@ -55,13 +60,20 @@ class Checker(mwInputParser):
         MDoperator(self.initialParameters, self.folder).saveStep(1)
         self.trajCount += 1
         # we then extract the best metric/score and store it as a reference
-        self.bestWalker, self.max_value, self.metric_1, self.metric_2 = MetricsParser().getBestWalker(
-            self.walker_metrics)
 
         if self.initialParameters['NumberCV'] == 1:
-            MetricsParser().countTraj_logTraj(MetricsParser.getSlope(self.walker_metrics))
+            self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(
+                self.scores, self.averages)
         else:
-            MetricsParser().countTraj_logTraj(MetricsParser.getSlope(self.walker_metrics[0]))
+            self.bestWalker, self.best_walker_score, self.best_average_metric_1, self.best_average_metric_2 = MetricsParser().getBestWalker(
+                self.walker_metrics[0], self.walker_metrics[1], self.averages[0], self.averages[1])
+            self.best_metric_result = [self.best_average_metric_1, self.best_average_metric_2]
+
+        MetricsParser().countTraj_logTraj(
+            MetricsParser.getSlope(["RELAXATION SCORE: " + str(self.best_walker_score) + " Metric: "
+                                    + str(self.best_metric_result)]))
+
+        MetricsParser().countTraj_logTraj(MetricsParser.getSlope(self.walker_metrics[0]))
         print("\nRelaxation Protocol Ended")
         print('#' * 200)
         print('\n\n')

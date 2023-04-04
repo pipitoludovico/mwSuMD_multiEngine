@@ -2,6 +2,7 @@ import multiprocessing as mp
 from multiprocessing import Manager
 
 from .Getters import *
+from .Loggers import Logger
 from .Parser import *
 
 
@@ -11,49 +12,45 @@ class MetricsParser(mwInputParser):
         import warnings
         warnings.filterwarnings(action='ignore')
         self.walkers_metrics = []
+        self.metric_in_last_frames = []
+        self.score_metrics = []
         self.walkers_number_snapshot = self.initialParameters['Walkers']
 
     def getChosenMetrics(self):
         self.createMetricList()
-        print(self.walkers_metrics)
-        return self.walkers_metrics
+        if self.initialParameters['NumberCV'] == 1:
+            return self.score_metrics, self.metric_in_last_frames
+        else:
+            return self.walkers_metrics, self.metric_in_last_frames
 
     def createMetricList(self):
         if self.initialParameters['Relax'] is True:
             self.initialParameters['Walkers'] = 1
-        walker_metrics_1 = []
-        walker_metrics_2 = []
-        all_m_1 = []
-        all_m_2 = []
+        last_frame_metric_1, last_frame_metric_2, all_m_1, all_m_2 = [], [], [], []
         manager = Manager()
         q = manager.Queue()
         print("Calculating Metrics:")
+        results = []
         with mp.Pool() as pool:
-            results = pool.starmap(self.calculateMetricsMP,
-                                   [(q, walker, self.selection_list) for walker in
-                                    range(1, self.initialParameters['Walkers'] + 1)])
-            for _ in results:
+            for x in range(1, self.initialParameters['Walkers'] + 1):
+                results.append(pool.apply_async(self.calculateMetricsMP, args=(q, x, self.selection_list)))
                 ret = q.get()
                 if self.initialParameters['NumberCV'] == 1:
-                    self.walkers_metrics.append(ret[0])
+                    self.score_metrics.append(*ret[0])
+                    self.metric_in_last_frames.append(*ret[1])
                 else:
-                    print("PRINTING RETS")
-                    print(ret)
-                    walker_metrics_1.append(ret[0][0])
-                    walker_metrics_2.append(ret[1][0])
-                    all_m_1.append(ret[2])
-                    all_m_2.append(ret[3])
-        pool.join()
+                    last_frame_metric_1.append(*ret[0][0])
+                    last_frame_metric_2.append(*ret[1][0])
+                    all_m_1.append(*ret[0][1])
+                    all_m_2.append(*ret[1][1])
         if self.initialParameters['NumberCV'] == 2:
-            self.walkers_metrics = walker_metrics_1, walker_metrics_2, all_m_1, all_m_2
+            self.metric_in_last_frames = last_frame_metric_1, last_frame_metric_2,
+            self.walkers_metrics = all_m_1, all_m_2
         self.initialParameters['Walkers'] = self.walkers_number_snapshot
 
     def calculateMetricsMP(self, queue, walker, selection_list):
-        walker_metric = []
-        walkers_metrics_1 = []
-        walkers_metrics_2 = []
-        allMetric_1 = []
-        allMetric_2 = []
+        score_metric_1, score_metric_2, last_metrics_1, last_metrics_2, allMetric_1, allMetric_2 = \
+            [], [], [], [], [], []
         os.chdir(f'tmp/walker_' + str(walker))
         print(os.getcwd())
         for productions in os.listdir(os.getcwd()):
@@ -61,95 +58,96 @@ class MetricsParser(mwInputParser):
                 if self.initialParameters['Metric_1'] == 'DISTANCE':
                     distMetric, distances, lastDist = Getters(self.initialParameters).getDistance(selection_list[0],
                                                                                                   selection_list[1])
-                    walker_metric.append(distMetric)
-                    walkers_metrics_1.append(lastDist)
+                    score_metric_1.append(distMetric)
+                    last_metrics_1.append(lastDist)
                     allMetric_1.append(distances)
                 if self.initialParameters['Metric_2'] == 'DISTANCE':
                     distMetric, distances, lastDist = Getters(self.initialParameters).getDistance(selection_list[2],
                                                                                                   selection_list[3])
-                    walkers_metrics_2.append(lastDist)
+                    last_metrics_2.append(lastDist)
                     allMetric_2.append(distances)
 
                 if self.initialParameters['Metric_1'] == 'CONTACTS':
                     contactMetric, timeseries, lastContacts = Getters(self.initialParameters).getContacts(
-                        selection_list[0],
-                        selection_list[1])
-                    walker_metric.append(contactMetric)
-                    walkers_metrics_1.append(lastContacts)
+                        selection_list[0], selection_list[1])
+                    score_metric_1.append(contactMetric)
+                    last_metrics_1.append(lastContacts)
                     allMetric_1.append(timeseries)
                 if self.initialParameters['Metric_2'] == 'CONTACTS':
                     contactMetric, timeseries, lastContacts = Getters(self.initialParameters).getContacts(
-                        selection_list[0],
-                        selection_list[1])
-                    walkers_metrics_2.append(lastContacts)
+                        selection_list[0], selection_list[1])
+                    last_metrics_2.append(lastContacts)
                     allMetric_2.append(timeseries)
 
                 if self.initialParameters['Metric_1'] == 'RMSD':
-                    distMetric, data, lastRMSD = Getters(self.initialParameters).getRMSD(selection_list[0],
+                    rmsdMetric, data, lastRMSD = Getters(self.initialParameters).getRMSD(selection_list[0],
                                                                                          selection_list[1])
-                    walker_metric.append(distMetric)
-                    walkers_metrics_1.append(lastRMSD)
+                    score_metric_1.append(rmsdMetric)
+                    last_metrics_1.append(lastRMSD)
                     allMetric_1.append(data)
                 if self.initialParameters['Metric_2'] == 'RMSD':
-                    distMetric, data, lastRMSD = Getters(self.initialParameters).getRMSD(selection_list[2],
+                    rmsdMetric, data, lastRMSD = Getters(self.initialParameters).getRMSD(selection_list[2],
                                                                                          selection_list[3])
-                    walkers_metrics_2.append(lastRMSD)
+                    last_metrics_2.append(lastRMSD)
                     allMetric_2.append(data)
 
                 if self.initialParameters['Metric_1'] == 'HB':
-                    HB_score, hbData, last_HB = Getters(self.initialParameters).getHB_score(selection_list[0],
-                                                                                            selection_list[1])
-                    walker_metric.append(HB_score)
-                    walkers_metrics_1.append(HB_score)
+                    HB_score, hbData, lastHB = Getters(self.initialParameters).getHB_score(selection_list[0],
+                                                                                           selection_list[1])
+                    score_metric_1.append(HB_score)
+                    last_metrics_1.append(lastHB)
                     allMetric_1.append(hbData)
                 if self.initialParameters['Metric_2'] == 'HB':
-                    HB_score, hbData, last_HB = Getters(self.initialParameters).getHB_score(selection_list[2],
-                                                                                            selection_list[3])
-                    walkers_metrics_2.append(last_HB)
+                    HB_score, hbData, lastHB = Getters(self.initialParameters).getHB_score(selection_list[2],
+                                                                                           selection_list[3])
+                    last_metrics_2.append(lastHB)
                     allMetric_2.append(hbData)
-                # wrapping up all the computed metrics into shared memory values
+
                 if self.initialParameters['NumberCV'] == 1:
-                    queue.put(walker_metric)
+                    # Queue
+                    queue.put((score_metric_1, last_metrics_1, allMetric_1))
+                    Logger(self.initialParameters['Root']).logData(
+                        1, walker, self.initialParameters['Metric_1'], allMetric_1, np.mean(allMetric_1),
+                        allMetric_1[0][-1], score_metric_1)
                 if self.initialParameters['NumberCV'] == 2:
-                    queue.put([walkers_metrics_1, walkers_metrics_2, allMetric_1, allMetric_2])
+                    score_metric_1.clear()
+                    score_metric_2.clear()
+                    # Queue
+                    queue.put([[last_metrics_1, allMetric_1], [last_metrics_2, allMetric_2]])
+
+                    Logger(self.initialParameters['Root']).logData(1, walker, self.initialParameters['Metric_1'],
+                                                                   allMetric_1, np.mean(allMetric_1), allMetric_1[-1],
+                                                                   last_metrics_1)
+                    Logger(self.initialParameters['Root']).logData(2, walker, self.initialParameters['Metric_2'],
+                                                                   allMetric_2, np.mean(allMetric_2), allMetric_2[-1],
+                                                                   last_metrics_2)
                 os.chdir(self.folder)
 
-    def getBestWalker(self, walkers_metrics):
+    def getBestWalker(self, *args):
+        """Returns the walker with the best metric"""
         if self.initialParameters['NumberCV'] == 1:
-            metric_values = [m for m in walkers_metrics if m is not None]
+            metric_scores = args[0]
             if self.initialParameters['Transition_1'] == 'positive':
-                best_value = max(metric_values)
+                best_score = max(metric_scores)
             else:
-                best_value = min(metric_values)
-            best_walker = walkers_metrics.index(best_value) + 1
-            return best_walker, best_value, walkers_metrics[-1], walkers_metrics[-1]
+                best_score = min(metric_scores)
+            best_walker_index = metric_scores.index(best_score) + 1
+            print('\nCV1 Best Index \t Best Score \t L 1\t  Associated Last Metric')
+            print(best_walker_index, best_score, args[1][best_walker_index - 1])
+            return best_walker_index, best_score, args[1][best_walker_index - 1]
+
         else:
-            # we create the "allMetrics_1 and 2", walking metrics list 1 and 2
-            allMetricLists = (walkers_metrics[i] for i in [2, 3])
-            # we calculate the averages for each element in the sublist
-            metric_averages = [np.average([item for sublist in upperList for item in sublist]) for upperList in
-                               allMetricLists]
-
-            scores_wm = [
-                ([(i - metric_averages[0]) * (100 / metric_averages[0])]) if self.initialParameters[
-                                                                                 'Transition_1'] == 'positive' else (
-                    [-(i - metric_averages[0]) * (100 / metric_averages[0])]) for i in walkers_metrics[0]]
-            scores_wm2 = [
-                ([(i - metric_averages[1]) * (100 / metric_averages[1])]) if self.initialParameters[
-                                                                                 'Transition_2'] == 'positive' else (
-                    [-(i - metric_averages[1]) * (100 / metric_averages[1])]) for i in walkers_metrics[1]]
-
-            score_sum = [(x[0] + y[0]) for x, y in zip(scores_wm, scores_wm2)]
-            list(score_sum)
+            metric_1_scores = [((walker[-1] / np.average(args[0])) - 1) * (
+                -1 if self.initialParameters['Transition_1'] == 'negative' else 1) for walker in args[0]]
+            metric_2_scores = [((walker[-1] / np.average(args[1])) - 1) * (
+                -1 if self.initialParameters['Transition_2'] == 'negative' else 1) for walker in args[1]]
+            score_sum = [x + y for x, y in zip(metric_1_scores, metric_2_scores)]
             max_score = max(score_sum)
             max_index = score_sum.index(max_score) + 1
-
-            if any(np.isnan(val).any for val in [scores_wm, scores_wm2]):
-                print("The reference value you chose did not produce results yet (averages = 0)."
-                      f"First metric scores:{scores_wm}\tsecond metric scores:{scores_wm2}")
-                max_score, max_index = 0, 1
-
-            return max_index, max_score, walkers_metrics[0][-1], walkers_metrics[1][-1]
+            print('CV2:')
+            print('Max Index \t Max Score \t Associated Walker Avg Metric 1\t  Associated Walker Metric 2')
+            print(max_index, max_score, args[2][max_index - 1], args[3][max_index - 1])
+            return max_index, max_score, args[2][max_index - 1], args[3][max_index - 1]
 
     @staticmethod
     def getSlope(values_metric) -> float:

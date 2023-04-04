@@ -41,6 +41,5 @@ class TrajectoryOperator(mwInputParser):
 
                 with Mda.Writer('wrapped.xtc', ag) as w:
                     for ts in u.trajectory:
-                        if ts is not None:
-                            w.write(ag)
+                        w.write(ag)
         os.chdir(self.folder)

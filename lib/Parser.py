@@ -45,7 +45,7 @@ class mwInputParser:
                     self.initialParameters['Parameters'].append(params)
             for dirpath, dirnames, generalParams in os.walk(self.parameterFolderPath):
                 for filename in [f for f in generalParams if f.endswith(self.initialParametersameter_extensions)]:
-                    self.initialParameters['Parameters'].append(filename)
+                    self.initialParameters['Parameters'].append(dirpath + "/" + filename)
         else:
             return self.initialParameters['Parameters']
 
@@ -123,6 +123,7 @@ class mwInputParser:
                     self.initialParameters['Wrap'] = line.split('=')[1].strip()
 
     def argumentParser(self):
+
         ap = argparse.ArgumentParser()
         ap.add_argument("-m", '--mode', type=str, default='parallel', required=False,
                         help="specify -m parallel or serial mode [Default = parallel]")
@@ -139,7 +140,8 @@ class mwInputParser:
         elif 'serial' in vars(args).values():
             self.initialParameters['Mode'] = 'serial'
 
-        if args.command:
+        self.initialParameters['COMMAND'] = None
+        if args.command is not None:
             self.initialParameters['COMMAND'] = args.command
             print(self.initialParameters['COMMAND'])
 
@@ -181,31 +183,18 @@ class mwInputParser:
     def countTraj_logTraj(self, metric):
         """ At what cycle number mwSuMD was stopped? """
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
-        if self.initialParameters['Restart'] == 'NO':
-            if self.trajCount == 0 and (metric == 0 or metric == 10 ** 6):
-                with open('walkerSummary.log', 'w') as logF:
-                    logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")
-            elif self.trajCount != 0 and (metric == 0 or metric == 10 ** 6):
-                with open('walkerSummary.log', 'a') as logF:
-                    metric = 'RESUMED'
-                    logF.write(str(self.trajCount) + " " + str(metric) + "\n")
-            elif metric == '' and self.trajCount != 0:
-                pass
-            else:
-                with open('walkerSummary.log', 'a') as logF:
-                    logF.write(str(self.trajCount) + " " + str(metric) + "\n")
-
-        if self.initialParameters['Relax'] is True:
+        if self.trajCount == 0 and (metric == 0 or metric == 10 ** 6):
+            with open('walkerSummary.log', 'w') as logF:
+                logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")
+        elif self.trajCount != 0 and (metric == 0 or metric == 10 ** 6):
+            with open('walkerSummary.log', 'a') as logF:
+                logF.write(str(self.trajCount) + " RESUMED " + str(metric) + "\n")
+        elif self.initialParameters['Relax'] is True:
             with open('walkerSummary.log', 'a') as logF:
                 logF.write(str(self.trajCount) + " RELAXATION PROTOCOL  " + str(metric) + "\n")
-        if self.initialParameters['Restart'] == 'YES':
-            if self.trajCount != 0 and (metric == 0 or metric == 10 ** 6):
-                metric = 'RESTART'
-                with open('walkerSummary.log', 'a') as logF:
-                    logF.write(str(self.trajCount) + " " + str(metric) + "\n")
-            else:
-                with open('walkerSummary.log', 'a') as logF:
-                    logF.write(str(self.trajCount) + " " + str(metric) + "\n")
+        else:
+            with open('walkerSummary.log', 'a') as logF:
+                logF.write(str(self.trajCount) + " " + str(metric) + "\n")
 
     def getSettings(self):
         print("Loading setting parameters...")

@@ -7,7 +7,7 @@ Wrap = protein
 # Relaxation protocol time in case of stuck condition [Default = 5 ns]
 RelaxTime = 
 # Output name of the files
-Output = test_DIS_n_RMSD_p
+Output = output
 ########################################################################
 # Supervision on one or two metrics?
 NumberCV = 2
@@ -18,15 +18,15 @@ NumberCV = 2
 # The Cutoff is the value at which the simulation will stop once the metric has reached this number
 
 Metric_1 = Distance
-Sel_1 = protein and resid 1
-Sel_2 = protein and resid 2
+Sel_1 = segid P2 and resid 2
+Sel_2 = segid P1 and resid 317
 Cutoff_1 = 3
 Transition_1 = negative
 
-Metric_2 = Contacts
-Sel_3 = protein and resid 1
-Sel_4 = protein and resid 2
-Cutoff_2 = 20
+Metric_2 = RMSD
+Sel_3 = segid P1 and name CA
+Sel_4 = segid P0 and name CA
+Cutoff_2 = 200
 Transition_2 = positive
 
 #####################################################################

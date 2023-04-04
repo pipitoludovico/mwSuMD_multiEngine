@@ -5,7 +5,13 @@
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/bin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/toppar_c36_jul20" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/backup" />
+      <excludeFolder url="file://$MODULE_DIR$/restarts" />
+      <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/tmp_bk" />
+      <excludeFolder url="file://$MODULE_DIR$/trajectories" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/walker_1" />
     </content>
     <orderEntry type="jdk" jdkName="mwsumd" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

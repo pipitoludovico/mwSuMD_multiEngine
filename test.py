@@ -50,7 +50,7 @@
 # meanTime = np.array(list(data.values())).mean()
 # meanDist = np.array(list(data.keys())).mean()
 #
-# nume = [(float(value) - meanTime) * (float(key) - meanDist) for key, value in data.items()]
+
 # denume = [(float(value) - meanTime) ** 2 for value in data.values()]
 #
 #
@@ -100,8 +100,6 @@
 # print(count)
 # number_of_walkers = 4
 
-# import multiprocessing as mp
-# import os
 # batch = [0, 1, 2, 3]
 # trajCount = 0
 # process = 0
@@ -172,7 +170,7 @@
 
 # Center of Mass with MDA
 # import MDAnalysis as mda
-# import numpy as np
+import numpy as np
 #
 # selection = 'segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA'
 #
@@ -832,55 +830,55 @@
 #     print((mean_distance_a * last_distance_a) ** 0.5, distances_a, last_distance_a)
 
 
-def comp2():
-    import MDAnalysis as Mda
-    import numpy as np
+# def comp2():
+#     import MDAnalysis as Mda
+#     import numpy as np
+#
+#     # Load your trajectory and topology
+#     u = Mda.Universe("NEUTRAL_fis.psf", "wrapped.xtc")
+#
+#     # Define your two selections
+#     sel1 = u.select_atoms("segid P0")
+#     sel2 = u.select_atoms("segid P2")
+#
+#     distances = []
+#     distanceS_np = []
+#     for ts in u.trajectory:
+#         # Compute the center of mass of each selection
+#         com1 = sel1.center_of_mass()
+#         com2 = sel2.center_of_mass()
+#
+#         distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
+#
+#         distances_np = [np.linalg.norm(a - b) * 10 for a, b in zip(com1, com2)]
+#         distanceS_np.append(distances_np)
+#
+#         distances.append(distance)
+#     # distances = np.array(distances)
+#     mean_distance = np.mean(distances)
+#     last_distance = distances[-1]
+#     print(distances)
+#     print(last_distance)
+#     print(distanceS_np)
+#     print(mean_distance)
 
-    # Load your trajectory and topology
-    u = Mda.Universe("NEUTRAL_fis.psf", "wrapped.xtc")
+# mean_distance = np.mean(distances)
+# sel1_pos = [sel1.positions for ts in u.trajectory if ts is not None]
+# sel2_pos = [sel2.positions for ts in u.trajectory if ts is not None]
 
-    # Define your two selections
-    sel1 = u.select_atoms("segid P0")
-    sel2 = u.select_atoms("segid P2")
+# Compute the distance between the centers of mass
 
-    distances = []
-    distanceS_np = []
-    for ts in u.trajectory:
-        # Compute the center of mass of each selection
-        com1 = sel1.center_of_mass()
-        com2 = sel2.center_of_mass()
+# distance = mda.lib.distances.distance_array(com1, com2)
+# print(distance)
+# print(sel1_pos)
+# print(sel2_pos)
+# print(distances, last_distance, mean_distance, (mean_distance * last_distance) ** 0.5)
 
-        distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
-
-        distances_np = [np.linalg.norm(a - b) * 10 for a, b in zip(com1, com2)]
-        distanceS_np.append(distances_np)
-
-        distances.append(distance)
-    # distances = np.array(distances)
-    mean_distance = np.mean(distances)
-    last_distance = distances[-1]
-    print(distances)
-    print(last_distance)
-    print(distanceS_np)
-    print(mean_distance)
-
-    # mean_distance = np.mean(distances)
-    # sel1_pos = [sel1.positions for ts in u.trajectory if ts is not None]
-    # sel2_pos = [sel2.positions for ts in u.trajectory if ts is not None]
-
-    # Compute the distance between the centers of mass
-
-    # distance = mda.lib.distances.distance_array(com1, com2)
-    # print(distance)
-    # print(sel1_pos)
-    # print(sel2_pos)
-    # print(distances, last_distance, mean_distance, (mean_distance * last_distance) ** 0.5)
-
-    # print(f"The distance between the centers of mass of the two selections is {distance:.3f} Å.")
+# print(f"The distance between the centers of mass of the two selections is {distance:.3f} Å.")
 
 
-print("COMP2 ")
-comp2()
+# print("COMP2 ")
+# comp2()
 
 # TEST STDV for checker
 # vals = [1042.1788427529493, 1188.3683748604185, 1231.2038868066752, 1257.244082669362, 1249.1861324877304,
@@ -927,4 +925,225 @@ comp2()
 # list(score_sum)
 # max_score = max(score_sum)
 # max_index = score_sum.index(max_score) + 1
+# pizza = [[73.68924751717799, 74.52631161362292], [70.89893277755907, 72.13195844938991], [73.54088838232087, 73.86075976198593]]
 #
+# minore = (min(min(x for x in pizza)))
+#
+# for idx, lista in enumerate(pizza):
+#     if minore in lista:
+#         print(idx)
+#
+# idx_val = [idx +1 for idx, lista in enumerate(pizza) if minore in lista]
+#
+# print(idx_val)
+# pizza2 = ['Score of the best 1.5247694223395782', ' Metrics 1:  0', ' Metrics 2: 0', ' Best Metrics: 67.09209972567722']
+#
+# print("i valori sono: " + " ".join(pizza2))
+
+# import numpy as np
+#
+# walkers_metrics = [[68.40681676365901, 66.98947894167819, 67.0462169266036, 66.09016507158805],  # DISTANCE
+#                    [64.03433644363041, 62.20138715941137, 61.4184966301327, 59.4528484778242],
+#                    [67.20794704993656, 67.94094116284039, 69.59623880159859, 68.68284323180802]], \
+#     [[1.7798778082582722, 1.5911268346305518, 1.701341448376421, 1.6158511790391388],  # RMSD
+#      [1.5198264916843358, 1.5283420344411225, 1.6476582638556438, 1.5569977220128732],
+#      [1.6316067378354169, 1.5273519297784623, 1.6640788946351763, 1.5680215720067414]]
+#
+# allMetricLists = [walkers_metrics[i] for i in [0, 1]]
+#
+# averages_metric_1 = [np.average(results) for results in walkers_metrics[0]]
+# averages_metric_2 = [np.average(results) for results in walkers_metrics[1]]
+#
+# scores_wm = [([(i - min(averages_metric_1)) * (100 / min(averages_metric_1))]) for i in walkers_metrics[0]]
+# scores_wm2 = [([(i - np.average(averages_metric_1)) * (100 / np.average(averages_metric_1)) for i in walkers_metrics[0]])]
+#
+#
+# print(averages_metric_1, averages_metric_2)
+# for x in scores_wm:
+#     print(x)
+#
+# print("")
+# for y in scores_wm2:
+#     print(y)
+
+# walkers_metrics = [[67.55080172781814, 68.57198471483285, 65.68296837125814, 66.72526699638205],
+#                    [69.81932494267221, 71.11762158331567, 72.16996068106717, 72.917310659952],
+#                    [62.864904136240746, 60.77628648401, 59.26766231092518, 57.204254997916934]], [
+#     [1.4574887950163649, 1.5563416332636282, 1.6905481817541355, 1.6517788841510965],
+#     [1.6005589431898808, 1.6115067918659267, 1.5959415322050126, 1.7800017850111511],
+#     [1.5601941768899734, 1.6392860180628905, 1.643573651531415, 1.629790253289279]]
+
+# walkers_metrics = ([666.6166123583164, 728.0935421312167, 726.8064722293553], [0, 0, 0],
+#         [[[86.48604948230368, 56.14707281802907, 666.6166123583164]],
+#          [[64.74193515110267, 60.36174557705699, 728.0935421312167]],
+#          [[90.40869781133853, 77.98607617612205, 726.8064722293553]]], [[[0, 0]], [[0, 0]], [[0, 0]]])
+
+# print(walkers_metrics[0])
+
+# allMetricLists = (walkers_metrics[i] for i in [0, 1])
+# # we calculate the averages for each element in the sublist
+# metric_averages = [np.average([item for sublist in upperList for item in sublist]) for upperList in
+#                    allMetricLists]
+#
+# scores_wm = [([(i - metric_averages[0]) * (100 / metric_averages[0])]) for i in walkers_metrics[0]]
+# scores_wm2 = [([(i - metric_averages[1]) * (100 / metric_averages[1])]) for i in walkers_metrics[1]]
+#
+# score_sum = [(x[0] + y[0]) for x, y in zip(scores_wm, scores_wm2)]
+#
+# listaConvertita = np.array(score_sum).tolist()
+# print(listaConvertita)
+#
+# massimoScore = (max(sottolista) for sottolista in listaConvertita)
+# print(*massimoScore)
+# list(score_sum)
+# max_score = max(score_sum)
+# max_index = score_sum.index(max_score) + 1
+
+
+# averages per frame walker 1 - Distance:
+# [68.23039075764112, 65.43151479943582, 65.59349050450218]
+# averages per frame walker 2 - Distance:
+# [74.9461452237978, 73.83383057460237, 74.44472274755637]
+# averages per frame walker 3 - Distance:
+# [73.0118791985253, 68.12678017859682, 75.07388666968403]
+# averages per frame walker 1 - RMSD:
+# [1.518071303385798, 1.5012931293695824, 1.4881288621530513]
+# averages per frame walker 2 - RMSD:
+# [1.7496403751351113, 1.8159470142191956, 1.735967463609014]
+# averages per frame walker 3 - RMSD:
+# [1.5757336715415255, 1.7539980741201482, 1.779617380929741]
+# Average Metrics 1 of each walker
+# [66.4184653538597, 74.40823284865219, 72.07084868226872]
+# Average Metrics 2 of each walker
+# [1.5024977649694773, 1.7671849509877735, 1.7031163755304715]
+# average poll:
+# 36.31172432937805
+# SCORE SUMS
+# -12.950322868920805 9.781879562271655 3.1684433066491935
+#
+initialParameters = {"Transition_1": 'negative', 'Transition_2': 'positive'}
+all_metrics = (
+    [[61.182863915064786, 62.61750030774978, 65.09235961562598],
+     [65.65477800598221, 61.87346259963871, 58.129623807388384],
+     [66.06689021141422, 72.9892678497545, 72.88424573411918]],
+    [[1.4401303820477205, 1.379706569886924, 1.32476885713243],
+     [1.580342428681843, 1.358962083714633, 1.5385896250442517],
+     [1.792912866549573, 1.525100782898183, 1.6315333686322762]])
+
+all_avgs = ([62.96424127948018, 61.88595480433643, 70.64680126509597],
+            [1.381535269689025, 1.4926313791469095, 1.6498490060266775])
+
+
+# def prova(*args):
+#     average_poll = np.average(args[0] + args[1])
+#     # average_poll = np.average(all_metrics_per_frame_1 + all_metrics_per_frame_2)
+#     print("average poll:")
+#     print(average_poll)
+#     metric_1_scores = []
+#     metric_2_scores = []
+#     # for average in avg_metrics_1:
+#     for average in args[2]:
+#         score_1 = ((average / average_poll) - 1)
+#         if initialParameters['Transition_1'] == 'negative':
+#             abs(score_1)
+#             metric_1_scores.append(abs(score_1))
+#         else:
+#             metric_1_scores.append(score_1)
+#         print("SCORE 1:")
+#         print(score_1)
+#     # for average in avg_metrics_2:
+#     for average in args[3]:
+#         score_2 = ((average / average_poll) - 1)
+#         if initialParameters['Transition_2'] == 'negative':
+#             abs(score_2)
+#             metric_2_scores.append(abs(score_2))
+#         else:
+#             metric_2_scores.append(score_2)
+#         print("SCORE 2:")
+#         print(score_2)
+#     score_sum = [(x + y) for x, y in zip(metric_1_scores, metric_2_scores)]
+#     list(score_sum)
+#     print("SCORE SUM")
+#     print(*score_sum)
+#     max_score = max(score_sum)
+#     print('MAX')
+#     print(max_score)
+#     max_index = score_sum.index(max_score) + 1
+#     print('\nCV2 BEST METRIC RESULTS')
+#     print(max_index, max_score, args[2][max_index - 1], args[3][max_index - 1])
+
+import numpy as np
+
+initialParameters = {"Transition_1": 'positive', 'Transition_2': 'positive'}
+all_metrics = (
+    [[61.182863915064786, 62.61750030774978, 65.09235961562598],
+     [65.65477800598221, 61.87346259963871, 58.129623807388384],
+     [66.06689021141422, 72.9892678497545, 72.88424573411918]],
+    [[1.4401303820477205, 1.379706569886924, 1.32476885713243],
+     [1.580342428681843, 1.358962083714633, 1.5385896250442517],
+     [1.792912866549573, 1.525100782898183, 1.6315333686322762]])
+
+
+all_avgs = ([62.96424127948018, 61.88595480433643, 70.64680126509597],
+            [1.381535269689025, 1.4926313791469095, 1.6498490060266775])
+
+def prova(*args):
+    average_poll_1 = np.average(args[0])
+    average_poll_2 = np.average(args[1])
+    metric_1_scores = []
+    metric_2_scores = []
+    metric_11_scores = [i*((walker[-1] / average_poll_1) - 1) for walker in args[0]]
+    metric_22_scores = [i((walker[-1] / average_poll_1) - 1) for walker in args[1]]
+    for walker in args[0]:
+        score_1 = ((walker[-1] / average_poll_1) - 1)
+        if initialParameters['Transition_1'] == 'negative':
+            score_1 = score_1 * -1
+            metric_1_scores.append(score_1)
+        else:
+            metric_1_scores.append(score_1)
+    for walker in args[1]:
+        score_2 = ((walker[-1] / average_poll_2) - 1)
+        if initialParameters['Transition_2'] == 'negative':
+            score_2 = score_2 * -1
+            metric_2_scores.append(score_2)
+        else:
+            metric_2_scores.append(score_2)
+    score_sum = [(x + y) for x, y in zip(metric_1_scores, metric_2_scores)]
+    list(score_sum)
+    s_s = [(x + y) for x, y in zip(metric_11_scores, metric_22_scores)]
+
+    max_score = max(score_sum)
+    max_index = score_sum.index(max_score) + 1
+
+    max_s = max(s_s)
+    m_i = s_s.index(max_s) + 1
+    print('\nCV2 BEST METRIC RESULTS')
+    print(max_index, max_score, args[2][max_index - 1], args[3][max_index - 1])
+    print("PIZZA")
+    print(m_i, max_s, args[2][m_i - 1], args[3][m_i - 1])
+
+prova(all_metrics[0], all_metrics[1], all_avgs[0], all_avgs[1])
+
+# print("RISULTATI DEL CV1 BEST SCORE")
+
+
+# ordered multiprocessing outputs
+# import multiprocessing as mp
+#
+#
+# def quadrato(q, x):
+#     print((x * x))
+#     q.put((x * x))
+#
+# pizza = []
+# manager = mp.Manager()
+# q = manager.Queue()
+# results = []
+# with mp.Pool() as pool:
+#     for x in range(1, 11):
+#         results.append(pool.apply_async(quadrato, args=(q, x)))
+#         aaa = q.get()
+#         print(x, aaa)
+#         pizza.append(aaa)
+# pool.terminate()
+# print(pizza)
