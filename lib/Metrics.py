@@ -148,20 +148,20 @@ class MetricsParser(mwInputParser):
             print('Max Index \t Max Score \t Associated Walker Avg Metric 1\t  Associated Walker Metric 2')
             print(max_index, max_score, args[2][max_index - 1], args[3][max_index - 1])
             return max_index, max_score, args[2][max_index - 1], args[3][max_index - 1]
-
-    @staticmethod
-    def getSlope(values_metric) -> float:
-        """Compute the least square methods on the data
-        list provided called by other metrics functions"""
-        data = dict(enumerate(values_metric))
-        meanTime = np.array(list(data.values())).mean()
-        meanDist = np.array(list(data.keys())).mean()
-        nume = [(float(value) - meanTime) * (float(key) - meanDist) for key, value in data.items()]
-        deNume = [(float(value) - meanTime) ** 2 for value in data.values()]
-        try:
-            slope = float(np.sum(nume)) / float(np.sum(deNume))
-            return slope
-        except:
-            print("Slope deNumerator was 0.")
-            slope = 0
-        return slope
+    #
+    # @staticmethod
+    # def getSlope(values_metric) -> float:
+    #     """Compute the least square methods on the data
+    #     list provided called by other metrics functions"""
+    #     data = dict(enumerate(values_metric))
+    #     meanTime = np.array(list(data.values())).mean()
+    #     meanDist = np.array(list(data.keys())).mean()
+    #     nume = [(float(value) - meanTime) * (float(key) - meanDist) for key, value in data.items()]
+    #     deNume = [(float(value) - meanTime) ** 2 for value in data.values()]
+    #     try:
+    #         slope = float(np.sum(nume)) / float(np.sum(deNume))
+    #         return slope
+    #     except:
+    #         print("Slope deNumerator was 0.")
+    #         slope = 0
+    #     return slope

@@ -25,7 +25,7 @@ class Checker(mwInputParser):
             self.relaxSystem()
             accumulatedFails += 1
         else:
-            accumulatedFails -= 1
+            accumulatedFails += 0
             print("Number of fails accumulated: " + str(accumulatedFails))
         return accumulatedFails
 
@@ -55,12 +55,14 @@ class Checker(mwInputParser):
         os.chdir(f'{self.folder}')
         TrajectoryOperator().wrap(1)
         # we then compute its metrics as a reference
-        self.walker_metrics = MetricsParser().getChosenMetrics()
+        if self.initialParameters['NumberCV'] == 1:
+            self.scores, self.averages = MetricsParser().getChosenMetrics()
+        else:
+            self.walker_metrics, self.averages = MetricsParser().getChosenMetrics()
         # then the last coordinate is saved
         MDoperator(self.initialParameters, self.folder).saveStep(1)
         self.trajCount += 1
         # we then extract the best metric/score and store it as a reference
-
         if self.initialParameters['NumberCV'] == 1:
             self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(
                 self.scores, self.averages)
@@ -69,11 +71,8 @@ class Checker(mwInputParser):
                 self.walker_metrics[0], self.walker_metrics[1], self.averages[0], self.averages[1])
             self.best_metric_result = [self.best_average_metric_1, self.best_average_metric_2]
 
-        MetricsParser().countTraj_logTraj(
-            MetricsParser.getSlope(["RELAXATION SCORE: " + str(self.best_walker_score) + " Metric: "
-                                    + str(self.best_metric_result)]))
-
-        MetricsParser().countTraj_logTraj(MetricsParser.getSlope(self.walker_metrics[0]))
+        MetricsParser().countTraj_logTraj(["RELAXATION PROTOCOL SCORE: " + str(self.best_walker_score) + " Metric: "
+                                           + str(self.best_metric_result)])
         print("\nRelaxation Protocol Ended")
         print('#' * 200)
         print('\n\n')

@@ -8,8 +8,9 @@ class Logger:
         os.makedirs('logs', exist_ok=True)
 
     def logData(self, CV, walker, metricName, data, mean_of_data, last_data, scoreMetric):
+        os.makedirs(f'{self.root}/reports', exist_ok=True)
         cycle = len(os.listdir(f'{self.root}/trajectories'))
-        with open(f'{self.root}/datalogger_METRIC_{CV}.log', 'a') as logFile:
+        with open(f'{self.root}/reports/datalogger_METRIC_{CV}.log', 'a') as logFile:
             logFile.write(f'Cycle number: {cycle} '
                           f'Walker: {walker}, Metric: {metricName} '
                           f'All data per frame: {data} '

@@ -3,7 +3,7 @@ import time
 
 from .MDoperations import *
 from .TrajectoryOperator import *
-from .Utilities import ProcessManager
+from .GPUoperations import ProcessManager
 
 
 class Runner(mwInputParser):

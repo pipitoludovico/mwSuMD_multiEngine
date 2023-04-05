@@ -2,7 +2,7 @@ import pandas as pd
 
 from lib import *
 
-Utilities.ProcessManager()
+GPUoperations.ProcessManager()
 pars = Parser.mwInputParser()
 settings, selection_list, parameterFolderPath = pars.getSettings()
 settings_df = pd.DataFrame(sorted(list(settings.items())), columns=['Setting', 'Parameter'])
