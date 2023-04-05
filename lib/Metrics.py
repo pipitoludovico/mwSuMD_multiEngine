@@ -128,13 +128,13 @@ class MetricsParser(mwInputParser):
         if self.initialParameters['NumberCV'] == 1:
             metric_scores = args[0]
             if self.initialParameters['Transition_1'] == 'positive':
-                best_score = max(metric_scores)
+                best_metric = max(metric_scores)
             else:
-                best_score = min(metric_scores)
-            best_walker_index = metric_scores.index(best_score) + 1
-            print('\nCV1 Best Index \t Best Score \t L 1\t  Associated Last Metric')
-            print(best_walker_index, best_score, args[1][best_walker_index - 1])
-            return best_walker_index, best_score, args[1][best_walker_index - 1]
+                best_metric = min(metric_scores)
+            best_walker_index = metric_scores.index(best_metric) + 1
+            print('\nCV1 Best Index \t Best Metric \t Associated Last Metric')
+            print(best_walker_index, best_metric, args[1][best_walker_index - 1])
+            return best_walker_index, best_metric, args[1][best_walker_index - 1]
 
         else:
             metric_1_scores = [((walker[-1] / np.average(args[0])) - 1) * (

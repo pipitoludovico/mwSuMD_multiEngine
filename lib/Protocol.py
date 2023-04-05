@@ -10,6 +10,13 @@ from .Runners import Runner
 class ProtocolRunner(mwInputParser):
     def __init__(self):
         super(ProtocolRunner).__init__()
+        self.best_metric_result = None
+        self.best_average_metric_2 = None
+        self.best_average_metric_1 = None
+        self.best_walker_score = None
+        self.bestWalker = None
+        self.last_frame_metrics = None
+        self.scores = None
 
     def runStandardProtocol(self):
         print("")
@@ -22,18 +29,23 @@ class ProtocolRunner(mwInputParser):
         Runner(self.initialParameters).runMD()
         # compute metrics
         if self.initialParameters['NumberCV'] == 1:
-            self.scores, self.averages = MetricsParser().getChosenMetrics()
+            self.scores, self.last_frame_metrics = MetricsParser().getChosenMetrics()
         else:
-            self.walker_metrics, self.averages = MetricsParser().getChosenMetrics()
+            self.walker_metrics, self.last_frame_metrics = MetricsParser().getChosenMetrics()
         # get metrics
         if self.initialParameters['NumberCV'] == 1:
-            self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores, self.averages)
+            self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(
+                self.scores, self.last_frame_metrics)
             mwInputParser().countTraj_logTraj(
-                ["Best Walker: " + str(self.bestWalker) + " Best Metric: " + str(self.best_walker_score) + " Last Metric: " + str(self.best_metric_result)])
+                ["Best Walker: " + str(self.bestWalker) + " Best Metric: " + str(
+                    self.best_walker_score) + " Last Metric: " + str(self.best_metric_result)])
         else:
-            self.bestWalker, self.best_walker_score, self.best_average_metric_1, self.best_average_metric_2 = MetricsParser().getBestWalker(self.walker_metrics[0], self.walker_metrics[1], self.averages[0], self.averages[1])
+            self.bestWalker, self.best_walker_score, self.best_average_metric_1, self.best_average_metric_2 = \
+                MetricsParser().getBestWalker(self.walker_metrics[0], self.walker_metrics[1],
+                                              self.last_frame_metrics[0], self.last_frame_metrics[1])
             self.best_metric_result = [self.best_average_metric_1, self.best_average_metric_2]
-            mwInputParser().countTraj_logTraj(["Best Walker: " + str(self.bestWalker) + " Score Result: " + str(self.best_walker_score) + " Metric: " + str(self.best_metric_result)])
+            mwInputParser().countTraj_logTraj(["Best Walker: " + str(self.bestWalker) + " Score Result: " + str(
+                self.best_walker_score) + " Metric: " + str(self.best_metric_result)])
 
         MDoperator(self.initialParameters, self.folder).saveStep(self.bestWalker)
 

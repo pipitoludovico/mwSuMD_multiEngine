@@ -170,7 +170,6 @@
 
 # Center of Mass with MDA
 # import MDAnalysis as mda
-import numpy as np
 #
 # selection = 'segid P0 P1 and (resnum 33:239 or resnum 259:323) and name CA'
 #
@@ -1021,17 +1020,17 @@ import numpy as np
 # SCORE SUMS
 # -12.950322868920805 9.781879562271655 3.1684433066491935
 #
-initialParameters = {"Transition_1": 'negative', 'Transition_2': 'positive'}
-all_metrics = (
-    [[61.182863915064786, 62.61750030774978, 65.09235961562598],
-     [65.65477800598221, 61.87346259963871, 58.129623807388384],
-     [66.06689021141422, 72.9892678497545, 72.88424573411918]],
-    [[1.4401303820477205, 1.379706569886924, 1.32476885713243],
-     [1.580342428681843, 1.358962083714633, 1.5385896250442517],
-     [1.792912866549573, 1.525100782898183, 1.6315333686322762]])
-
-all_avgs = ([62.96424127948018, 61.88595480433643, 70.64680126509597],
-            [1.381535269689025, 1.4926313791469095, 1.6498490060266775])
+# initialParameters = {"Transition_1": 'negative', 'Transition_2': 'positive'}
+# all_metrics = (
+#     [[61.182863915064786, 62.61750030774978, 65.09235961562598],
+#      [65.65477800598221, 61.87346259963871, 58.129623807388384],
+#      [66.06689021141422, 72.9892678497545, 72.88424573411918]],
+#     [[1.4401303820477205, 1.379706569886924, 1.32476885713243],
+#      [1.580342428681843, 1.358962083714633, 1.5385896250442517],
+#      [1.792912866549573, 1.525100782898183, 1.6315333686322762]])
+#
+# all_avgs = ([62.96424127948018, 61.88595480433643, 70.64680126509597],
+#             [1.381535269689025, 1.4926313791469095, 1.6498490060266775])
 
 
 # def prova(*args):
@@ -1071,59 +1070,6 @@ all_avgs = ([62.96424127948018, 61.88595480433643, 70.64680126509597],
 #     max_index = score_sum.index(max_score) + 1
 #     print('\nCV2 BEST METRIC RESULTS')
 #     print(max_index, max_score, args[2][max_index - 1], args[3][max_index - 1])
-
-import numpy as np
-
-initialParameters = {"Transition_1": 'positive', 'Transition_2': 'positive'}
-all_metrics = (
-    [[61.182863915064786, 62.61750030774978, 65.09235961562598],
-     [65.65477800598221, 61.87346259963871, 58.129623807388384],
-     [66.06689021141422, 72.9892678497545, 72.88424573411918]],
-    [[1.4401303820477205, 1.379706569886924, 1.32476885713243],
-     [1.580342428681843, 1.358962083714633, 1.5385896250442517],
-     [1.792912866549573, 1.525100782898183, 1.6315333686322762]])
-
-
-all_avgs = ([62.96424127948018, 61.88595480433643, 70.64680126509597],
-            [1.381535269689025, 1.4926313791469095, 1.6498490060266775])
-
-def prova(*args):
-    average_poll_1 = np.average(args[0])
-    average_poll_2 = np.average(args[1])
-    metric_1_scores = []
-    metric_2_scores = []
-    metric_11_scores = [i*((walker[-1] / average_poll_1) - 1) for walker in args[0]]
-    metric_22_scores = [i((walker[-1] / average_poll_1) - 1) for walker in args[1]]
-    for walker in args[0]:
-        score_1 = ((walker[-1] / average_poll_1) - 1)
-        if initialParameters['Transition_1'] == 'negative':
-            score_1 = score_1 * -1
-            metric_1_scores.append(score_1)
-        else:
-            metric_1_scores.append(score_1)
-    for walker in args[1]:
-        score_2 = ((walker[-1] / average_poll_2) - 1)
-        if initialParameters['Transition_2'] == 'negative':
-            score_2 = score_2 * -1
-            metric_2_scores.append(score_2)
-        else:
-            metric_2_scores.append(score_2)
-    score_sum = [(x + y) for x, y in zip(metric_1_scores, metric_2_scores)]
-    list(score_sum)
-    s_s = [(x + y) for x, y in zip(metric_11_scores, metric_22_scores)]
-
-    max_score = max(score_sum)
-    max_index = score_sum.index(max_score) + 1
-
-    max_s = max(s_s)
-    m_i = s_s.index(max_s) + 1
-    print('\nCV2 BEST METRIC RESULTS')
-    print(max_index, max_score, args[2][max_index - 1], args[3][max_index - 1])
-    print("PIZZA")
-    print(m_i, max_s, args[2][m_i - 1], args[3][m_i - 1])
-
-prova(all_metrics[0], all_metrics[1], all_avgs[0], all_avgs[1])
-
 # print("RISULTATI DEL CV1 BEST SCORE")
 
 
@@ -1147,3 +1093,20 @@ prova(all_metrics[0], all_metrics[1], all_avgs[0], all_avgs[1])
 #         pizza.append(aaa)
 # pool.terminate()
 # print(pizza)
+
+
+import numpy as np
+
+values = [np.random.uniform(low=0, high=100, size=(10,))]
+
+
+def check(values):
+    x_norm = (values - np.min(values)) / (np.max(values) - np.min(values))
+    print(values)
+    print(*normalized_v)
+    if np.std(values) < 0.6:
+        print('done')
+        return True
+
+
+check(values)

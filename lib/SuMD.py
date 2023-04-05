@@ -62,7 +62,7 @@ class suMD1(mwInputParser):
             self.checkVals_2.append(self.output_to_check[1])
         self.cycle += 1
 
-        if self.cycle % (self.parameters['RelaxTime'] * 1000 / self.parameters['Timewindow']) == 0:
+        if self.cycle % int(self.parameters['RelaxTime'] * 1000 / self.parameters['Timewindow']) == 0:
             checker = Checker()
             if self.parameters['NumberCV'] == 1:
                 self.fails += checker.checkIfFailed(self.checkVals_1, self.fails)
