@@ -77,8 +77,9 @@ class MDoperator:
                 logFile.close()
             exit()
         else:
-            # we check if the simulation did not change much, and we run the relaxation protocol
-            if np.std(values) < 0.6:
+            x = np.array(values)
+            x_norm = (x - np.min(x)) / (np.max(x) - np.min(x))
+            if np.std(x_norm) < 0.3:
                 print('\nSimulation might be stuck. Running the relaxation protocol.')
                 print("")
                 return True

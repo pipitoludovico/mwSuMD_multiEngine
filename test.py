@@ -1097,15 +1097,19 @@
 
 import numpy as np
 
-values = [np.random.uniform(low=0, high=100, size=(10,))]
+values = [np.random.uniform(low=4.826, high=5.118,  size=(20,))]
+
+
 
 
 def check(values):
-    x_norm = (values - np.min(values)) / (np.max(values) - np.min(values))
+    x = np.array(values)
+    x_norm = (x-np.min(x))/(np.max(x)-np.min(x))
     print(values)
-    print(*normalized_v)
-    if np.std(values) < 0.6:
-        print('done')
+    # print(*x_norm)
+    print((np.std(x_norm)))
+    if np.std(x_norm) < 0.3:
+        print('stuck')
         return True
 
 
