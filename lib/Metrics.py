@@ -33,7 +33,7 @@ class MetricsParser(mwInputParser):
         results = []
         with mp.Pool() as pool:
             for x in range(1, self.initialParameters['Walkers'] + 1):
-                results.append(pool.apply_async(self.calculateMetricsMP, args=(q, x, self.selection_list)))
+                results.append(pool.apply(self.calculateMetricsMP, args=(q, x, self.selection_list)))
                 ret = q.get()
                 if self.initialParameters['NumberCV'] == 1:
                     self.score_metrics.append(*ret[0])

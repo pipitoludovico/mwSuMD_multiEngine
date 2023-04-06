@@ -1209,18 +1209,54 @@
 #
 #
 # check(values)
-pizza = ["mozzarella"]
-x = 1
+# pizza = ["mozzarella"]
+# x = 1
 
 # print(f"{'mi piace la' if x==0 else 'Non mi piace la'} {pizza}{' e odio l ananas'}")
 
-initialParameters = {'coor': 'test.coor', 'xsc' :'fileXSC.xsc', 'Forcefield': "CHARMM"}
-trajCount = 0
-print(f'binCoordinates\t../../system/{initialParameters["coor"]}\n' if trajCount == 0 else f'binCoordinates\t../../restart/{initialParameters["coor"]}\n')
+# initialParameters = {'coor': 'test.coor', 'xsc' :'fileXSC.xsc', 'Forcefield': "CHARMM"}
+# trajCount = 0
+# print(f'binCoordinates\t../../system/{initialParameters["coor"]}\n' if trajCount == 0 else f'binCoordinates\t../../restart/{initialParameters["coor"]}\n')
+#
+# trajCount = 1
+# print(f'binCoordinates\t../../system/{initialParameters["coor"]}\n' if trajCount == 0 else f'binCoordinates\t../../restart/{initialParameters["coor"]}\n')
+# trajCount = 0
+# print(f'set xscfile [open %s{initialParameters["xsc"]}]\n' % '../../system/' if trajCount == 0 else '../../restarts/')
+#
+# print(f"%s;\n" % 'paraTypeCharmm\ton' if initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n')
 
-trajCount = 1
-print(f'binCoordinates\t../../system/{initialParameters["coor"]}\n' if trajCount == 0 else f'binCoordinates\t../../restart/{initialParameters["coor"]}\n')
-trajCount = 0
-print(f'set xscfile [open %s{initialParameters["xsc"]}]\n' % '../../system/' if trajCount == 0 else '../../restarts/')
+import MDAnalysis as Mda
+import MDAnalysis.analysis.rms
 
-print(f"%s;\n" % 'paraTypeCharmm\ton' if initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n')
+import numpy as np
+
+sel_1 = "segid P2 and resid 2"
+sel_2 = "segid P1 and resid 317"
+psf = 'aaa/NEUTRAL_fis.hmr.psf'
+xtc = 'aaa/wrapped.xtc'
+
+u = Mda.Universe(psf, xtc)
+sel1 = u.select_atoms(sel_1)
+sel2 = u.select_atoms(sel_2)
+
+distances = []
+for ts in u.trajectory:
+    if ts is not None:
+        com1 = sel1.center_of_mass()
+        com2 = sel2.center_of_mass()
+
+        distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
+        distances.append(distance)
+mean_lin = np.mean(distances)
+distMetric = (mean_lin * distances[-1]) ** 0.5
+
+u = Mda.Universe(psf, xtc)
+ref = Mda.Universe('system/NEUTRAL_fis.pdb')
+R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
+R.run()
+rmsd = R.rmsd.T
+data = list(rmsd[3])
+mean_rmsd = sum(data) / len(data)
+last_rmsd = data[-1]
+distMetric2 = (mean_rmsd * last_rmsd) ** 0.5
+print(distMetric2)

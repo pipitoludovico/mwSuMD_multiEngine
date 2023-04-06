@@ -30,7 +30,8 @@ class Template(mwInputParser):
                 'thermostatTemperature   310\n',
                 'barostat                off\n',
                 'trajectoryFile          %s_%s.xtc\n' % (self.initialParameters['Output'], str(self.trajCount)),
-                'trajectoryPeriod               %s ps\n' % str(self.initialParameters['Savefreq']),
+                'trajectoryPeriod               %s\n' % int(
+                    self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
                 f'binCoordinates          ../../system/%s\n' % self.initialParameters['coor'],
                 f'extendedSystem          ../../system/%s\n' % self.initialParameters['xsc'],
                 'binVelocities           ../../system/%s\n' % self.initialParameters['vel']]
@@ -44,7 +45,7 @@ class Template(mwInputParser):
                               'coordinates             ../../system/%s\n' % self.initialParameters['PDB'],
                               'outputname\t%s\n' % self.initialParameters['Output'],
                               f'binCoordinates\t{sys_folder}{self.initialParameters["coor"]}\n'
-                              f'binVelocieties\t{sys_folder}{self.initialParameters["vel"]}\n'
+                              f'binVelocities\t{sys_folder}{self.initialParameters["vel"]}\n'
                               f'extendedSystem\t{sys_folder}{self.initialParameters["xsc"]}\n'
                               f'set xscfile [open {sys_folder}{self.initialParameters["xsc"]}]\n'
                               'proc get_first_ts { xscfile } {\n',
@@ -60,9 +61,6 @@ class Template(mwInputParser):
                               'firsttimestep\t$firsttime\n',
                               'set temp\t313.15;\n',
                               'outputEnergies %s\n' % int(
-                                  self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 2)),
-
-                              'restartfreq\t%s;\t\n' % int(
                                   self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
                               'dcdfreq\t%s;\t\n' % int(
                                   self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
@@ -72,7 +70,8 @@ class Template(mwInputParser):
                                   self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
 
                               '# Force-Field Parameters\n',
-                              "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n',
+                              "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters[
+                                                                    'Forcefield'] == 'CHARMM' else 'amber\ton\n',
                               '%s;\n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}' if
                               self.initialParameters["Forcefield"] == "AMBER" else "\n",
                               'exclude                 scaled1-4\n',

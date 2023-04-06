@@ -133,10 +133,10 @@ class Runner(mwInputParser):
         elif self.par['MDEngine'] == 'NAMD':
             command = f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
                 if customFile is not None and self.initialParameters['COMMAND'] is not None \
-                else f'namd3 +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
+                else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
                 if customFile is not None \
                 else f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
                 if self.initialParameters['COMMAND'] is not None \
-                else f'namd3 +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log'
+                else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log'
 
         return command

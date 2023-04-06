@@ -23,6 +23,7 @@ class Getters(mwInputParser):
 
         if self.initialParameters['Forcefield'] == 'CHARMM':
             if self.initialParameters['PSF'] is not None:
+
                 psf = '../../system/%s' % self.initialParameters['PSF']
         elif self.initialParameters['Forcefield'] == 'AMBER':
             psf = '../../system/%s' % self.initialParameters['PRMTOP']
@@ -37,16 +38,17 @@ class Getters(mwInputParser):
 
         distances = []
         for ts in u.trajectory:
+            print("TRAJECTORY TS COUNTER")
+
             if ts is not None:
-                # Compute the center of mass of each selection
                 com1 = sel1.center_of_mass()
                 com2 = sel2.center_of_mass()
 
                 distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
                 distances.append(distance)
-        # USARE AVG
         mean_lin = np.mean(distances)
         distMetric = (mean_lin * distances[-1]) ** 0.5
+        print(distMetric)
         return distMetric, distances, distances[-1]
 
     def getContacts(self, sel_1, sel_2):
@@ -95,7 +97,7 @@ class Getters(mwInputParser):
             psf = '%s' % self.par['PRMTOP']
         u = Mda.Universe(psf, xtc)
         ref = Mda.Universe(pdb)
-        R = Mda.analysis.rms.RMSD(u, ref, select="%s" % sel_1, groupselections=["%s" % sel_2])
+        R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
         R.run()
         rmsd = R.rmsd.T
         data = list(rmsd[3])
