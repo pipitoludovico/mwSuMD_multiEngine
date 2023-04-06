@@ -605,30 +605,30 @@
 # print(checkIfStuck(vals, fails))
 
 # extrapolating namd input file to list
-import os
-
-namdInputFile = []
-
-with open('./prod2.inp', 'r') as file:
-    for line in file.readlines():
-        namdInputFile.append(line)
-
-print(namdInputFile)
-# setting NAMD input file for PRODUCTION
-folder = os.getcwd()
-par = {'MDEngine': 'NAMD', 'PDB': 'neutral.pdb', 'PSF': 'neutral.psf', 'TOP': 'neutral.prmtop',
-       'PRMTOP': 'neutral.prmtop',
-       'Parameters': ['neutral.prmtop', 'par_all36_cgenff_empty.prm', 'par_all36_carb_2.prm', 'par_all35_ethers.prm',
-                      'par_all36_na.prm', 'par_all36m_prot.prm', 'par_all22_prot.prm', 'par_all36_lipid.prm',
-                      'par_all36_cgenff.prm', 'par_all36_prot.prm', 'par_all36_carb.prm', 'parm14sb_all.prm'],
-       'Forcefield': 'CHARMM', 'Timestep': 4, 'Savefreq': 20, 'Wrap': 'protein and name CA and segid P0 P1',
-       'RelaxTime': 5, 'Relax': False, 'NumberCV': 2, 'Metric_1': 'DISTANCE', 'Cutoff_1': 3.0,
-       'Transition_1': 'negative', 'Metric_2': 'RMSD', 'Cutoff_2': 20.0, 'Transition_2': 'positive', 'Walkers': 3,
-       'Timewindow': 40, 'REFERENCE': 'neutral.pdb', 'PLUMED': None, 'Restart': 'NO', 'Output': 'output',
-       'ligand_HB': '', 'coor': 'previous.coor', 'vel': 'previous.vel', 'xsc': 'previous.xsc'}
-
-print((len(os.listdir(f"{folder}/trajectories"))))
-saveFrequency = 40
+# import os
+#
+# namdInputFile = []
+#
+# with open('./prod2.inp', 'r') as file:
+#     for line in file.readlines():
+#         namdInputFile.append(line)
+#
+# print(namdInputFile)
+# # setting NAMD input file for PRODUCTION
+# folder = os.getcwd()
+# par = {'MDEngine': 'NAMD', 'PDB': 'neutral.pdb', 'PSF': 'neutral.psf', 'TOP': 'neutral.prmtop',
+#        'PRMTOP': 'neutral.prmtop',
+#        'Parameters': ['neutral.prmtop', 'par_all36_cgenff_empty.prm', 'par_all36_carb_2.prm', 'par_all35_ethers.prm',
+#                       'par_all36_na.prm', 'par_all36m_prot.prm', 'par_all22_prot.prm', 'par_all36_lipid.prm',
+#                       'par_all36_cgenff.prm', 'par_all36_prot.prm', 'par_all36_carb.prm', 'parm14sb_all.prm'],
+#        'Forcefield': 'CHARMM', 'Timestep': 4, 'Savefreq': 20, 'Wrap': 'protein and name CA and segid P0 P1',
+#        'RelaxTime': 5, 'Relax': False, 'NumberCV': 2, 'Metric_1': 'DISTANCE', 'Cutoff_1': 3.0,
+#        'Transition_1': 'negative', 'Metric_2': 'RMSD', 'Cutoff_2': 20.0, 'Transition_2': 'positive', 'Walkers': 3,
+#        'Timewindow': 40, 'REFERENCE': 'neutral.pdb', 'PLUMED': None, 'Restart': 'NO', 'Output': 'output',
+#        'ligand_HB': '', 'coor': 'previous.coor', 'vel': 'previous.vel', 'xsc': 'previous.xsc'}
+#
+# print((len(os.listdir(f"{folder}/trajectories"))))
+# saveFrequency = 40
 # input2 = ['structure              ../../system/NEUTRAL_fis.hmr.psf\n',
 #           'coordinates             ../../system/NEUTRAL_fis.pdb\n', '\n', 'outputName              out_cv2_test\n',
 #           'binCoordinates          ../../system/equilibration.coor\n',
@@ -1209,6 +1209,18 @@ saveFrequency = 40
 #
 #
 # check(values)
+pizza = ["mozzarella"]
+x = 1
 
-lent = len(os.listdir('trajectories'))
-print(lent)
+# print(f"{'mi piace la' if x==0 else 'Non mi piace la'} {pizza}{' e odio l ananas'}")
+
+initialParameters = {'coor': 'test.coor', 'xsc' :'fileXSC.xsc', 'Forcefield': "CHARMM"}
+trajCount = 0
+print(f'binCoordinates\t../../system/{initialParameters["coor"]}\n' if trajCount == 0 else f'binCoordinates\t../../restart/{initialParameters["coor"]}\n')
+
+trajCount = 1
+print(f'binCoordinates\t../../system/{initialParameters["coor"]}\n' if trajCount == 0 else f'binCoordinates\t../../restart/{initialParameters["coor"]}\n')
+trajCount = 0
+print(f'set xscfile [open %s{initialParameters["xsc"]}]\n' % '../../system/' if trajCount == 0 else '../../restarts/')
+
+print(f"%s;\n" % 'paraTypeCharmm\ton' if initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n')

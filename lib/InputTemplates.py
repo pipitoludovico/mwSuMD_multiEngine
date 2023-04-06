@@ -7,6 +7,7 @@ class Template(mwInputParser):
     def __init__(self):
         super(Template, self).__init__()
         self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
+        self.root = self.initialParameters['Root']
 
         if self.initialParameters['MDEngine'] == 'ACEMD':
             self.inputFile = [
@@ -17,7 +18,7 @@ class Template(mwInputParser):
                 'timeStep        %s\n' % self.initialParameters['Timestep'],
                 '%s    \t' % f'parmfile {self.initialParameters["PRMTOP"]}'
                 if self.initialParameters['Forcefield'] == 'AMBER' else '\n',
-                'structure               ../../system/%s\n' % self.initialParameters['PSF']
+                f'structure\t../../system/{self.initialParameters["PSF"]}\n'
                 if self.initialParameters['PSF'] is not None else '',
                 'coordinates             ../../system/%s\n' % self.initialParameters['PDB'],
                 'temperature     310\n',
@@ -35,14 +36,17 @@ class Template(mwInputParser):
                 'binVelocities           ../../system/%s\n' % self.initialParameters['vel']]
 
         if self.initialParameters['MDEngine'] == 'NAMD':
+            if self.trajCount == 0:
+                sys_folder = "../../system/"
+            else:
+                sys_folder = "../../restarts/"
             self.inputFile = ['structure               ../../system/%s\n' % self.initialParameters['PSF'],
                               'coordinates             ../../system/%s\n' % self.initialParameters['PDB'],
                               'outputname\t%s\n' % self.initialParameters['Output'],
-                              f'binCoordinates\t%s{self.initialParameters["coor"]} \n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
-                              f'binVelocities\t%s{self.initialParameters["vel"]};\n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
-                              f'extendedSystem\t%s{self.initialParameters["xsc"]};\n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
-                              f'set xscfile [open %s{self.initialParameters["xsc"]}]\n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
-
+                              f'binCoordinates\t{sys_folder}{self.initialParameters["coor"]}\n'
+                              f'binVelocieties\t{sys_folder}{self.initialParameters["vel"]}\n'
+                              f'extendedSystem\t{sys_folder}{self.initialParameters["xsc"]}\n'
+                              f'set xscfile [open {sys_folder}{self.initialParameters["xsc"]}]\n'
                               'proc get_first_ts { xscfile } {\n',
                               '  set fd [open $xscfile r]\n',
                               '  gets $fd\n',
@@ -52,10 +56,11 @@ class Template(mwInputParser):
                               '  close $fd\n',
                               '  return $ts\n',
                               '}\n',
-                              f'set firsttime [get_first_ts %s{self.initialParameters["xsc"]}]\n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
+                              f'set firsttime [get_first_ts {sys_folder}{self.initialParameters["xsc"]}]\n',
                               'firsttimestep\t$firsttime\n',
-
                               'set temp\t313.15;\n',
+                              'outputEnergies %s\n' % int(
+                                  self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 2)),
 
                               'restartfreq\t%s;\t\n' % int(
                                   self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
@@ -67,8 +72,7 @@ class Template(mwInputParser):
                                   self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
 
                               '# Force-Field Parameters\n',
-                              "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters[
-                                                                    'Forcefield'] == 'CHARMM' else 'amber\ton\n',
+                              "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n',
                               '%s;\n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}' if
                               self.initialParameters["Forcefield"] == "AMBER" else "\n",
                               'exclude                 scaled1-4\n',
@@ -113,9 +117,9 @@ class Template(mwInputParser):
                               '\n',
                               '\n',
                               'numsteps\t%s;\n' % int(self.initialParameters['Timewindow'] / (
-                                          self.initialParameters['Timestep'] / 10 ** 3)),
+                                      self.initialParameters['Timestep'] / 10 ** 3)),
                               'run\t%s;\n' % int(self.initialParameters['Timewindow'] / (
-                                          self.initialParameters['Timestep'] / 10 ** 3))]
+                                      self.initialParameters['Timestep'] / 10 ** 3))]
 
         if self.initialParameters['MDEngine'] == 'GROMACS':
             self.inputFile = ['title                   = %s\n' % self.initialParameters['Output'],
