@@ -605,28 +605,121 @@
 # print(checkIfStuck(vals, fails))
 
 # extrapolating namd input file to list
-# namdInputFile = []
-#
-# with open('./production.inp', 'r') as file:
-#     for line in file.readlines():
-#         namdInputFile.append(line)
-#
-# print(namdInputFile)
+import os
+
+namdInputFile = []
+
+with open('./prod2.inp', 'r') as file:
+    for line in file.readlines():
+        namdInputFile.append(line)
+
+print(namdInputFile)
 # setting NAMD input file for PRODUCTION
-# folder = os.getcwd()
-# par = {'MDEngine': 'NAMD', 'PDB': 'neutral.pdb', 'PSF': 'neutral.psf', 'TOP': 'neutral.prmtop',
-#        'PRMTOP': 'neutral.prmtop',
-#        'Parameters': ['neutral.prmtop', 'par_all36_cgenff_empty.prm', 'par_all36_carb_2.prm', 'par_all35_ethers.prm',
-#                       'par_all36_na.prm', 'par_all36m_prot.prm', 'par_all22_prot.prm', 'par_all36_lipid.prm',
-#                       'par_all36_cgenff.prm', 'par_all36_prot.prm', 'par_all36_carb.prm', 'parm14sb_all.prm'],
-#        'Forcefield': 'CHARMM', 'Timestep': 4, 'Savefreq': 20, 'Wrap': 'protein and name CA and segid P0 P1',
-#        'RelaxTime': 5, 'Relax': False, 'NumberCV': 2, 'Metric_1': 'DISTANCE', 'Cutoff_1': 3.0,
-#        'Transition_1': 'negative', 'Metric_2': 'RMSD', 'Cutoff_2': 20.0, 'Transition_2': 'positive', 'Walkers': 3,
-#        'Timewindow': 40, 'REFERENCE': 'neutral.pdb', 'PLUMED': None, 'Restart': 'NO', 'Output': 'output',
-#        'ligand_HB': '', 'coor': 'previous.coor', 'vel': 'previous.vel', 'xsc': 'previous.xsc'}
-#
-# print((len(os.listdir(f"{folder}/trajectories"))))
-# saveFrequency = 40
+folder = os.getcwd()
+par = {'MDEngine': 'NAMD', 'PDB': 'neutral.pdb', 'PSF': 'neutral.psf', 'TOP': 'neutral.prmtop',
+       'PRMTOP': 'neutral.prmtop',
+       'Parameters': ['neutral.prmtop', 'par_all36_cgenff_empty.prm', 'par_all36_carb_2.prm', 'par_all35_ethers.prm',
+                      'par_all36_na.prm', 'par_all36m_prot.prm', 'par_all22_prot.prm', 'par_all36_lipid.prm',
+                      'par_all36_cgenff.prm', 'par_all36_prot.prm', 'par_all36_carb.prm', 'parm14sb_all.prm'],
+       'Forcefield': 'CHARMM', 'Timestep': 4, 'Savefreq': 20, 'Wrap': 'protein and name CA and segid P0 P1',
+       'RelaxTime': 5, 'Relax': False, 'NumberCV': 2, 'Metric_1': 'DISTANCE', 'Cutoff_1': 3.0,
+       'Transition_1': 'negative', 'Metric_2': 'RMSD', 'Cutoff_2': 20.0, 'Transition_2': 'positive', 'Walkers': 3,
+       'Timewindow': 40, 'REFERENCE': 'neutral.pdb', 'PLUMED': None, 'Restart': 'NO', 'Output': 'output',
+       'ligand_HB': '', 'coor': 'previous.coor', 'vel': 'previous.vel', 'xsc': 'previous.xsc'}
+
+print((len(os.listdir(f"{folder}/trajectories"))))
+saveFrequency = 40
+# input2 = ['structure              ../../system/NEUTRAL_fis.hmr.psf\n',
+#           'coordinates             ../../system/NEUTRAL_fis.pdb\n', '\n', 'outputName              out_cv2_test\n',
+#           'binCoordinates          ../../system/equilibration.coor\n',
+#           'binVelocities   ../../system/equilibration.vel;  # velocities from last run (binary)\n',
+#           'extendedSystem          ../../system/equilibration.xsc;\n', '\n', '\n',
+#           'set xscfile [open ../../system/equilibration.xsc]\n', '\n', 'proc get_first_ts { xscfile } {\n',
+#           '  set fd [open $xscfile r]\n', '  gets $fd\n', '  gets $fd\n', '  gets $fd line\n',
+#           '  set ts [lindex $line 0]\n', '  close $fd\n', '  return $ts\n', '}\n', '\n',
+#           'set inputname\tequilibration;\n', 'set firsttime [get_first_ts ../../system/$inputname.restart.xsc]\n',
+#           '#set firsttime 0\n', '\n', 'firsttimestep\t   $firsttime\n', '\n', '\n', 'set temp                313.15;\n',
+#           '                                            # NAMD writes two files at the end, final coord and vel\n',
+#           '                                            # in the format of first-dyn.coor and first-dyn.vel\n', '\n',
+#           'restartfreq             2500;               # 5000 steps = every 10ps formula = (steps x ts)/100\n',
+#           'dcdfreq                 2500;\n',
+#           'dcdUnitCell             yes;                # the file will contain unit cell info in the style of\n',
+#           '                                            # charmm dcd files. if yes, the dcd files will contain\n',
+#           '                                            # unit cell information in the style of charmm DCD files.\n',
+#           'xstFreq                 2500;               # XSTFreq: control how often the extended systen configuration\n',
+#           '                                            # will be appended to the XST file\n',
+#           '#outputEnergies          5000;               # 5000 steps = every 10ps\n',
+#           '#                                            # The number of timesteps between each energy output of NAMD\n',
+#           '#outputTiming            5000;               # The number of timesteps between each timing output shows\n',
+#           '                                            # time per step and time to completion\n', '\n',
+#           '# Force-Field Parameters\n',
+#           "paraTypeCharmm          on;                 # We're using charmm type parameter file(s)\n",
+#           '                                            # multiple definitions may be used but only one file per definition\n',
+#           '\n', 'parameters              /home/scratch/MD_utilities/toppar_c36_jul20/par_all36_prot.prm\n',
+#           'parameters              /home/scratch/MD_utilities/toppar_c36_jul20/par_all36_lipid.prm\n',
+#           'parameters              /home/scratch/MD_utilities/toppar_c36_jul20/par_all36_cgenff.prm\n',
+#           'parameters              /home/scratch/MD_utilities/toppar_c36_jul20/par_all36_na.prm\n',
+#           'parameters              /home/scratch/MD_utilities/toppar_c36_jul20/par_all36_carb.prm\n',
+#           'parameters              /home/scratch/MD_utilities/toppar_c36_jul20/stream/na/toppar_all36_na_reactive_rna.str\n',
+#           '\n', '\n', '# FF PARAMETERS - These are specified by CHARMM\n',
+#           'exclude                 scaled1-4           # non-bonded exclusion policy to use "none,1-2,1-3,1-4,or scaled1-4"\n',
+#           '                                            # 1-2: all atoms pairs that are bonded are going to be ignored\n',
+#           '                                            # 1-3: 3 consecutively bonded are excluded\n',
+#           '                                            # scaled1-4: include all the 1-3, and modified 1-4 interactions\n',
+#           '                                            # electrostatic scaled by 1-4scaling factor 1.0\n',
+#           '                                            # vdW special 1-4 parameters in charmm parameter file.\n',
+#           '1-4scaling              1.0\n', 'switching               on\n',
+#           'vdwForceSwitching       on;                 # New option for force-based switching of vdW\n',
+#           '                                            # if both switching and vdwForceSwitching are on CHARMM force\n',
+#           '                                            # switching is used for vdW forces. on is better on membranes\n',
+#           '\n', '# You have some freedom choosing the cutoff\n',
+#           'cutoff                  10.0;               # may use smaller, maybe 10., with PME\n',
+#           'switchdist              8.0;               # cutoff - 2.\n',
+#           '                                            # switchdist - where you start to switch\n',
+#           '                                            # cutoff - where you stop accounting for nonbond interactions.\n',
+#           '                                            # correspondence in charmm:\n',
+#           '                                            # (cutnb,ctofnb,ctonnb = pairlistdist,cutoff,switchdist)\n',
+#           'pairlistdist            16.0;               # stores the all the pairs with in the distance it should be larger\n',
+#           '                                            # than cutoff( + 2.)\n',
+#           'stepspercycle           5;                 # 20 redo pairlists every ten steps. SET TO 5 (or lower than 20 if HMR)\n',
+#           'pairlistsPerCycle       2;                  # 2 is the default\n',
+#           '                                            # cycle represents the number of steps between atom reassignments\n',
+#           '                                            # this means every 20/2=10 steps the pairlist will be updated\n',
+#           '\n', '# Integrator Parameters\n',
+#           'timestep                4.0;                # fs/step SET 4 is you use HMR\n',
+#           'rigidBonds              all;                # Bound constraint all bonds involving H are fixed in length\n',
+#           'nonbondedFreq           1;                  # nonbonded forces every step\n',
+#           'fullElectFrequency      1;                  # PME every step\n', '\n',
+#           'wrapWater               on;                 # wrap water to central cell\n',
+#           'wrapAll                 on;                 # wrap other molecules too\n',
+#           'wrapNearest             off;                # use for non-rectangular cells (wrap to the nearest image)\n',
+#           '\n', '# PME (for full-system periodic electrostatics)\n', 'PME                     yes;\n',
+#           'PMEInterpOrder          6;                  # interpolation order (spline order 6 in charmm)\n',
+#           'PMEGridSpacing          1.0;                # maximum PME grid space / used to calculate grid size\n', '\n',
+#           '# Constant Pressure Control (variable volume)\n',
+#           'useGroupPressure        yes;                # use a hydrogen-group based pseudo-molecular viral to calcualte pressure and\n',
+#           '                                            # has less fluctuation, is needed for rigid bonds (rigidBonds/SHAKE)\n',
+#           'useFlexibleCell         yes;                 # yes for anisotropic system like membrane\n',
+#           'useConstantRatio        yes;                 # keeps the ratio of the unit cell in the x-y plane constant A=B. Try yes on hmr.\n',
+#           '\n', '# Constant Temperature Control\n', 'langevin                on;                 # langevin dynamics\n',
+#           'langevinDamping         1.0;                # damping coefficient of 1/ps (keep low) 0.5 if HMR\n',
+#           'langevinTemp            $temp;              # random noise at this level\n',
+#           "langevinHydrogen        off;                # don't couple bath to hydrogens\n", '\n',
+#           '# Constant pressure\n',
+#           'langevinPiston          off;                # Nose-Hoover Langevin piston pressure control\n',
+#           'langevinPistonTarget    1.01325;            # target pressure in bar 1atm = 1.01325bar\n',
+#           'langevinPistonPeriod    50.0;               # oscillation period in fs. correspond to pgamma T=50fs=0.05ps\n',
+#           '                                            # f=1/T=20.0(pgamma)\n',
+#           'langevinPistonDecay     25.0;               # oscillation decay time. smaller value corresponds to larger random\n',
+#           '                                            # forces and increased coupling to the Langevin temp bath.\n',
+#           '                                            # Equal or smaller than piston period\n',
+#           'langevinPistonTemp      $temp;              # coupled to heat bath\n', '\n',
+#           '#############################################################\n',
+#           '## EXTRA PARAMETERS                                        ##\n',
+#           '#############################################################\n', '\n',
+#           'numsteps                5000;             # run stops when this step is reached\n',
+#           'run                     5000;             # 1ns as always = steps * ts / 1*10^6 = ns\n', '\n']
+
 #
 # inputFile = ['structure               %s\n' % par['PSF'],
 #              'coordinates             %s\n' % par['PDB'],
@@ -1094,25 +1187,28 @@
 # pool.terminate()
 # print(pizza)
 
+# CHECK NORMALIZATION
+# import numpy as np
+#
+# values = [np.random.uniform(low=0, high=1118, size=(20,))]
+# pizza = [32.478466241848515, 31.73855769940349, 31.93651853400223, 31.232295797469703, 32.65980349314519,
+#          32.30371863399997, 32.51712440695326, 32.72872203434873, 32.35572490664603, 32.123918298151025,
+#          31.992928479318362, 32.43326565996796, 31.521355029641818, 33.418092617810984, 32.76612870829853,
+#          32.62654708219471]
+#
+#
+# def check(values):
+#     x = np.array(values)
+#     x_norm = (x - np.min(x)) / (np.max(x) - np.min(x))
+#     # print(values)
+#     # print(*x_norm)
+#     print((np.std(x_norm)))
+#     if np.std(x_norm) < 0.3:
+#         print('stuck')
+#         return True
+#
+#
+# check(values)
 
-import numpy as np
-
-values = [np.random.uniform(low=0, high=1118, size=(20,))]
-pizza = [32.478466241848515, 31.73855769940349, 31.93651853400223, 31.232295797469703, 32.65980349314519,
-         32.30371863399997, 32.51712440695326, 32.72872203434873, 32.35572490664603, 32.123918298151025,
-         31.992928479318362, 32.43326565996796, 31.521355029641818, 33.418092617810984, 32.76612870829853,
-         32.62654708219471]
-
-
-def check(values):
-    x = np.array(values)
-    x_norm = (x - np.min(x)) / (np.max(x) - np.min(x))
-    # print(values)
-    # print(*x_norm)
-    print((np.std(x_norm)))
-    if np.std(x_norm) < 0.3:
-        print('stuck')
-        return True
-
-
-check(values)
+lent = len(os.listdir('trajectories'))
+print(lent)

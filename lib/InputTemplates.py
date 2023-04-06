@@ -6,13 +6,12 @@ from .Parser import mwInputParser
 class Template(mwInputParser):
     def __init__(self):
         super(Template, self).__init__()
-        self.saveFrequency = int(
-            (int(self.initialParameters['Savefreq']) * 1000) / int(self.initialParameters['Timestep']))
+        self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
 
         if self.initialParameters['MDEngine'] == 'ACEMD':
             self.inputFile = [
-                'restart %s\n' % 'on\n' if len([x for x in os.scandir(f'{self.folder}/trajectories')]) != 0 else '',
-                'restart %s\n' % 'off' if len([x for x in os.scandir(f'{self.folder}/trajectories')]) == 0 else '',
+                'restart %s\n' % 'on\n' if self.trajCount != 0 else '',
+                'restart %s\n' % 'off' if self.trajCount == 0 else '',
                 'minimize        0\n',
                 'run            %sps\n' % self.initialParameters['Timewindow'],
                 'timeStep        %s\n' % self.initialParameters['Timestep'],
@@ -30,7 +29,7 @@ class Template(mwInputParser):
                 'thermostatTemperature   310\n',
                 'barostat                off\n',
                 'trajectoryFile          %s_%s.xtc\n' % (self.initialParameters['Output'], str(self.trajCount)),
-                'trajectoryPeriod               %s\n' % str(self.saveFrequency),
+                'trajectoryPeriod               %s ps\n' % str(self.initialParameters['Savefreq']),
                 f'binCoordinates          ../../system/%s\n' % self.initialParameters['coor'],
                 f'extendedSystem          ../../system/%s\n' % self.initialParameters['xsc'],
                 'binVelocities           ../../system/%s\n' % self.initialParameters['vel']]
@@ -38,10 +37,12 @@ class Template(mwInputParser):
         if self.initialParameters['MDEngine'] == 'NAMD':
             self.inputFile = ['structure               ../../system/%s\n' % self.initialParameters['PSF'],
                               'coordinates             ../../system/%s\n' % self.initialParameters['PDB'],
-                              'set xscfile [open %s]\n' % f"../../system/{self.initialParameters['xsc']}"
-                              if (len(os.listdir(f'{self.folder}/trajectories'))) == 0 else "",
-                              'set xscfile [open %s]\n' % f"../../restarts/{self.initialParameters['xsc']}"
-                              if (len(os.listdir(f'{self.folder}/trajectories'))) != 0 else "",
+                              'outputname\t%s' % self.initialParameters['Output'],
+                              f'binCoordinates\t%s{self.initialParameters["coor"]} \n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
+                              f'binVelocities\t%s{self.initialParameters["vel"]};\n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
+                              f'extendedSystem\t%s{self.initialParameters["xsc"]};\n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
+                              f'set xscfile [open %s{self.initialParameters["xsc"]}]\n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
+
                               'proc get_first_ts { xscfile } {\n',
                               '  set fd [open $xscfile r]\n',
                               '  gets $fd\n',
@@ -51,41 +52,35 @@ class Template(mwInputParser):
                               '  close $fd\n',
                               '  return $ts\n',
                               '}\n',
-                              'set firsttime [get_first_ts %s]\n' %
-                              f"{self.folder}/system/{self.initialParameters['xsc'].replace('.xsc', '')}.restart.xsc",
-                              'firsttimestep\t   $firsttime\n',
-                              'set temp                310;\n',
-                              'outputName              %s\n' % self.initialParameters['Output'],
-                              f'binCoordinates          %s{self.initialParameters["coor"]} \n' % '../../system/',
-                              'binVelocities\t../../system/%s;  # velocities from last run (binary)\n'
-                              % self.initialParameters['vel'],
-                              'extendedSystem          ../../system/%s;\n' % self.initialParameters['xsc'],
+                              f'set firsttime [get_first_ts %s{self.initialParameters["xsc"]}]\n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
+                              'firsttimestep\t$firsttime\n',
+
+                              'set temp\t313.15;\n',
+
                               'restartfreq\t%s;\t\n' % int(
-                                  self.saveFrequency / (self.initialParameters['Timestep'] / 10 ** 4)),
+                                  self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
                               'dcdfreq\t%s;\t\n' % int(
-                                  self.saveFrequency / (self.initialParameters['Timestep'] / 10 ** 4)),
-                              'dcdUnitCell\tyes;\t# the file will contain unit cell info\n',
+                                  self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
+                              'dcdUnitCell\tyes;\n',
+
                               'xstFreq\t%s;\t\n' % int(
-                                  self.saveFrequency / (self.initialParameters['Timestep'] / 10 ** 4)),
-                              'outputEnergies\t%s;\t\n' % int(
-                                  self.saveFrequency / (self.initialParameters['Timestep'] / 10 ** 4)),
-                              'outputTiming\t%s;\t\n' % int(
-                                  self.saveFrequency / (self.initialParameters['Timestep'] / 10 ** 4)),
-                              '# Force-Field self.initialParametersameters\n',
+                                  self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
+
+                              '# Force-Field Parameters\n',
                               "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters[
                                                                     'Forcefield'] == 'CHARMM' else 'amber\ton\n',
-                              '%s \n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}'
-                              if self.initialParameters['Forcefield'] == 'AMBER' else '',
-                              'exclude                 scaled1-4           # non-bonded exclusion policy"\n',
-                              '1-4scaling              1.0\n', 'switching               on\n',
+                              '%s;\n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}' if
+                              self.initialParameters["Forcefield"] == "AMBER" else "\n",
+                              'exclude                 scaled1-4\n',
+                              '1-4scaling              1.0\n',
+                              'switching               on\n',
                               'vdwForceSwitching       on;                 # \n',
-                              'cutoff                  12.0;               # may use smaller, maybe 10., with PME\n',
-                              'switchdist              10.0;               # cutoff - 2.\n',
+                              'cutoff                  10.0;               # may use smaller, maybe 10., with PME\n',
+                              'switchdist              8.0;               # cutoff - 2.\n',
                               'pairlistdist            16.0;               # \n',
                               'stepspercycle           5;                  # SET TO 5 (or lower than 20 if HMR)\n',
                               'pairlistsPerCycle       2;                  # 2 is the default\n',
-                              'timestep                %s;                # fs/step SET 4 is you use HMR\n' %
-                              self.initialParameters[
+                              'timestep\t%s;                # fs/step SET 4 is you use HMR\n' % self.initialParameters[
                                   'Timestep'],
                               'rigidBonds              all;                # Bound constraint\n',
                               '%s' % 'useSettle\ton' if self.initialParameters['Forcefield'] == 'AMBER' else '',
@@ -114,13 +109,13 @@ class Template(mwInputParser):
                               'langevinPistonTarget    1.01325;            \n',
                               'langevinPistonPeriod    50.0;               \n',
                               'langevinPistonDecay     25.0;               \n',
-                              'langevinPistonTemp      $temp;              \n', '\n',
-                              # 'margin 1\n',
-                              '\n', 'numsteps                %s;             \n' % int(
-                    self.initialParameters['Timewindow'] / (self.initialParameters['Timestep'] / 10 ** 4)),
-                              'run                     %s;             \n' % int(
-                                  self.initialParameters['Timewindow'] / (
-                                              self.initialParameters['Timestep'] / 10 ** 4))]
+                              'langevinPistonTemp      $temp;              \n',
+                              '\n',
+                              '\n',
+                              'numsteps\t%s;\n' % int(self.initialParameters['Timewindow'] / (
+                                          self.initialParameters['Timestep'] / 10 ** 3)),
+                              'run\t%s;\n' % int(self.initialParameters['Timewindow'] / (
+                                          self.initialParameters['Timestep'] / 10 ** 3))]
 
         if self.initialParameters['MDEngine'] == 'GROMACS':
             self.inputFile = ['title                   = %s\n' % self.initialParameters['Output'],
@@ -134,11 +129,12 @@ class Template(mwInputParser):
                               'nstxout                 = 0         ; suppress bulky .trr file by specifying \n',
                               'nstvout                 = 0         ; 0 for output frequency of nstxout,\n',
                               'nstfout                 = 0         ; nstvout, and nstfout\n',
-                              'nstenergy               = %s      ; savefrequency\n' % self.saveFrequency,
+                              'nstenergy               = %s      ; savefrequency\n' % self.initialParameters[
+                                  "Savefreq"],
                               'nstlog                  = %s      ; update log file every 10.0 ps\n'
-                              % self.saveFrequency,
+                              % self.initialParameters["Savefreq"],
                               'nstxout-compressed      = %s      ; save compressed coordinates every 10.0 ps\n'
-                              % self.saveFrequency,
+                              % self.initialParameters["Savefreq"],
                               'compressed-x-grps       = System    ; save the whole system\n', '; Bond parameters\n',
                               'continuation            = yes       ; Restarting after NPT \n',
                               'constraint_algorithm    = lincs     ; holonomic constraints \n',
