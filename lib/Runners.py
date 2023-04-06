@@ -139,7 +139,7 @@ class Runner(mwInputParser):
                 command = f'%s +devices {GPU} production.namd 1> namd.log' % "namd3 +auto-provision +setcpuaffinity" \
                     if self.initialParameters['COMMAND'] is None else f'{self.initialParameters["COMMAND"]}'
             else:
-                command = f'%s +devices {GPU} input_{walk_count}_{trajCount}.inp 1> namd.log' % \
+                command = f'%s +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' % \
                           "namd3 +auto-provision +setcpuaffinity" \
                     if self.initialParameters['COMMAND'] is None else f'{self.initialParameters["COMMAND"]}'
         return command

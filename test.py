@@ -1097,15 +1097,17 @@
 
 import numpy as np
 
-values = [np.random.uniform(low=4.826, high=5.118,  size=(20,))]
-
-
+values = [np.random.uniform(low=0, high=1118, size=(20,))]
+pizza = [32.478466241848515, 31.73855769940349, 31.93651853400223, 31.232295797469703, 32.65980349314519,
+         32.30371863399997, 32.51712440695326, 32.72872203434873, 32.35572490664603, 32.123918298151025,
+         31.992928479318362, 32.43326565996796, 31.521355029641818, 33.418092617810984, 32.76612870829853,
+         32.62654708219471]
 
 
 def check(values):
     x = np.array(values)
-    x_norm = (x-np.min(x))/(np.max(x)-np.min(x))
-    print(values)
+    x_norm = (x - np.min(x)) / (np.max(x) - np.min(x))
+    # print(values)
     # print(*x_norm)
     print((np.std(x_norm)))
     if np.std(x_norm) < 0.3:
