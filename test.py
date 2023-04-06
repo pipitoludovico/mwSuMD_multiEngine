@@ -842,7 +842,9 @@
 
 # wrapping GROMACS
 #
-# import os
+
+import os
+
 # def wrapMDA():
 #     import MDAnalysis as Mda
 #     from MDAnalysis import transformations
@@ -866,6 +868,7 @@
 #                 for ts in u.trajectory:
 #                     if ts is not None:
 #                         w.write(ag)
+#
 #
 # wrapMDA()
 # import numpy as np
@@ -1225,38 +1228,74 @@
 #
 # print(f"%s;\n" % 'paraTypeCharmm\ton' if initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n')
 
-import MDAnalysis as Mda
-import MDAnalysis.analysis.rms
+# import MDAnalysis as Mda
+# import MDAnalysis.analysis.rms
+#
+# import numpy as np
+#
+# sel_1 = "segid P2 and resid 2"
+# sel_2 = "segid P1 and resid 317"
+# psf = 'aaa/NEUTRAL_fis.hmr.psf'
+# xtc = 'aaa/wrapped.xtc'
+#
+# u = Mda.Universe(psf, xtc)
+# sel1 = u.select_atoms(sel_1)
+# sel2 = u.select_atoms(sel_2)
+#
+# distances = []
+# for ts in u.trajectory:
+#     if ts is not None:
+#         com1 = sel1.center_of_mass()
+#         com2 = sel2.center_of_mass()
+#
+#         distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
+#         distances.append(distance)
+# mean_lin = np.mean(distances)
+# distMetric = (mean_lin * distances[-1]) ** 0.5
+#
+# u = Mda.Universe(psf, xtc)
+# ref = Mda.Universe('system/NEUTRAL_fis.pdb')
+# R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
+# R.run()
+# rmsd = R.rmsd.T
+# data = list(rmsd[3])
+# mean_rmsd = sum(data) / len(data)
+# last_rmsd = data[-1]
+# distMetric2 = (mean_rmsd * last_rmsd) ** 0.5
+# print(distMetric2)
 
-import numpy as np
+# WRAPPING ACEMD DUE TO ERRORS
+import os
 
-sel_1 = "segid P2 and resid 2"
-sel_2 = "segid P1 and resid 317"
-psf = 'aaa/NEUTRAL_fis.hmr.psf'
-xtc = 'aaa/wrapped.xtc'
 
-u = Mda.Universe(psf, xtc)
-sel1 = u.select_atoms(sel_1)
-sel2 = u.select_atoms(sel_2)
+def wrapMDA():
+    import MDAnalysis as Mda
+    from MDAnalysis import transformations
+    ext = ('xtc', 'dcd')
+    traj_name = 'step_9'
+    for trajectory in os.listdir(os.getcwd()):
+        if trajectory.startswith(traj_name) and trajectory.endswith(ext):
+            print(trajectory)
+            u = Mda.Universe('NEUTRAL_fis.psf', trajectory)
+            prot = u.select_atoms("protein")
+            if len(prot.atoms) == 0:
+                print("your wrapping selection selected 0 atoms! using protein and name CA instead...")
+                prot = u.select_atoms('protein')
+            non_prot = u.select_atoms("not protein")
+            all = u.select_atoms('all')
+            ag = u.atoms
+            workflow = (transformations.unwrap(prot),
+                        transformations.center_in_box(prot, center='geometry',
+                                                      wrap=True),
+                        transformations.center_in_box(non_prot, center='geometry',
+                                                      wrap=True),
+                        transformations.wrap(non_prot))
+            u.trajectory.add_transformations(*workflow)
 
-distances = []
-for ts in u.trajectory:
-    if ts is not None:
-        com1 = sel1.center_of_mass()
-        com2 = sel2.center_of_mass()
+            with Mda.Writer('wrapped_MDA.xtc', ag) as w:
+                for ts in u.trajectory:
+                    if ts is not None:
+                        w.write(ag)
 
-        distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
-        distances.append(distance)
-mean_lin = np.mean(distances)
-distMetric = (mean_lin * distances[-1]) ** 0.5
 
-u = Mda.Universe(psf, xtc)
-ref = Mda.Universe('system/NEUTRAL_fis.pdb')
-R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
-R.run()
-rmsd = R.rmsd.T
-data = list(rmsd[3])
-mean_rmsd = sum(data) / len(data)
-last_rmsd = data[-1]
-distMetric2 = (mean_rmsd * last_rmsd) ** 0.5
-print(distMetric2)
+wrapMDA()

@@ -29,13 +29,13 @@ class TrajectoryOperator(mwInputParser):
         for trajectory in os.listdir(os.getcwd()):
             if trajectory.startswith(self.initialParameters['Output']) and trajectory.endswith(ext):
                 u = Mda.Universe(psf, trajectory)
-                prot = u.select_atoms(f"{self.initialParameters['Wrap']}")
-                if len(prot.atoms) == 0:
+                selection = u.select_atoms(f"{self.initialParameters['Wrap']}")
+                if len(selection.atoms) == 0:
                     print("your wrapping selection selected 0 atoms! using protein and name CA instead...")
-                    prot = u.select_atoms('protein and name CA')
+                    selection = u.select_atoms('protein and name CA')
                 ag = u.atoms
                 workflow = (transformations.unwrap(ag),
-                            transformations.center_in_box(prot),
+                            transformations.center_in_box(selection),
                             transformations.wrap(ag, compound='fragments'))
                 u.trajectory.add_transformations(*workflow)
 

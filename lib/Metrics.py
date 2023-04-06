@@ -137,16 +137,31 @@ class MetricsParser(mwInputParser):
             return best_walker_index, best_metric, args[1][best_walker_index - 1]
 
         else:
-            metric_1_scores = [((walker[-1] / np.average(args[0])) - 1) * (
-                -1 if self.initialParameters['Transition_1'] == 'negative' else 1) for walker in args[0]]
-            metric_2_scores = [((walker[-1] / np.average(args[1])) - 1) * (
-                -1 if self.initialParameters['Transition_2'] == 'negative' else 1) for walker in args[1]]
-            score_sum = [x + y for x, y in zip(metric_1_scores, metric_2_scores)]
+            average_poll_1 = np.average(args[0])
+            average_poll_2 = np.average(args[1])
+            print(average_poll_1, average_poll_2)
+
+            metric_1_scores = []
+            metric_2_scores = []
+            # for average in avg_metrics_1:
+            for walker in args[0]:
+                score_1 = ((walker[-1] / average_poll_1) - 1)
+                if self.initialParameters['Transition_1'] == 'negative':
+                    score_1 = score_1 * -1
+                    metric_1_scores.append(score_1)
+                else:
+                    metric_1_scores.append(score_1)
+            for walker in args[1]:
+                score_2 = ((walker[-1] / average_poll_2) - 1)
+                if self.initialParameters['Transition_2'] == 'negative':
+                    score_2 = score_2 * -1
+                    metric_2_scores.append(score_2)
+                else:
+                    metric_2_scores.append(score_2)
+            score_sum = [(x + y) for x, y in zip(metric_1_scores, metric_2_scores)]
+            list(score_sum)
             max_score = max(score_sum)
             max_index = score_sum.index(max_score) + 1
-            print('CV2:')
-            print('Max Index \t Max Score \t Associated Walker Avg Metric 1\t  Associated Walker Metric 2')
-            print(max_index, max_score, args[2][max_index - 1], args[3][max_index - 1])
             return max_index, max_score, args[2][max_index - 1], args[3][max_index - 1]
     #
     # @staticmethod
