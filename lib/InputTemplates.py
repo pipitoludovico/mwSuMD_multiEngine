@@ -37,7 +37,7 @@ class Template(mwInputParser):
         if self.initialParameters['MDEngine'] == 'NAMD':
             self.inputFile = ['structure               ../../system/%s\n' % self.initialParameters['PSF'],
                               'coordinates             ../../system/%s\n' % self.initialParameters['PDB'],
-                              'outputname\t%s' % self.initialParameters['Output'],
+                              'outputname\t%s\n' % self.initialParameters['Output'],
                               f'binCoordinates\t%s{self.initialParameters["coor"]} \n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
                               f'binVelocities\t%s{self.initialParameters["vel"]};\n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
                               f'extendedSystem\t%s{self.initialParameters["xsc"]};\n' % '../../system/' if self.trajCount == 0 else '../../restarts/',
