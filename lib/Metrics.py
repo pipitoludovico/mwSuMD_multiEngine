@@ -143,7 +143,6 @@ class MetricsParser(mwInputParser):
 
             metric_1_scores = []
             metric_2_scores = []
-            # for average in avg_metrics_1:
             for walker in args[0]:
                 score_1 = ((walker[-1] / average_poll_1) - 1)
                 if self.initialParameters['Transition_1'] == 'negative':
