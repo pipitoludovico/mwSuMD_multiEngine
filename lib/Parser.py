@@ -56,7 +56,7 @@ class mwInputParser:
                 exit()
             if len(os.listdir(f'{self.folder}/system/reference')) > 0:
                 for reference in os.listdir(f'{self.folder}/system/reference'):
-                    if reference.endswith('.pdb'):
+                    if reference.endswith('.pdb') or reference.endswith('.gro'):
                         self.initialParameters['REFERENCE'] = reference
             else:
                 print("Put a reference pdb file in the 'reference' folder inside system and rerun.")

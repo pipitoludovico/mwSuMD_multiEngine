@@ -1265,37 +1265,63 @@ import os
 # print(distMetric2)
 
 # WRAPPING ACEMD DUE TO ERRORS
-import os
+# import os
+#
+#
+# def wrapMDA():
+#     import MDAnalysis as Mda
+#     from MDAnalysis import transformations
+#     ext = ('xtc', 'dcd')
+#     traj_name = 'step_9'
+#     for trajectory in os.listdir(os.getcwd()):
+#         if trajectory.startswith(traj_name) and trajectory.endswith(ext):
+#             print(trajectory)
+#             u = Mda.Universe('gro/out_cv2_test_0_1.gro', 'gro/wrapped.xtc')
+#             prot = u.select_atoms("protein")
+#             if len(prot.atoms) == 0:
+#                 print("your wrapping selection selected 0 atoms! using protein and name CA instead...")
+#                 prot = u.select_atoms('protein')
+#             non_prot = u.select_atoms("not protein")
+#             all = u.select_atoms('all')
+#             ag = u.atoms
+#             workflow = (transformations.unwrap(prot),
+#                         transformations.center_in_box(prot, center='geometry',
+#                                                       wrap=True),
+#                         transformations.center_in_box(non_prot, center='geometry',
+#                                                       wrap=True),
+#                         transformations.wrap(non_prot))
+#             u.trajectory.add_transformations(*workflow)
+#
+#             with Mda.Writer('wrapped_MDA.xtc', ag) as w:
+#                 for ts in u.trajectory:
+#                     if ts is not None:
+#                         w.write(ag)
+#
+#
+# wrapMDA()
 
 
-def wrapMDA():
-    import MDAnalysis as Mda
-    from MDAnalysis import transformations
-    ext = ('xtc', 'dcd')
-    traj_name = 'step_9'
-    for trajectory in os.listdir(os.getcwd()):
-        if trajectory.startswith(traj_name) and trajectory.endswith(ext):
-            print(trajectory)
-            u = Mda.Universe('NEUTRAL_fis.psf', trajectory)
-            prot = u.select_atoms("protein")
-            if len(prot.atoms) == 0:
-                print("your wrapping selection selected 0 atoms! using protein and name CA instead...")
-                prot = u.select_atoms('protein')
-            non_prot = u.select_atoms("not protein")
-            all = u.select_atoms('all')
-            ag = u.atoms
-            workflow = (transformations.unwrap(prot),
-                        transformations.center_in_box(prot, center='geometry',
-                                                      wrap=True),
-                        transformations.center_in_box(non_prot, center='geometry',
-                                                      wrap=True),
-                        transformations.wrap(non_prot))
-            u.trajectory.add_transformations(*workflow)
+# DIST GROMACS
+import MDAnalysis as Mda
+import numpy as np
 
-            with Mda.Writer('wrapped_MDA.xtc', ag) as w:
-                for ts in u.trajectory:
-                    if ts is not None:
-                        w.write(ag)
+psf = 'gro/'
+sel_1 = "segid P0"
+sel_2 = "segid P1"
+u = Mda.Universe('gro/out_cv2_test_0_1.gro', 'gro/wrapped.xtc')
 
-
-wrapMDA()
+sel1 = u.select_atoms(sel_1)
+sel2 = u.select_atoms(sel_2)
+distances = []
+for ts in u.trajectory:
+    if ts is not None:
+        if len(sel1) != 0 and len(sel2) != 0:
+            distance = Mda.lib.distances.distance_array(sel1.center_of_mass(), sel2.center_of_mass())[0][0]
+            distances.append(distance)
+        else:
+            print("One of your atomselection was None. Check your simulations settings.")
+            exit()
+mean_lin = np.mean(distances)
+distMetric = (mean_lin * distances[-1]) ** 0.5
+print(distMetric)
+# return distMetric, distances, distances[-1]

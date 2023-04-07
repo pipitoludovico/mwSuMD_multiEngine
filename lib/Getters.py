@@ -1,4 +1,5 @@
 import os
+import signal
 
 import MDAnalysis as Mda
 import numpy as np
@@ -16,6 +17,7 @@ class Getters(mwInputParser):
         self.nume = None
         self.com = None
         self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
+        self.selection_error = "One of your selection from setting file was None. Check that your selection matches a part of your system with MDA atomselection language."
 
     def getDistance(self, sel_1, sel_2):
         psf = None
@@ -38,14 +40,14 @@ class Getters(mwInputParser):
 
         distances = []
         for ts in u.trajectory:
-            print("TRAJECTORY TS COUNTER")
-
             if ts is not None:
-                com1 = sel1.center_of_mass()
-                com2 = sel2.center_of_mass()
-
-                distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
-                distances.append(distance)
+                if len(sel1) == 0 and len(sel2) == 0:
+                    print(self.selection_error)
+                    os.kill(os.getpid(), signal.SIGKILL)
+                    raise ValueError
+                else:
+                    distance = Mda.lib.distances.distance_array(sel1.center_of_mass(), sel2.center_of_mass())[0][0]
+                    distances.append(distance)
         mean_lin = np.mean(distances)
         distMetric = (mean_lin * distances[-1]) ** 0.5
         print(distMetric)
@@ -66,20 +68,24 @@ class Getters(mwInputParser):
                     psf = tpr
 
         u = Mda.Universe(psf, xtc)
+        if len(u.select_atoms(sel_1)) == 0 and len(u.select_atoms(sel_2)) == 0:
+            print(self.selection_error)
+            os.kill(os.getpid(), signal.SIGKILL)
+            raise ValueError
+        else:
+            selection_1 = u.select_atoms(sel_1)
+            selection_2 = u.select_atoms(sel_2)
 
-        selection_1 = u.select_atoms(sel_1)
-        selection_2 = u.select_atoms(sel_2)
+            timeseries = [(distance_array(selection_1.positions, selection_2.positions, box=u.dimensions) < 3).sum() for ts
+                          in
+                          u.trajectory if ts is not None]
 
-        timeseries = [(distance_array(selection_1.positions, selection_2.positions, box=u.dimensions) < 3).sum() for ts
-                      in
-                      u.trajectory if ts is not None]
+            mean_contacts = sum(timeseries) / len(timeseries)
+            last_contacts = timeseries[-1]
 
-        mean_contacts = sum(timeseries) / len(timeseries)
-        last_contacts = timeseries[-1]
+            distMetric = (mean_contacts * last_contacts) ** 0.5
 
-        distMetric = (mean_contacts * last_contacts) ** 0.5
-
-        return distMetric, timeseries, timeseries[-1]
+            return distMetric, timeseries, timeseries[-1]
 
     def getRMSD(self, sel_1, sel_2):
         import MDAnalysis.analysis.rms
@@ -97,15 +103,20 @@ class Getters(mwInputParser):
             psf = '%s' % self.par['PRMTOP']
         u = Mda.Universe(psf, xtc)
         ref = Mda.Universe(pdb)
-        R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
-        R.run()
-        rmsd = R.rmsd.T
-        data = list(rmsd[3])
-        mean_rmsd = sum(data) / len(data)
-        last_rmsd = data[-1]
+        if len(u.select_atoms(sel_1)) == 0 or len(u.select_atoms(sel_2)) == 0:
+            print(self.selection_error)
+            os.kill(os.getpid(), signal.SIGKILL)
+            raise ValueError
+        else:
+            R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
+            R.run()
+            rmsd = R.rmsd.T
+            data = list(rmsd[3])
+            mean_rmsd = sum(data) / len(data)
+            last_rmsd = data[-1]
 
-        distMetric = (mean_rmsd * last_rmsd) ** 0.5
-        return distMetric, data, data[-1]
+            distMetric = (mean_rmsd * last_rmsd) ** 0.5
+            return distMetric, data, data[-1]
 
     def getHB_score(self, sel_1, sel_2):
         print("getting HB in folder in: " + str(os.getcwd()))
@@ -139,8 +150,7 @@ class Getters(mwInputParser):
             mean_contacts = hbonds.count_by_time().mean()
             last_contact = hbonds.count_by_time()[-1]
 
-            distMetric = ((mean_contacts * last_contact) ** 0.5)  # if self.par['NumberCV'] == 1
-            # else (((np.mean(waterCont)) * waterCont[-1]) ** 0.5))
+            distMetric = ((mean_contacts * last_contact) ** 0.5)
 
             if distMetric != 0:
                 return distMetric, hbonds.count_by_time(), mean_contacts
@@ -149,3 +159,8 @@ class Getters(mwInputParser):
                 # to determine the degree of solvation of the ligand
                 distMetric = (((np.mean(waterCont)) * waterCont[-1]) ** 0.5)
                 return distMetric, waterCont, mean_contacts
+        else:
+            print(self.selection_error)
+            os.kill(os.getpid(), signal.SIGKILL)
+            raise ValueError
+
