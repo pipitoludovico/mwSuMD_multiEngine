@@ -89,7 +89,7 @@ class Runner(mwInputParser):
             for GPUbatch in GPUbatches:
                 for GPU in GPUbatch:
                     os.chdir('tmp/walker_' + str(self.walk_count))
-                    print("we are in " + os.getcwd())
+                    print("Running in " + os.getcwd())
                     command = self.lauchEngine(self.trajCount, self.walk_count, GPU,
                                                self.customProductionFile)
                     subprocess.Popen(command, shell=True).wait()
@@ -107,27 +107,23 @@ class Runner(mwInputParser):
     def lauchEngine(self, trajCount, walk_count, GPU, customFile=None):
         command = ''
         if self.par['MDEngine'] == 'GROMACS':
-            MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount, customFile) \
-                if customFile is not None \
-                else MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount)
+            MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount, customFile)
             plumed = f'-plumed {self.par["PLUMED"]}' if self.par['PLUMED'] is not None else ''
-            if self.initialParameters['COMMAND'] is None:
-                command = f'gmx mdrun -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed}' \
-                    if customFile is None\
-                    else f'gmx mdrun -plumed {self.par["PLUMED"]} -deffnm production'
-            else:
-                command = self.initialParameters['COMMAND'] \
-                    if customFile is None \
-                    else self.initialParameters['COMMAND'] + f' +plumed {self.par["PLUMED"]}'\
-                    if self.par['PLUMED'] is not None \
-                    else self.initialParameters['COMMAND'] + f' -deffnm production'
+            if self.initialParameters['COMMAND'] is None and self.customProductionFile is None:
+               command = f'gmx mdrun -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} &> gromacs.log'
+               #  command = f'mpirun -np 8 gmx_mpi mdrun -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} -npme 0 &> gromacs.log'
+            elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is None:
+                command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} &> gromacs.log'
+            elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:
+                command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm production {plumed} &> gromacs.log'
+
         elif self.par['MDEngine'] == 'ACEMD':
             command = f'{self.initialParameters["COMMAND"]} --device {GPU} production.inp 1> acemd.log' \
                 if customFile is not None and self.initialParameters['COMMAND'] is not None \
                 else f'acemd3 --device {GPU} production.inp 1> acemd.log' \
                 if customFile is not None \
                 else f'{self.initialParameters["COMMAND"]} --device {GPU} input_{walk_count}_{trajCount}.inp 1> acemd.log' \
-                if self.initialParameters['COMMAND'] is not None\
+                if self.initialParameters['COMMAND'] is not None \
                 else f'acemd3 --device {GPU} input_{walk_count}_{trajCount}.inp 1> acemd.log'
 
         elif self.par['MDEngine'] == 'NAMD':
@@ -138,5 +134,4 @@ class Runner(mwInputParser):
                 else f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
                 if self.initialParameters['COMMAND'] is not None \
                 else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log'
-
         return command

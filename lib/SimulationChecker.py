@@ -44,7 +44,7 @@ class Checker(mwInputParser):
             elif file.endswith('.namd'):
                 subprocess.Popen(f'namd3 +p8 +device 0 {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.mdp'):
-                subprocess.Popen(f'gmx grompp -f production.mdp'
+                subprocess.Popen(f'gmx grompp -f {file}'
                                  f' -c {self.folder}/system/{self.initialParameters["GRO"]}'
                                  f' -t {self.folder}/system/{self.initialParameters["CPT"]}'
                                  f' -p {self.folder}/system/{self.initialParameters["TOP"]}'

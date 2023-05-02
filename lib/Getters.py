@@ -33,7 +33,6 @@ class Getters(mwInputParser):
             for tpr in os.listdir(os.getcwd()):
                 if tpr.startswith(self.initialParameters['Output']) and tpr.endswith('.tpr'):
                     psf = tpr
-
         u = Mda.Universe(psf, xtc)
         sel1 = u.select_atoms(sel_1)
         sel2 = u.select_atoms(sel_2)
@@ -92,15 +91,18 @@ class Getters(mwInputParser):
 
         pdb = f'{self.folder}/system/reference/' + str(self.par['REFERENCE'])
         psf = None
-        if self.par['MDEngine'] != 'GROMACS':
-            xtc = 'wrapped.xtc'
-            if self.par['Forcefield'] == 'CHARMM':
-                psf = f'{self.folder}/system/%s' % self.par['PSF']
-            if self.par['Forcefield'] == 'AMBER':
-                psf = f'{self.folder}/system/%s' % self.par['PRMTOP']
-        else:
-            xtc = '%s_%s.xtc' % (self.par['Output'], str(self.trajCount))
-            psf = '%s' % self.par['PRMTOP']
+        xtc = 'wrapped.xtc'
+
+        if self.par['Forcefield'] == 'GROMOS':
+            for tpr in os.listdir(os.getcwd()):
+                if tpr.endswith('.tpr'):
+                    psf = tpr
+                    break
+        if self.par['Forcefield'] == 'CHARMM':
+            psf = f'{self.folder}/system/%s' % self.par['PSF']
+        if self.par['Forcefield'] == 'AMBER':
+            psf = f'{self.folder}/system/%s' % self.par['PRMTOP']
+
         u = Mda.Universe(psf, xtc)
         ref = Mda.Universe(pdb)
         if len(u.select_atoms(sel_1)) == 0 or len(u.select_atoms(sel_2)) == 0:

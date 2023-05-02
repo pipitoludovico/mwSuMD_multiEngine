@@ -61,7 +61,7 @@ class MetricsParser(mwInputParser):
                     score_metric_1.append(distMetric)
                     last_metrics_1.append(lastDist)
                     allMetric_1.append(distances)
-                if self.initialParameters['Metric_2'] == 'DISTANCE':
+                if self.initialParameters['Metric_2'] == 'DISTANCE' and self.initialParameters['NumberCV'] == 2:
                     distMetric, distances, lastDist = Getters(self.initialParameters).getDistance(selection_list[2],
                                                                                                   selection_list[3])
                     last_metrics_2.append(lastDist)
@@ -73,7 +73,7 @@ class MetricsParser(mwInputParser):
                     score_metric_1.append(contactMetric)
                     last_metrics_1.append(lastContacts)
                     allMetric_1.append(timeseries)
-                if self.initialParameters['Metric_2'] == 'CONTACTS':
+                if self.initialParameters['Metric_2'] == 'CONTACTS' and self.initialParameters['NumberCV'] == 2:
                     contactMetric, timeseries, lastContacts = Getters(self.initialParameters).getContacts(
                         selection_list[0], selection_list[1])
                     last_metrics_2.append(lastContacts)
@@ -85,7 +85,7 @@ class MetricsParser(mwInputParser):
                     score_metric_1.append(rmsdMetric)
                     last_metrics_1.append(lastRMSD)
                     allMetric_1.append(data)
-                if self.initialParameters['Metric_2'] == 'RMSD':
+                if self.initialParameters['Metric_2'] == 'RMSD' and self.initialParameters['NumberCV'] == 2:
                     rmsdMetric, data, lastRMSD = Getters(self.initialParameters).getRMSD(selection_list[2],
                                                                                          selection_list[3])
                     last_metrics_2.append(lastRMSD)
@@ -97,7 +97,7 @@ class MetricsParser(mwInputParser):
                     score_metric_1.append(HB_score)
                     last_metrics_1.append(lastHB)
                     allMetric_1.append(hbData)
-                if self.initialParameters['Metric_2'] == 'HB':
+                if self.initialParameters['Metric_2'] == 'HB' and self.initialParameters['NumberCV'] == 2:
                     HB_score, hbData, lastHB = Getters(self.initialParameters).getHB_score(selection_list[2],
                                                                                            selection_list[3])
                     last_metrics_2.append(lastHB)

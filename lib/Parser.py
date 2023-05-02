@@ -18,7 +18,7 @@ class mwInputParser:
 
     def __init__(self):
         self.outExtensions = ('coor', 'vel', 'xsc')
-        self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', '.itp', 'top', '.prmtop', '.tpr')
+        self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
         self.initialParametersameter_extensions = ('.param', '.prmtop', '.prm')
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):

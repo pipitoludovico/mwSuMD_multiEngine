@@ -127,17 +127,19 @@ class Template(mwInputParser):
                               'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' %
                               int(self.initialParameters['Timewindow'] / (self.initialParameters['Timestep'] / 1000)),
                               'dt                      = %s     ; Timestep/1000 \n' % float(
-                                  self.initialParameters['Timestep'] / 1000),
+                                  self.initialParameters['Timestep'] / 10**3),
                               '; Output control\n',
                               'nstxout                 = 0         ; suppress bulky .trr file by specifying \n',
                               'nstvout                 = 0         ; 0 for output frequency of nstxout,\n',
                               'nstfout                 = 0         ; nstvout, and nstfout\n',
-                              'nstenergy               = %s      ; savefrequency\n' % self.initialParameters[
-                                  "Savefreq"],
+                              'nstenergy               = %s      ; savefrequency\n' % int(
+                                  self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
                               'nstlog                  = %s      ; update log file every 10.0 ps\n'
-                              % self.initialParameters["Savefreq"],
+                              % int(
+                                  self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
                               'nstxout-compressed      = %s      ; save compressed coordinates every 10.0 ps\n'
-                              % self.initialParameters["Savefreq"],
+                              % int(
+                                  self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
                               'compressed-x-grps       = System    ; save the whole system\n', '; Bond parameters\n',
                               'continuation            = yes       ; Restarting after NPT \n',
                               'constraint_algorithm    = lincs     ; holonomic constraints \n',

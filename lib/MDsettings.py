@@ -10,6 +10,7 @@ class MDsetter(mwInputParser):
         self.setterParameters = par
         self.walkers_snaphot = self.initialParameters['Walkers']
         self.cycle = len(os.listdir(f'{self.folder}/trajectories'))
+        self.custom_input = None
 
     def createInputFile(self):
         if self.initialParameters['Relax'] is True:
@@ -22,29 +23,31 @@ class MDsetter(mwInputParser):
             for file in os.listdir(f'{self.folder}/system'):
                 if file.startswith('production'):
                     os.system(f'cp {self.folder}/system/{file} tmp/walker_{walker}')
+                    self.custom_input = file
 
-            if self.setterParameters['MDEngine'] == 'GROMACS':
-                mw_file = open(f'tmp/walker_{walker}/input_{walker}_{self.cycle}.mdp', 'w')
-            elif self.setterParameters['MDEngine'] == 'NAMD':
-                mw_file = open(f'tmp/walker_{walker}/input_{walker}_{self.cycle}.namd', 'w')
-            else:
-                mw_file = open(f'tmp/walker_{walker}/input_{walker}_{self.cycle}.inp', 'w')
-            # we get the inputfile based on the engine and fill the mw_file
-            txt = EngineInputs(self.setterParameters).getInputFile()
+            if self.custom_input is None:
+                if self.setterParameters['MDEngine'] == 'GROMACS':
+                    mw_file = open(f'tmp/walker_{walker}/input_{walker}_{self.cycle}.mdp', 'w')
+                elif self.setterParameters['MDEngine'] == 'NAMD':
+                    mw_file = open(f'tmp/walker_{walker}/input_{walker}_{self.cycle}.namd', 'w')
+                else:
+                    mw_file = open(f'tmp/walker_{walker}/input_{walker}_{self.cycle}.inp', 'w')
+                # we get the inputfile based on the engine and fill the mw_file
+                txt = EngineInputs(self.setterParameters).getInputFile()
 
-            if self.setterParameters['MDEngine'] != 'GROMACS':
-                # adding parameters lines to input files != GROMACS
-                if self.setterParameters['Parameters'] is not None:
-                    for e in self.setterParameters['Parameters']:
-                        mw_file.write(f'parameters		%s\n' % e)
+                if self.setterParameters['MDEngine'] != 'GROMACS':
+                    # adding parameters lines to input files != GROMACS
+                    if self.setterParameters['Parameters'] is not None:
+                        for e in self.setterParameters['Parameters']:
+                            mw_file.write(f'parameters		%s\n' % e)
 
-            # writing the input file
-            for line in txt:
-                mw_file.write(line)
+                # writing the input file
+                for line in txt:
+                    mw_file.write(line)
 
-            if self.setterParameters['PLUMED'] is not None:
-                mw_file.write('plumedFile		%s\n' % self.setterParameters['PLUMED'])
-            mw_file.close()
-            # if in relaxation mode, we reset the number of walkers back to original
+                if self.setterParameters['PLUMED'] is not None:
+                    mw_file.write('plumedFile		%s\n' % self.setterParameters['PLUMED'])
+                mw_file.close()
+                # if in relaxation mode, we reset the number of walkers back to original
         self.initialParameters['Walkers'] = self.walkers_snaphot
         self.cycle += 1

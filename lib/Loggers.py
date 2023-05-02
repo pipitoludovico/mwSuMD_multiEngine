@@ -5,7 +5,6 @@ import os
 class Logger:
     def __init__(self, root):
         self.root = root
-        os.makedirs('logs', exist_ok=True)
 
     def logData(self, CV, walker, metricName, data, mean_of_data, last_data, scoreMetric):
         os.makedirs(f'{self.root}/reports', exist_ok=True)
