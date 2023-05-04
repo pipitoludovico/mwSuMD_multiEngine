@@ -106,12 +106,14 @@ class Runner(mwInputParser):
 
     def lauchEngine(self, trajCount, walk_count, GPU, customFile=None):
         command = ''
+        cpi = '' if trajCount == 0 else '-cpi ../../restarts/previous.cpt -append no'
+        core_division = (int(len(os.sched_getaffinity(0))/self.initialParameters["Walkers"]))
+        taks_master = f'-nt {core_division} -npme -1 -ntmpi 0 -ntomp 0 -ntomp_pme 0 -pin on -pme gpu -nb gpu -bonded gpu -update gpu'
         if self.par['MDEngine'] == 'GROMACS':
             MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount, customFile)
             plumed = f'-plumed {self.par["PLUMED"]}' if self.par['PLUMED'] is not None else ''
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is None:
-               command = f'gmx mdrun -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} &> gromacs.log'
-               #  command = f'mpirun -np 8 gmx_mpi mdrun -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} -npme 0 &> gromacs.log'
+                command = f'gmx mdrun -s {self.par["Output"]}_{trajCount}_{walk_count}.tpr -v {plumed} {cpi} -gpu_id {GPU} {taks_master} -pinoffset {GPU*core_division} -nstlist {self.initialParameters["Timewindow"]} &> gromacs.log'
             elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is None:
                 command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} &> gromacs.log'
             elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:

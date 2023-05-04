@@ -11,6 +11,10 @@ from .TrajectoryOperator import TrajectoryOperator
 class Checker(mwInputParser):
     def __init__(self):
         super(Checker).__init__()
+        self.best_metric_result = None
+        self.best_average_metric_2 = None
+        self.best_average_metric_1 = None
+        self.best_walker_score = None
         self.averages = None
         self.scores = None
         self.best_value = None
@@ -44,11 +48,9 @@ class Checker(mwInputParser):
             elif file.endswith('.namd'):
                 subprocess.Popen(f'namd3 +p8 +device 0 {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.mdp'):
-                subprocess.Popen(f'gmx grompp -f {file}'
-                                 f' -c {self.folder}/system/{self.initialParameters["GRO"]}'
-                                 f' -t {self.folder}/system/{self.initialParameters["CPT"]}'
-                                 f' -p {self.folder}/system/{self.initialParameters["TOP"]}'
-                                 f' -o {self.initialParameters["Output"]}_{self.trajCount}.tpr').wait()
+                subprocess.Popen(f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr '
+                                 f'-extend {self.initialParameters["Timewindow"]}'
+                                 f' -o {self.initialParameters["Output"]}_{self.trajCount}.tpr &>tpr_log.log').wait()
                 command = f'gmx mdrun -deffnm {self.initialParameters["Output"]}_{self.trajCount}'
                 subprocess.Popen(command).wait()
 

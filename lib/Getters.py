@@ -25,14 +25,13 @@ class Getters(mwInputParser):
 
         if self.initialParameters['Forcefield'] == 'CHARMM':
             if self.initialParameters['PSF'] is not None:
-
                 psf = '../../system/%s' % self.initialParameters['PSF']
         elif self.initialParameters['Forcefield'] == 'AMBER':
             psf = '../../system/%s' % self.initialParameters['PRMTOP']
         elif self.initialParameters['Forcefield'] == 'GROMOS':
-            for tpr in os.listdir(os.getcwd()):
-                if tpr.startswith(self.initialParameters['Output']) and tpr.endswith('.tpr'):
-                    psf = tpr
+            for gro in os.listdir(os.getcwd()):
+                if gro.endswith('.gro'):
+                    psf = gro
         u = Mda.Universe(psf, xtc)
         sel1 = u.select_atoms(sel_1)
         sel2 = u.select_atoms(sel_2)
@@ -62,9 +61,9 @@ class Getters(mwInputParser):
         elif self.initialParameters['Forcefield'] == 'AMBER':
             psf = '../../system/%s' % self.initialParameters['PRMTOP']
         elif self.initialParameters['Forcefield'] == 'GROMOS':
-            for tpr in os.listdir(os.getcwd()):
-                if tpr.startswith(self.initialParameters['Output']) and tpr.endswith('.tpr'):
-                    psf = tpr
+            for gro in os.listdir(os.getcwd()):
+                if gro.endswith('.gro'):
+                    psf = gro
 
         u = Mda.Universe(psf, xtc)
         if len(u.select_atoms(sel_1)) == 0 and len(u.select_atoms(sel_2)) == 0:
@@ -75,7 +74,8 @@ class Getters(mwInputParser):
             selection_1 = u.select_atoms(sel_1)
             selection_2 = u.select_atoms(sel_2)
 
-            timeseries = [(distance_array(selection_1.positions, selection_2.positions, box=u.dimensions) < 3).sum() for ts
+            timeseries = [(distance_array(selection_1.positions, selection_2.positions, box=u.dimensions) < 3).sum() for
+                          ts
                           in
                           u.trajectory if ts is not None]
 
@@ -94,9 +94,9 @@ class Getters(mwInputParser):
         xtc = 'wrapped.xtc'
 
         if self.par['Forcefield'] == 'GROMOS':
-            for tpr in os.listdir(os.getcwd()):
-                if tpr.endswith('.tpr'):
-                    psf = tpr
+            for gro in os.listdir(os.getcwd()):
+                if gro.endswith('.gro'):
+                    psf = gro
                     break
         if self.par['Forcefield'] == 'CHARMM':
             psf = f'{self.folder}/system/%s' % self.par['PSF']
@@ -123,11 +123,15 @@ class Getters(mwInputParser):
     def getHB_score(self, sel_1, sel_2):
         print("getting HB in folder in: " + str(os.getcwd()))
         xtc = "wrapped.xtc"
-        if self.par['MDEngine'] == 'ACEMD':
-            psf = f"../../system/{self.par['PSF']}" \
-                if self.par['Forcefield'] == 'CHARMM' else f"../../system/{self.par['PRMTOP']}"
-        else:
-            psf = f"{self.par['gro']}"
+        if self.par['Forcefield'] == 'GROMOS':
+            for gro in os.listdir(os.getcwd()):
+                if gro.endswith('.gro'):
+                    psf = gro
+                    break
+        if self.par['Forcefield'] == 'CHARMM':
+            psf = f'{self.folder}/system/%s' % self.par['PSF']
+        if self.par['Forcefield'] == 'AMBER':
+            psf = f'{self.folder}/system/%s' % self.par['PRMTOP']
 
         u = Mda.Universe(psf, xtc)
         if sel_1 or sel_2 is not None:
@@ -165,4 +169,3 @@ class Getters(mwInputParser):
             print(self.selection_error)
             os.kill(os.getpid(), signal.SIGKILL)
             raise ValueError
-

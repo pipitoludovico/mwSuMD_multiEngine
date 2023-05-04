@@ -26,9 +26,9 @@ class MDoperator:
                     os.system(f'cp *.vel {self.folder}/restarts/previous.vel')
 
                 elif self.par['MDEngine'] == 'GROMACS':
-                    os.system(f'mv *.gro {self.folder}/restarts/previous.gro')
-                    os.system(f'mv *.cpt {self.folder}/restarts/previous.cpt')
-                    os.system(f'mv *.tpr {self.folder}/restarts/previous.tpr')
+                    os.system(f'cp *.gro {self.folder}/restarts/previous.gro')
+                    os.system(f'cp *.cpt {self.folder}/restarts/previous.cpt')
+                    os.system(f'cp *.tpr {self.folder}/restarts/previous.tpr')
 
                 elif self.par['PLUMED'] is not None:
                     os.system('cp HILLS  %s/restarts/ ' % self.folder)
@@ -41,19 +41,6 @@ class MDoperator:
         self.par['Relax'] = False
 
     def prepareTPR(self, walk_count, trajcount, customFile=None):
-        if customFile is None:
-            command = (f'gmx grompp -f input_{walk_count}_{trajcount}.mdp'
-                       f' -c {self.folder}/system/{self.par["GRO"]}'
-                       f' -t {self.folder}/system/{self.par["CPT"]}'
-                       f' -p {self.folder}/system/{self.par["TOP"]}'
-                       f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr &>tpr_log.log')
-
-        else:
-            command = (f'gmx grompp -f production.mdp'
-                       f' -c {self.folder}/system/{self.par["GRO"]}'
-                       f' -t {self.folder}/system/{self.par["CPT"]}'
-                       f' -p {self.folder}/system/{self.par["TOP"]}'
-                       f' -o production.tpr &>tpr_log.log')
         if self.cycle != 0 and customFile is None:
             command = f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr ' \
                       f'-extend {self.par["Timewindow"]}' \
@@ -62,6 +49,18 @@ class MDoperator:
             command = f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr ' \
                       f'-extend {self.par["Timewindow"]}' \
                       f' -o production.tpr &>tpr_log.log'
+        elif self.cycle == 0 and customFile is None:
+            command = (f'gmx grompp -f input_{walk_count}_{trajcount}.mdp'
+                       f' -c {self.folder}/system/{self.par["GRO"]}'
+                       f' -t {self.folder}/system/{self.par["CPT"]}'
+                       f' -p {self.folder}/system/{self.par["TOP"]}'
+                       f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr &>tpr_log.log')
+        else:
+            command = (f'gmx grompp -f production.mdp'
+                       f' -c {self.folder}/system/{self.par["GRO"]}'
+                       f' -t {self.folder}/system/{self.par["CPT"]}'
+                       f' -p {self.folder}/system/{self.par["TOP"]}'
+                       f' -o production.tpr &>tpr_log.log')
         tprPreparation = subprocess.Popen(command, shell=True)
         tprPreparation.wait()
 
