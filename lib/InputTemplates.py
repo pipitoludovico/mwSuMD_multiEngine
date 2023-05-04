@@ -141,7 +141,7 @@ class Template(mwInputParser):
                               % int(
                                   self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
                               'compressed-x-grps       = System    ; save the whole system\n', '; Bond parameters\n',
-                              'continuation            = yes       ; Restarting after NPT \n',
+                              'continuation            = no       ; Restarting after NPT \n',
                               'constraint_algorithm    = lincs     ; holonomic constraints \n',
                               'constraints             = h-bonds   ; bonds involving H are constrained\n',
                               'lincs_iter              = 1         ; accuracy of LINCS\n',
@@ -172,4 +172,4 @@ class Template(mwInputParser):
                               '; Dispersion correction\n',
                               'DispCorr                = EnerPres  ; account for cut-off vdW scheme\n',
                               '; Velocity generation\n',
-                              'gen_vel                 = no        ; Velocity generation is off \n']
+                              'gen_vel                 = yes        ; Velocity generation is off \n']

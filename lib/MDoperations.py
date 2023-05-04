@@ -41,26 +41,17 @@ class MDoperator:
         self.par['Relax'] = False
 
     def prepareTPR(self, walk_count, trajcount, customFile=None):
-        if self.cycle != 0 and customFile is None:
-            command = f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr ' \
-                      f'-extend {self.par["Timewindow"]}' \
-                      f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr &>tpr_log.log'
-        elif self.cycle != 0 and customFile is not None:
-            command = f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr ' \
-                      f'-extend {self.par["Timewindow"]}' \
-                      f' -o production.tpr &>tpr_log.log'
-        elif self.cycle == 0 and customFile is None:
-            command = (f'gmx grompp -f input_{walk_count}_{trajcount}.mdp'
-                       f' -c {self.folder}/system/{self.par["GRO"]}'
-                       f' -t {self.folder}/system/{self.par["CPT"]}'
-                       f' -p {self.folder}/system/{self.par["TOP"]}'
-                       f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr &>tpr_log.log')
+        gro = f'{self.par["Root"]}system/{self.par["GRO"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.gro'
+        cpt = f'{self.par["Root"]}system/{self.par["CPT"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.cpt'
+        if customFile is None:
+            command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
+                      f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \
+                      f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr -maxwarn 1 &>tpr_log.log'
         else:
-            command = (f'gmx grompp -f production.mdp'
-                       f' -c {self.folder}/system/{self.par["GRO"]}'
-                       f' -t {self.folder}/system/{self.par["CPT"]}'
-                       f' -p {self.folder}/system/{self.par["TOP"]}'
-                       f' -o production.tpr &>tpr_log.log')
+            command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
+                      f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \
+                      f' -o production.tpr -maxwarn 1 &>tpr_log.log'
+
         tprPreparation = subprocess.Popen(command, shell=True)
         tprPreparation.wait()
 
