@@ -116,11 +116,11 @@ class MetricsParser(mwInputParser):
                     queue.put([[last_metrics_1, allMetric_1], [last_metrics_2, allMetric_2]])
 
                     Logger(self.initialParameters['Root']).logData(1, walker, self.initialParameters['Metric_1'],
-                                                                   allMetric_1, np.mean(allMetric_1), allMetric_1[-1],
-                                                                   last_metrics_1)
+                                                                   allMetric_1, np.mean(allMetric_1), last_metrics_1,
+                                                                   score_metric_1)
                     Logger(self.initialParameters['Root']).logData(2, walker, self.initialParameters['Metric_2'],
-                                                                   allMetric_2, np.mean(allMetric_2), allMetric_2[-1],
-                                                                   last_metrics_2)
+                                                                   allMetric_2, np.mean(allMetric_2), last_metrics_2,
+                                                                   score_metric_2)
                 os.chdir(self.folder)
 
     def getBestWalker(self, *args):

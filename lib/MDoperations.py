@@ -41,8 +41,8 @@ class MDoperator:
         self.par['Relax'] = False
 
     def prepareTPR(self, walk_count, trajcount, customFile=None):
-        gro = f'{self.par["Root"]}system/{self.par["GRO"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.gro'
-        cpt = f'{self.par["Root"]}system/{self.par["CPT"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.cpt'
+        gro = f'{self.par["Root"]}/system/{self.par["GRO"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.gro'
+        cpt = f'{self.par["Root"]}/system/{self.par["CPT"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.cpt'
         if customFile is None:
             command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
                       f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \

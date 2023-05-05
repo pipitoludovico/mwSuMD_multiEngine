@@ -26,7 +26,6 @@ class TrajectoryOperator(mwInputParser):
                 raise FileNotFoundError
             else:
                 psf = '../../system/%s' % self.initialParameters['PSF']
-
         elif self.initialParameters['Forcefield'] == 'AMBER':
             if self.initialParameters['PRMTOP'] is None:
                 os.kill(os.getpid(), signal.SIGKILL)
@@ -34,20 +33,25 @@ class TrajectoryOperator(mwInputParser):
                 raise FileNotFoundError
             else:
                 psf = '../../system/%s' % self.initialParameters['PRMTOP']
-
         elif self.initialParameters['Forcefield'] == 'GROMOS':
             for new_coords in os.listdir(os.getcwd()):
                 if new_coords.endswith('.tpr'):
                     psf = new_coords
-                    break
+                else:
+                    os.kill(os.getpid(), signal.SIGKILL)
+                    raise FileNotFoundError
+
         for trajectory in os.listdir(os.getcwd()):
             if trajectory.endswith(ext):
                 trajFile = trajectory
-                break
-
+            else:
+                os.kill(os.getpid(), signal.SIGKILL)
+                print("No Trajectory found (xtc or dcd)")
+                raise FileNotFoundError
         try:
             u = Mda.Universe(psf, trajFile)
         except:
+            os.kill(os.getpid(), signal.SIGKILL)
             exit("No trajectory or psf found. Check your simulation parameters and make sure production went well")
 
         selection = u.select_atoms(f"{self.initialParameters['Wrap']}")
