@@ -54,9 +54,11 @@ class Runner(mwInputParser):
         manager = ProcessManager()
         GPUs = manager.getGPUids()
         # let's exclude the GPU id if we want to keep a GPU for other jobs
-        for excluded in self.excludedGPUS:
-            GPUs.remove(excluded)
-        GPUbatches, idList = manager.createBatches(walkers=self.par['Walkers'], total_gpu_ids=GPUs)
+        if self.initialParameters['EXCLUDED_GPUS'] is not None:
+            print("EXCLUDED GPU:", self.initialParameters['EXCLUDED_GPUS'])
+            for excluded in self.initialParameters['EXCLUDED_GPUS']:
+                GPUs.remove(excluded)
+        GPUbatches, lenIDs = manager.createBatches(walkers=self.par['Walkers'], total_gpu_ids=GPUs)
 
         print('#' * 200)
         if self.initialParameters['Mode'] == 'parallel':
@@ -68,12 +70,10 @@ class Runner(mwInputParser):
             start_time_parallel = time.perf_counter()
             walk_count = 1  # Initialize the variable
             results = []
-            with mp.Pool(processes=len(GPUbatches)) as pool:
+            with mp.Pool(processes=len(lenIDs)) as pool:
                 for GPUbatch in GPUbatches:
-                    results.append(pool.apply_async(self.runGPU_batch, args=(self.trajCount, walk_count, GPUbatch, q)))
+                    results.append(pool.apply(self.runGPU_batch, args=(self.trajCount, walk_count, GPUbatch, q)))
                     walk_count += len(GPUbatch)
-                for result in results:
-                    result.get()
                 print(f"Waiting for all processes to finish...")
                 while not q.empty():
                     q.get()
@@ -107,7 +107,8 @@ class Runner(mwInputParser):
     def lauchEngine(self, trajCount, walk_count, GPU, customFile=None):
         command = ''
         core_division = (int(len(os.sched_getaffinity(0))/self.initialParameters["Walkers"]))
-        cpi = f'../../system/{self.initialParameters["CPT"]} -append no' if trajCount == 0 else '-cpi ../../restarts/previous.cpt -append no'
+        if "CPT" in self.initialParameters.keys():
+            cpi = f'../../system/{self.initialParameters["CPT"]} -append no' if trajCount == 0 else '-cpi ../../restarts/previous.cpt -append no'
         taks_master = f'-nt {core_division} -npme -1 -ntmpi 0 -ntomp 0 -ntomp_pme 0 -pin on -pme gpu -nb gpu -bonded gpu -update gpu'
         plumed = f'-plumed {self.par["PLUMED"]}' if self.par['PLUMED'] is not None else ''
 

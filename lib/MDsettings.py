@@ -21,9 +21,14 @@ class MDsetter(mwInputParser):
             os.makedirs('tmp/walker_' + str(walker), exist_ok=True)
             # we check if user-defined production is in the system folder and use it if present
             for file in os.listdir(f'{self.folder}/system'):
-                if file.startswith('production'):
+                if file.startswith('production') and self.trajCount == 0:
+                    restartExtensions = ('cpt', 'coor', 'bin', 'vel', 'cpi')
                     os.system(f'cp {self.folder}/system/{file} tmp/walker_{walker}')
                     self.custom_input = file
+                    os.makedirs('restarts', exist_ok=True)
+                    for extension in restartExtensions:
+                        os.system(
+                            f'mv {self.initialParameters["Root"]}/system/*.{extension} {self.initialParameters["Root"]}/restarts')
 
             if self.custom_input is None:
                 if self.setterParameters['MDEngine'] == 'GROMACS':

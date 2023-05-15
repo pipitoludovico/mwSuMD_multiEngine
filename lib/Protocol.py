@@ -45,7 +45,7 @@ class ProtocolRunner(mwInputParser):
                                               self.last_frame_metrics[0], self.last_frame_metrics[1])
             self.best_metric_result = [self.best_average_metric_1, self.best_average_metric_2]
             mwInputParser().countTraj_logTraj(["Best Walker: " + str(self.bestWalker) + " Score Result: " + str(
-                self.best_walker_score) + " Metric: " + str(self.best_metric_result)])
+                self.best_walker_score) + " Last Metrics from best: " + str(self.best_metric_result)])
 
         MDoperator(self.initialParameters, self.folder).saveStep(self.bestWalker)
 

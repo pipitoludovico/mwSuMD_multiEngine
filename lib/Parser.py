@@ -19,7 +19,7 @@ class mwInputParser:
     def __init__(self):
         self.outExtensions = ('coor', 'vel', 'xsc')
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
-        self.initialParametersameter_extensions = ('.param', '.prmtop', '.prm')
+        self.initialParametersameter_extensions = ('.param', '.prmtop', '.prm', '.par')
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
             print('Input file for SuMD simulation required')
@@ -42,7 +42,7 @@ class mwInputParser:
             self.initialParameters['Parameters'] = []
             for params in os.listdir(f'{self.folder}/system'):
                 if params.endswith(self.initialParametersameter_extensions):
-                    self.initialParameters['Parameters'].append(params)
+                    self.initialParameters['Parameters'].append(self.folder + "/system/" + params)
             for dirpath, dirnames, generalParams in os.walk(self.parameterFolderPath):
                 for filename in [f for f in generalParams if f.endswith(self.initialParametersameter_extensions)]:
                     self.initialParameters['Parameters'].append(dirpath + "/" + filename)
@@ -145,8 +145,9 @@ class mwInputParser:
             self.initialParameters['COMMAND'] = args.command
             print(self.initialParameters['COMMAND'])
 
+        self.initialParameters['EXCLUDED_GPUS'] = None
         if args.exclude is not None and len(args.exclude) != 0:
-            self.excludedGPUS = [x for x in args.exclude]
+            self.initialParameters['EXCLUDED_GPUS'] = [int(x) for x in args.exclude]
 
         if not os.path.isdir(f'{self.folder}/plumed'):
             self.initialParameters['PLUMED'] = None
@@ -175,7 +176,6 @@ class mwInputParser:
             directory = f'{self.folder}/restarts'
         else:
             directory = f'{self.folder}/system'
-
         self.initialParameters.update(
             {extension: file for file in os.listdir(directory) for extension in self.outExtensions if
              file.endswith(extension)})

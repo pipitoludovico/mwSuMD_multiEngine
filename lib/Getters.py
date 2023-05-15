@@ -48,7 +48,7 @@ class Getters(mwInputParser):
                     distances.append(distance)
         mean_lin = np.mean(distances)
         distMetric = (mean_lin * distances[-1]) ** 0.5
-        print(distMetric)
+        print("Distmetric (mean * last) ** 0.5: ", distMetric)
         return distMetric, distances, distances[-1]
 
     def getContacts(self, sel_1, sel_2):
@@ -83,7 +83,7 @@ class Getters(mwInputParser):
             last_contacts = timeseries[-1]
 
             distMetric = (mean_contacts * last_contacts) ** 0.5
-
+            print("ContactsMetric: (mean * last) ** 0.5: ", distMetric)
             return distMetric, timeseries, timeseries[-1]
 
     def getRMSD(self, sel_1, sel_2):
@@ -118,10 +118,12 @@ class Getters(mwInputParser):
             last_rmsd = data[-1]
 
             distMetric = (mean_rmsd * last_rmsd) ** 0.5
+            print("RMSD_METRIC: (mean * last) ** 0.5: ", distMetric)
             return distMetric, data, data[-1]
 
     def getHB_score(self, sel_1, sel_2):
         print("getting HB in folder in: " + str(os.getcwd()))
+        psf = None
         xtc = "wrapped.xtc"
         if self.par['Forcefield'] == 'GROMOS':
             for gro in os.listdir(os.getcwd()):
@@ -164,6 +166,7 @@ class Getters(mwInputParser):
                 # if no H bond is found, we compute the number of water contacts
                 # to determine the degree of solvation of the ligand
                 distMetric = (((np.mean(waterCont)) * waterCont[-1]) ** 0.5)
+                print("HB_METRIC: (mean * last) ** 0.5: ", distMetric)
                 return distMetric, waterCont, mean_contacts
         else:
             print(self.selection_error)

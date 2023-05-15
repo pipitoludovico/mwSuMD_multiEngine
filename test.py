@@ -79,18 +79,27 @@
 #
 # resu = max(x for x in pizza if x < 100)
 # print(resu)
-
-# batches gpu
-# lst = [0, 1]
+import os
+#batches gpu
+lst = [0, 1]
 #
-# walkers = 3
-# quotient, rest = divmod(walkers, len(lst))
-# result = quotient * lst + lst[:rest]
-# batches = [result[i:i + len(lst)] for i in range(0, len(result), len(lst))]
-# for idx, bat in enumerate(result):
-#     print(idx+1, bat)
-# print(result)
-# print(batches)
+walkers = 3
+quotient, rest = divmod(walkers, len(lst))
+result = quotient * lst + lst[:rest]
+batches = [result[i:i + len(lst)] for i in range(0, len(result), len(lst))]
+for idx, bat in enumerate(result):
+    print(idx+1, bat)
+print(result)
+print(batches)
+
+
+def createBatches(walkers, total_gpu_ids):
+    quotient, rest = divmod(walkers, len(total_gpu_ids))
+    result = quotient * total_gpu_ids + total_gpu_ids[:rest]
+    batches = [result[i:i + len(total_gpu_ids)] for i in range(0, len(result), len(total_gpu_ids))]
+    print("batches" , batches, "result", result, 'total ids', len(total_gpu_ids))
+
+createBatches(5, [0,1,2,3])
 # files = len([x for x in os.scandir('trajectories')])
 # print(files)
 
@@ -843,7 +852,7 @@
 # wrapping GROMACS
 #
 
-import os
+# import os
 
 # def wrapMDA():
 #     import MDAnalysis as Mda
@@ -1265,31 +1274,26 @@ import os
 # print(distMetric2)
 
 # WRAPPING ACEMD DUE TO ERRORS
-import os
+# import os
 
 
 # def wrapMDA():
 #     import MDAnalysis as Mda
 #     from MDAnalysis import transformations
 #     ext = ('xtc', 'dcd')
-#     traj_name = 'step_9'
+#     traj_name = 'merged.xtc'
 #     for trajectory in os.listdir(os.getcwd()):
 #         if trajectory.startswith(traj_name) and trajectory.endswith(ext):
 #             print(trajectory)
-#             u = Mda.Universe('gro/out_cv2_test_0_1.tpr', 'gro/wrapped.xtc')
-#             prot = u.select_atoms("protein")
+#             u = Mda.Universe('NEUTRAL_fis.psf', traj_name)
+#             prot = u.select_atoms("segid P0")
 #             if len(prot.atoms) == 0:
 #                 print("your wrapping selection selected 0 atoms! using protein and name CA instead...")
 #                 prot = u.select_atoms('protein')
-#             non_prot = u.select_atoms("not protein")
-#             all = u.select_atoms('all')
 #             ag = u.atoms
-#             workflow = (transformations.unwrap(prot),
-#                         transformations.center_in_box(prot, center='geometry',
-#                                                       wrap=True),
-#                         transformations.center_in_box(non_prot, center='geometry',
-#                                                       wrap=True),
-#                         transformations.wrap(non_prot))
+#             workflow = (transformations.unwrap(ag), transformations.center_in_box(prot),
+#                         transformations.wrap(ag, compound='segments'))
+#
 #             u.trajectory.add_transformations(*workflow)
 #
 #             with Mda.Writer('wrapped_MDA.xtc', ag) as w:
@@ -1302,36 +1306,72 @@ import os
 
 
 # DIST GROMACS
-import MDAnalysis as Mda
-import numpy as np
-import time
+# import MDAnalysis as Mda
+# import numpy as np
+# import time
+#
+# start = time.perf_counter()
+#
+# psf = 'gro/'
+# sel_1 = "nucleic and resnum 23"
+# sel_2 = "protein and resnum 530"
+# u = Mda.Universe('out_cv2_test_0_1.gro', 'wrapped.xtc')
+#
+# sel1 = u.select_atoms(sel_1)
+# sel2 = u.select_atoms(sel_2)
+# print(len(sel1))
+# print(len(sel2))
+# distances = []
+# for ts in u.trajectory:
+#     if ts is not None:
+#         if len(sel1) != 0 and len(sel2) != 0:
+#             distance = Mda.lib.distances.distance_array(sel1.center_of_mass(), sel2.center_of_mass())[0][0]
+#             distances.append(distance)
+#         else:
+#             print("One of your atomselection was None. Check your simulations settings.")
+#             exit()
+# mean_lin = np.mean(distances)
+# distMetric = (mean_lin * distances[-1]) ** 0.5
+# print(distMetric)
+# end = time.perf_counter()
 
-start = time.perf_counter()
-
-psf = 'gro/'
-sel_1 = "resid 503"
-sel_2 = "resid 16"
-u = Mda.Universe('out_cv2_test_0_2.tpr', 'wrapped.xtc')
-
-sel1 = u.select_atoms(sel_1)
-sel2 = u.select_atoms(sel_2)
-distances = []
-for ts in u.trajectory:
-    if ts is not None:
-        if len(sel1) != 0 and len(sel2) != 0:
-            distance = Mda.lib.distances.distance_array(sel1.center_of_mass(), sel2.center_of_mass())[0][0]
-            distances.append(distance)
-        else:
-            print("One of your atomselection was None. Check your simulations settings.")
-            exit()
-mean_lin = np.mean(distances)
-distMetric = (mean_lin * distances[-1]) ** 0.5
-print(distMetric)
-end = time.perf_counter()
-
-print(f'time:', end-start)
+# print(f'time:', end - start)
 # return distMetric, distances, distances[-1]
 
 # initialParameters = {'Forcefield': 'GROMOS'}
 # compound = "" if initialParameters['Forcefield'] == "GROMOS" else "fragments"
 # print(compound)
+#
+# params = app.CharmmParameterSet("./parameters/par_all36_lipid.prm",
+#                                 "./parameters/top_all36_lipid.rtf",
+#                                 "./parameters/par_all36_prot.prm",
+#                                 "./parameters/top_all36_prot.rtf",
+#                                 "./parameters/par_all36_cgenff.prm",
+#                                 "./parameters/top_all36_cgenff.rtf")
+#
+# params = app.CharmmParameterSet(
+#     "./parameters/par_all36_prot.prm",
+#     "./parameters/top_all36_prot.rtf",
+#     "./parameters/par_all36_cgenff.prm",
+#     "./parameters/top_all36_cgenff.rtf",
+#     "./parameters/par_all36_lipid.prm",
+#     "./parameters/top_all36_lipid.rtf")
+#
+# params = app.CharmmParameterSet(
+#     "/home/scratch/MD_utilities/toppar_c36_jul20/par_all36_prot.prm",
+#     "/home/scratch/MD_utilities/toppar_c36_jul20/top_all36_prot.rtf",
+#     "/home/scratch/MD_utilities/toppar_c36_jul20/par_all36_cgenff.prm",
+#     "/home/scratch/MD_utilities/toppar_c36_jul20/top_all36_cgenff.rtf",
+#     "/home/scratch/MD_utilities/toppar_c36_jul20/par_all36_lipid.prm",
+#     "/home/scratch/MD_utilities/toppar_c36_jul20/top_all36_lipid.rtf")
+
+# check available CPUs
+# print(int(len(os.sched_getaffinity(0))/3))
+
+# x = 2
+#
+# pizza = {'one': 'pizza', 'two':'pasta'}
+#
+# cpi = f'{pizza["one"]}' if x == 0 else f'{pizza["two"]}'
+#
+# print(cpi)

@@ -15,6 +15,7 @@ class TrajectoryOperator(mwInputParser):
     def wrap(self, folder):
         os.chdir(f'{self.folder}/tmp/walker_' + str(folder))
         print('wrapping in ' + os.getcwd())
+        print("")
         ext = ('xtc', 'dcd')
         trajFile = None
         psf = None
@@ -37,17 +38,11 @@ class TrajectoryOperator(mwInputParser):
             for new_coords in os.listdir(os.getcwd()):
                 if new_coords.endswith('.tpr'):
                     psf = new_coords
-                else:
-                    os.kill(os.getpid(), signal.SIGKILL)
-                    raise FileNotFoundError
 
         for trajectory in os.listdir(os.getcwd()):
             if trajectory.endswith(ext):
                 trajFile = trajectory
-            else:
-                os.kill(os.getpid(), signal.SIGKILL)
-                print("No Trajectory found (xtc or dcd)")
-                raise FileNotFoundError
+
         try:
             u = Mda.Universe(psf, trajFile)
         except:

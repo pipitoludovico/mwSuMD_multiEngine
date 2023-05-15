@@ -139,7 +139,9 @@ class MetricsParser(mwInputParser):
         else:
             average_poll_1 = np.average(args[0])
             average_poll_2 = np.average(args[1])
-            print(average_poll_1, average_poll_2)
+            print("AVERAGE OF METRIC 1: ", average_poll_1)
+            print("AVERAGE OF METRIC 2: ", average_poll_2)
+            print("")
 
             metric_1_scores = []
             metric_2_scores = []
@@ -161,6 +163,11 @@ class MetricsParser(mwInputParser):
             list(score_sum)
             max_score = max(score_sum)
             max_index = score_sum.index(max_score) + 1
+            print("max index: ", max_index)
+            print("max score (max[(x + y) for x, y in zip(metric_1_scores, metric_2_scores)]): ", max_score)
+            print("Score Metric 1: ", args[2][max_index - 1])
+            print("Score Metric 2: ", args[3][max_index - 1])
+            print("")
             return max_index, max_score, args[2][max_index - 1], args[3][max_index - 1]
     #
     # @staticmethod

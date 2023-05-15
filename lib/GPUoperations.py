@@ -25,17 +25,12 @@ class ProcessManager:
 
     @staticmethod
     def getGPUids():
-        max_memory = 0.1
         GPUs = GPUtil.getGPUs()
-        freeMemory = 0
         gpu_ids = []
         for GPU in GPUs:
-            if GPU.memoryUtil > max_memory:
-                continue
-            if GPU.memoryFree >= freeMemory:
-                freeMemory = GPU.memoryFree
-                gpu_ids.append(GPU.id)
+            gpu_ids.append(GPU.id)
         if len(gpu_ids) != 0:
+            print("Available GPUS: ", gpu_ids)
             return gpu_ids
         else:
             print("Please leave at least one GPU to run mwSuMD and run again.")
@@ -46,4 +41,4 @@ class ProcessManager:
         quotient, rest = divmod(walkers, len(total_gpu_ids))
         result = quotient * total_gpu_ids + total_gpu_ids[:rest]
         batches = [result[i:i + len(total_gpu_ids)] for i in range(0, len(result), len(total_gpu_ids))]
-        return batches, result
+        return batches, total_gpu_ids
