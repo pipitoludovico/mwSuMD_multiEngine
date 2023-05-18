@@ -33,9 +33,8 @@ class ProcessManager:
             print("Available GPUS: ", gpu_ids)
             return gpu_ids
         else:
-            return [0]
-            # print("Please leave at least one GPU to run mwSuMD and run again.")
-            # exit()
+            print("Please leave at least one GPU to run mwSuMD and run again.")
+            exit()
 
     @staticmethod
     def createBatches(walkers, total_gpu_ids):
