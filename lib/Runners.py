@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import os
 import time
 
 from .GPUoperations import ProcessManager
@@ -16,9 +17,10 @@ class Runner(mwInputParser):
         self.customProductionFile = None
 
     def runMD(self):
-        for file in os.listdir(f'{self.folder}/system'):
-            if file == 'production.mdp' or file == 'production.namd' or file == 'production.inp':
-                self.customProductionFile = file
+        if self.initialParameters['CUSTOMFILE'] is not None:
+            self.customProductionFile = self.initialParameters['CUSTOMFILE']
+        else:
+            self.customProductionFile = ''
         print('mwSuMD is working in ' + os.getcwd())
         print("Trajectory count: " + str(self.trajCount))
         self.runSimulation()
@@ -106,26 +108,25 @@ class Runner(mwInputParser):
 
     def lauchEngine(self, trajCount, walk_count, GPU, customFile=None):
         command = ''
-        core_division = (int(len(os.sched_getaffinity(0))/self.initialParameters["Walkers"]))
-        if "CPT" in self.initialParameters.keys():
-            cpi = f'../../system/{self.initialParameters["CPT"]} -append no' if trajCount == 0 else '-cpi ../../restarts/previous.cpt -append no'
+        core_division = (int(len(os.sched_getaffinity(0)) / self.initialParameters["Walkers"]))
         taks_master = f'-nt {core_division} -npme -1 -ntmpi 0 -ntomp 0 -ntomp_pme 0 -pin on -pme gpu -nb gpu -bonded gpu -update gpu'
         plumed = f'-plumed {self.par["PLUMED"]}' if self.par['PLUMED'] is not None else ''
 
         if self.par['MDEngine'] == 'GROMACS':
             MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount, customFile)
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is None:
-                # command = f'gmx mdrun -s {self.par["Output"]}_{trajCount}_{walk_count}.tpr -v {plumed} {cpi} -gpu_id {GPU} {taks_master} -pinoffset {GPU*core_division} -nstlist {self.initialParameters["Timewindow"]} &> gromacs.log'
-                command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} -gpu_id {GPU} {taks_master} -pinoffset {GPU*core_division} -nstlist {self.initialParameters["Timewindow"]} &> gromacs.log'
+                command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} -gpu_id {GPU} {taks_master} -pinoffset {GPU * core_division} -nstlist {self.initialParameters["Timewindow"]} &> gromacs.log'
             elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is None:
                 command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} &> gromacs.log'
             elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:
                 command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm production {plumed} &> gromacs.log'
+            elif self.initialParameters['COMMAND'] is None and self.customProductionFile is not None:
+                command = f'gmx mdrun  -v {plumed} -deffnm production -gpu_id {GPU} {taks_master} -pinoffset {GPU * core_division} -nstlist {self.initialParameters["Timewindow"]} &> gromacs.log'
 
         elif self.par['MDEngine'] == 'ACEMD':
-            command = f'{self.initialParameters["COMMAND"]} --device {GPU} production.inp 1> acemd.log' \
+            command = f'{self.initialParameters["COMMAND"]} --device {GPU} {self.customProductionFile} 1> acemd.log' \
                 if customFile is not None and self.initialParameters['COMMAND'] is not None \
-                else f'acemd3 --device {GPU} production.inp 1> acemd.log' \
+                else f'acemd3 --device {GPU} {self.customProductionFile} 1> acemd.log' \
                 if customFile is not None \
                 else f'{self.initialParameters["COMMAND"]} --device {GPU} input_{walk_count}_{trajCount}.inp 1> acemd.log' \
                 if self.initialParameters['COMMAND'] is not None \
@@ -134,7 +135,7 @@ class Runner(mwInputParser):
         elif self.par['MDEngine'] == 'NAMD':
             command = f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
                 if customFile is not None and self.initialParameters['COMMAND'] is not None \
-                else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
+                else f'namd3 +p8 +devices {GPU} production.namd 1> namd.log' \
                 if customFile is not None \
                 else f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
                 if self.initialParameters['COMMAND'] is not None \

@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 
 
 class mwInputParser:
@@ -17,7 +18,8 @@ class mwInputParser:
     excludedGPUS = []
 
     def __init__(self):
-        self.outExtensions = ('coor', 'vel', 'xsc')
+        self.customInputFileExtension = ('namd', 'inp', 'mdp')
+        self.outExtensions = ('cpt', 'cpi', 'gro', 'tpr', 'coor', 'vel', 'xsc')
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
         self.initialParametersameter_extensions = ('.param', '.prmtop', '.prm', '.par')
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
@@ -69,9 +71,22 @@ class mwInputParser:
 
     def getSettingsFromInputFile(self):
         # Default settings:
+        self.initialParameters['Restart'] = None
+        self.initialParameters['CUSTOMFILE'] = None
         self.initialParameters['Timestep'] = 2
         self.initialParameters['Savefreq'] = 20
         self.initialParameters['Wrap'] = 'protein and name CA'
+
+        for customFile in os.listdir(f"{self.initialParameters['Root']}/system"):
+            if customFile.startswith('production') and customFile.endswith(self.customInputFileExtension):
+                print("Custom Input File found: ", customFile)
+                print(
+                    "Warning: Make sure your custom input file is pointing at the binaries in the new restart folder!")
+                self.initialParameters['CUSTOMFILE'] = f"{self.folder}/system/{customFile}"
+                if self.trajCount == 0 and self.initialParameters['Restart'] == 'NO':  # first run we sort post-equilibration files
+                    for extension in self.outExtensions:
+                        subprocess.Popen(f'cp {self.folder}/system/*.{extension} restarts/previous.{extension}',
+                                         shell=True)
 
         with open(self.inputFile, "r") as infile:
             self.initialParameters['RelaxTime'] = 5

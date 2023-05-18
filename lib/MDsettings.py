@@ -20,15 +20,7 @@ class MDsetter(mwInputParser):
             os.makedirs('tmp', exist_ok=True)
             os.makedirs('tmp/walker_' + str(walker), exist_ok=True)
             # we check if user-defined production is in the system folder and use it if present
-            for file in os.listdir(f'{self.folder}/system'):
-                if file.startswith('production') and self.trajCount == 0:
-                    restartExtensions = ('cpt', 'coor', 'bin', 'vel', 'cpi')
-                    os.system(f'cp {self.folder}/system/{file} tmp/walker_{walker}')
-                    self.custom_input = file
-                    os.makedirs('restarts', exist_ok=True)
-                    for extension in restartExtensions:
-                        os.system(
-                            f'mv {self.initialParameters["Root"]}/system/*.{extension} {self.initialParameters["Root"]}/restarts')
+            self.custom_input = self.initialParameters['CUSTOMFILE']
 
             if self.custom_input is None:
                 if self.setterParameters['MDEngine'] == 'GROMACS':
@@ -45,14 +37,14 @@ class MDsetter(mwInputParser):
                     if self.setterParameters['Parameters'] is not None:
                         for e in self.setterParameters['Parameters']:
                             mw_file.write(f'parameters		%s\n' % e)
-
                 # writing the input file
                 for line in txt:
                     mw_file.write(line)
-
                 if self.setterParameters['PLUMED'] is not None:
                     mw_file.write('plumedFile		%s\n' % self.setterParameters['PLUMED'])
                 mw_file.close()
                 # if in relaxation mode, we reset the number of walkers back to original
+            else:
+                os.system(f'cp {self.initialParameters["CUSTOMFILE"]} {self.initialParameters["Root"]}/tmp/walker_{walker}')
         self.initialParameters['Walkers'] = self.walkers_snaphot
         self.cycle += 1
