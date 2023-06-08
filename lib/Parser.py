@@ -24,7 +24,7 @@ class mwInputParser:
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
         self.initialParametersameter_extensions = ('.param', '.prmtop', '.prm', '.par')
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
-        self.allowedMetrics = ("Distance", "RMSD", "Contacts")
+        self.allowedMetrics = ("DISTANCE", "RMSD", "CONTACTS")
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
             print('Input file for SuMD simulation required')
             quit()
@@ -78,7 +78,7 @@ class mwInputParser:
             if any(fileSys.endswith('.prmtop') for fileSys in os.listdir(f'{self.folder}/system')) else 'GROMOS'
 
     def getSettingsFromInputFile(self):
-        u = mda.Universe(f"{self.initialParameters['PDB']}")
+        u = mda.Universe(f"{self.folder}/system/{self.initialParameters['PDB']}")
         # Default settings:
         self.initialParameters['Restart'] = None
         self.initialParameters['CUSTOMFILE'] = None
@@ -123,13 +123,13 @@ class mwInputParser:
                         raise ValueError("Only NumberCV 1 or 2 allowed")
 
                 if line.startswith('Metric_1'):
-                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip() in self.allowedMetrics:
+                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip().upper() in self.allowedMetrics:
                         self.initialParameters['Metric_1'] = line.split('=')[1].strip().upper()
                     else:
                         raise ValueError("Invalid Metric 1. Only metrics allowed: ", self.allowedMetrics)
 
                 if line.startswith('Metric_2'):
-                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip() in self.allowedMetrics:
+                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip().upper() in self.allowedMetrics:
                         self.initialParameters['Metric_2'] = line.split('=')[1].strip().upper()
                     else:
                         raise ValueError("Invalid Metric 2. Only metrics allowed: ", self.allowedMetrics)

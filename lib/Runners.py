@@ -1,6 +1,7 @@
 import multiprocessing as mp
 import os
 import time
+import traceback
 
 from .GPUoperations import ProcessManager
 from .MDoperations import *
@@ -27,11 +28,15 @@ class Runner(mwInputParser):
 
         print("Wrapping results...")
         trajOperator = TrajectoryOperator()
-
-        with mp.Pool() as p:
-            p.map(trajOperator.wrap, range(1, self.par['Walkers'] + 1))
-            p.terminate()
-            p.join()
+        try:
+            with mp.Pool() as p:
+                p.map(trajOperator.wrap, range(1, self.par['Walkers'] + 1))
+                p.terminate()
+                p.join()
+        except:
+            os.kill(os.getpid(), signal.SIGKILL)
+            print("Wrapping failed.")
+            raise Exception(traceback.format_exc())
 
     def runGPU_batch(self, trajCount, walk_count, GPUbatch, queue):
         processes = []
@@ -72,16 +77,21 @@ class Runner(mwInputParser):
             start_time_parallel = time.perf_counter()
             walk_count = 1  # Initialize the variable
             results = []
-            with mp.Pool(processes=len(lenIDs)) as pool:
-                for GPUbatch in GPUbatches:
-                    results.append(pool.apply(self.runGPU_batch, args=(self.trajCount, walk_count, GPUbatch, q)))
-                    walk_count += len(GPUbatch)
-                print(f"Waiting for all processes to finish...")
-                while not q.empty():
-                    q.get()
-                print(f"All batches finished.")
-            pool.close()
-            pool.terminate()
+            try:
+                with mp.Pool(processes=len(lenIDs)) as pool:
+                    for GPUbatch in GPUbatches:
+                        results.append(pool.apply(self.runGPU_batch, args=(self.trajCount, walk_count, GPUbatch, q)))
+                        walk_count += len(GPUbatch)
+                    print(f"Waiting for all processes to finish...")
+                    while not q.empty():
+                        q.get()
+                    print(f"All batches finished.")
+                pool.close()
+                pool.terminate()
+            except:
+                os.kill(os.getpid(), signal.SIGKILL)
+                print("MD production failed. Check the log files.")
+                raise Exception(traceback.format_exc())
             self.trajCount += 1
             end_time_parallel = time.perf_counter()
             print(f"Time taken with multiprocessing: {end_time_parallel - start_time_parallel:.2f} seconds")
