@@ -46,7 +46,7 @@ class Checker(mwInputParser):
             if file.endswith('.inp'):
                 subprocess.Popen(f'acemd3 --device 0 {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.namd'):
-                subprocess.Popen(f'namd3 +p8 +device 0 {file} 1> relax.log', shell=True).wait()
+                subprocess.Popen(f'namd3 +p8 +devices 0 {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.mdp'):
                 subprocess.Popen(
                     f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr -extend {int(self.initialParameters["RelaxTime"] * 1000)} -o {self.initialParameters["Output"]}_{self.trajCount}.tpr &>tpr_log.log',

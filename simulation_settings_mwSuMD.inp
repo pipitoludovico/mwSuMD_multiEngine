@@ -6,6 +6,10 @@ Wrap = protein
 ########################################################################
 # Relaxation protocol time in case of stuck condition [Default = 5 ns]
 RelaxTime = 
+# number of fails allowed [Default = 5]
+Fails = 
+# Tolerance to determine if a simulation is stuck [Default = 30]
+Tolerance = 
 # Output name of the files
 Output = output
 ########################################################################

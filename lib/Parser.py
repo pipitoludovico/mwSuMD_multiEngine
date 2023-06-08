@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+import MDAnalysis as mda
 
 
 class mwInputParser:
@@ -23,6 +24,7 @@ class mwInputParser:
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
         self.initialParametersameter_extensions = ('.param', '.prmtop', '.prm', '.par')
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
+        self.allowedMetrics = ("Distance", "RMSD", "Contacts")
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
             print('Input file for SuMD simulation required')
             quit()
@@ -52,7 +54,7 @@ class mwInputParser:
             return self.initialParameters['Parameters']
 
     def getReferencePDB(self):
-        if self.initialParameters['Metric_1'] == 'RMSD' or self.initialParameters['Metric_2'] == 'RMSD':
+        def checkRMSDoption():
             if not os.path.isdir(f'{self.folder}/system/reference'):
                 print('You need a reference folder with a reference pdb in it if you use the RMSD as a metric.')
                 exit()
@@ -60,9 +62,15 @@ class mwInputParser:
                 for reference in os.listdir(f'{self.folder}/system/reference'):
                     if reference.endswith('.pdb') or reference.endswith('.gro'):
                         self.initialParameters['REFERENCE'] = reference
-            else:
-                print("Put a reference pdb file in the 'reference' folder inside system and rerun.")
-                exit()
+                    else:
+                        print("Put a reference pdb file in the 'reference' folder inside system and rerun.")
+                        exit()
+
+        if self.initialParameters['NumberCV'] == 1 and self.initialParameters['Metric_1'] == 'RMSD':
+            checkRMSDoption()
+        if self.initialParameters['NumberCV'] == 2 or self.initialParameters['Metric_1'] == 'RMSD' or \
+                self.initialParameters['Metric_2'] == 'RMSD':
+            checkRMSDoption()
 
     def getForcefields(self):
         self.initialParameters['Forcefield'] = 'CHARMM' \
@@ -70,12 +78,15 @@ class mwInputParser:
             if any(fileSys.endswith('.prmtop') for fileSys in os.listdir(f'{self.folder}/system')) else 'GROMOS'
 
     def getSettingsFromInputFile(self):
+        u = mda.Universe(f"{self.initialParameters['PDB']}")
         # Default settings:
         self.initialParameters['Restart'] = None
         self.initialParameters['CUSTOMFILE'] = None
         self.initialParameters['Timestep'] = 2
         self.initialParameters['Savefreq'] = 20
         self.initialParameters['Wrap'] = 'protein and name CA'
+        self.initialParameters['Fails'] = 5
+        self.initialParameters['Tolerance'] = 0.3
 
         for customFile in os.listdir(f"{self.initialParameters['Root']}/system"):
             if customFile.startswith('production') and customFile.endswith(self.customInputFileExtension):
@@ -83,7 +94,8 @@ class mwInputParser:
                 print(
                     "Warning: Make sure your custom input file is pointing at the binaries in the new restart folder!")
                 self.initialParameters['CUSTOMFILE'] = f"{self.folder}/system/{customFile}"
-                if self.trajCount == 0 and self.initialParameters['Restart'] == 'NO':  # first run we sort post-equilibration files
+                if self.trajCount == 0 and self.initialParameters[
+                    'Restart'] == 'NO':  # first run we sort post-equilibration files
                     for extension in self.outExtensions:
                         subprocess.Popen(f'cp {self.folder}/system/*.{extension} restarts/previous.{extension}',
                                          shell=True)
@@ -98,44 +110,85 @@ class mwInputParser:
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['RelaxTime'] = float(line.split('=')[1].strip())
 
+                if line.startswith('Tolerance'):
+                    if line.split('=')[1].strip() != '' and float(line.split("=")[1].strip()) in range(0, 101):
+                        self.initialParameters['Tolerance'] = float(line.split('=')[1].strip()) / 100
+                    else:
+                        raise ValueError("Tolerance range valid: 0 - 100")
+
                 if line.startswith('NumberCV'):
-                    self.initialParameters['NumberCV'] = int(line.split('=')[1].strip())
+                    if line.split('=')[1].strip() != '' and int(line.split('=')[1].strip()) in range(1, 3):
+                        self.initialParameters['NumberCV'] = int(line.split('=')[1].strip())
+                    else:
+                        raise ValueError("Only NumberCV 1 or 2 allowed")
 
                 if line.startswith('Metric_1'):
-                    self.initialParameters['Metric_1'] = line.split('=')[1].strip().upper()
+                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip() in self.allowedMetrics:
+                        self.initialParameters['Metric_1'] = line.split('=')[1].strip().upper()
+                    else:
+                        raise ValueError("Invalid Metric 1. Only metrics allowed: ", self.allowedMetrics)
 
                 if line.startswith('Metric_2'):
-                    self.initialParameters['Metric_2'] = line.split('=')[1].strip().upper()
+                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip() in self.allowedMetrics:
+                        self.initialParameters['Metric_2'] = line.split('=')[1].strip().upper()
+                    else:
+                        raise ValueError("Invalid Metric 2. Only metrics allowed: ", self.allowedMetrics)
 
                 if line.startswith('Cutoff_1'):
-                    self.initialParameters['Cutoff_1'] = float(line.split('=')[1].strip())
+                    if line.split('=')[1].strip() != '':
+                        self.initialParameters['Cutoff_1'] = float(line.split('=')[1].strip())
 
                 if line.startswith('Cutoff_2'):
-                    self.initialParameters['Cutoff_2'] = float(line.split('=')[1].strip())
+                    if line.split('=')[1].strip() != '':
+                        self.initialParameters['Cutoff_2'] = float(line.split('=')[1].strip())
 
                 if line.startswith('Walkers'):
-                    self.initialParameters['Walkers'] = int(line.split('=')[1].strip())
+                    if line.split('=')[1].strip() != '':
+                        self.initialParameters['Walkers'] = int(line.split('=')[1].strip())
+                    else:
+                        raise ValueError("Please set a number of desired walkers in your input file")
 
                 if line.startswith('Timewindow'):
-                    self.initialParameters['Timewindow'] = int(line.split('=')[1].strip())
+                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip().isdigit():
+                        self.initialParameters['Timewindow'] = int(line.split('=')[1].strip())
+                    else:
+                        raise ValueError("Please set a Timewindow value.")
 
                 if line.startswith('Timestep'):
-                    self.initialParameters['Timestep'] = int(line.split('=')[1].strip())
+                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip().isdigit():
+                        self.initialParameters['Timestep'] = int(line.split('=')[1].strip())
+                    else:
+                        raise ValueError("Please set the Timestep in your input file as an integer number.")
 
                 if line.startswith('Savefreq'):
-                    self.initialParameters['Savefreq'] = int(line.split('=')[1].strip())
+                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip().isdigit():
+                        self.initialParameters['Savefreq'] = int(line.split('=')[1].strip())
+                    else:
+                        raise ValueError("Please set the Savefreq in your input file as an integer number.")
 
                 if line.startswith('Sel_'):
-                    self.selection_list.append(line.split('=')[1].strip())
+                    if line.split('=')[1].strip() != '':
+                        if len(u.select_atoms(f"{line.split('=')[1].strip()}")) != 0:
+                            self.selection_list.append(line.split('=')[1].strip())
+                        else:
+                            raise ValueError(
+                                "You atom pointed to 0 atoms: please check your selection with your structure file")
 
                 if line.startswith('Transition_1'):
-                    self.initialParameters['Transition_1'] = line.split('=')[1].strip().lower()
+                    if line.split('=')[1].strip() != '':
+                        self.initialParameters['Transition_1'] = line.split('=')[1].strip().lower()
 
                 if line.startswith('Transition_2'):
-                    self.initialParameters['Transition_2'] = line.split('=')[1].strip().lower()
+                    if line.split('=')[1].strip() != '':
+                        self.initialParameters['Transition_2'] = line.split('=')[1].strip().lower()
 
                 if line.startswith('Wrap'):
-                    self.initialParameters['Wrap'] = line.split('=')[1].strip()
+                    if line.split('=')[1].strip() != '':
+                        self.initialParameters['Wrap'] = line.split('=')[1].strip()
+
+                if line.startswith('Fails'):
+                    if line.split('=')[1].strip() != '':
+                        self.initialParameters['Fails'] = int(line.split('=')[1].strip())
 
     def argumentParser(self):
 

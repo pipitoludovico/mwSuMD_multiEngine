@@ -18,7 +18,7 @@ class MDoperator:
                 print("Renaming the restart files and moving the best walker's restart bin files")
                 os.chdir('tmp/walker_%s' % str(r))
                 # moving the best frame to the trajectory folder
-                os.system(f'cp wrapped.xtc {self.folder}/trajectories/step_{self.cycle}.xtc')
+                os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
                 # moving and renaming the binary files to the restart folder
                 if self.par['MDEngine'] != 'GROMACS':
                     os.system(f'cp *.coor {self.folder}/restarts/previous.coor')

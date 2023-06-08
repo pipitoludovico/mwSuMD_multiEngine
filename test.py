@@ -80,27 +80,28 @@
 # resu = max(x for x in pizza if x < 100)
 # print(resu)
 import os
-#batches gpu
-lst = [0, 1]
+
+# batches gpu
+# lst = [0, 1]
+# #
+# walkers = 3
+# quotient, rest = divmod(walkers, len(lst))
+# result = quotient * lst + lst[:rest]
+# batches = [result[i:i + len(lst)] for i in range(0, len(result), len(lst))]
+# for idx, bat in enumerate(result):
+#     print(idx+1, bat)
+# print(result)
+# print(batches)
 #
-walkers = 3
-quotient, rest = divmod(walkers, len(lst))
-result = quotient * lst + lst[:rest]
-batches = [result[i:i + len(lst)] for i in range(0, len(result), len(lst))]
-for idx, bat in enumerate(result):
-    print(idx+1, bat)
-print(result)
-print(batches)
-
-
-def createBatches(walkers, total_gpu_ids):
-    quotient, rest = divmod(walkers, len(total_gpu_ids))
-    result = quotient * total_gpu_ids + total_gpu_ids[:rest]
-    batches = [result[i:i + len(total_gpu_ids)] for i in range(0, len(result), len(total_gpu_ids))]
-    print("batches" , batches, "result", result, 'total ids', len(total_gpu_ids))
-
-createBatches(5, [0,1,2,3])
-# files = len([x for x in os.scandir('trajectories')])
+#
+# def createBatches(walkers, total_gpu_ids):
+#     quotient, rest = divmod(walkers, len(total_gpu_ids))
+#     result = quotient * total_gpu_ids + total_gpu_ids[:rest]
+#     batches = [result[i:i + len(total_gpu_ids)] for i in range(0, len(result), len(total_gpu_ids))]
+#     print("batches" , batches, "result", result, 'total ids', len(total_gpu_ids))
+#
+# createBatches(5, [0,1,2,3])
+# # files = len([x for x in os.scandir('trajectories')])
 # print(files)
 
 ##########################################################
@@ -1375,3 +1376,21 @@ createBatches(5, [0,1,2,3])
 # cpi = f'{pizza["one"]}' if x == 0 else f'{pizza["two"]}'
 #
 # print(cpi)
+
+test = "Banana"
+pizza = ['cane', 'ananas', 'bau']
+
+if test.isdigit():
+    print("INT")
+else:
+    print("pizza")
+# #
+# # if test == 2 and 'ananas' in pizza:
+# #     print("OK")
+
+# import MDAnalysis as mda
+#
+# u = mda.Universe('system/NEUTRAL_fis.pdb')
+# sele = 'protein and name CA'
+# if len(u.select_atoms(sele)) != 0:
+#     print("OK")
