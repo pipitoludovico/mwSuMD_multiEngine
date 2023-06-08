@@ -55,9 +55,8 @@ class MDoperator:
         tprPreparation = subprocess.Popen(command, shell=True)
         tprPreparation.wait()
 
-    @staticmethod
-    def checkIfStuck(values, accumulatedFails) -> bool:
-        if accumulatedFails > 5:
+    def checkIfStuck(self, values, accumulatedFails) -> bool:
+        if accumulatedFails > self.par['Fails']:
             print('X' * 200)
             print("\nThe simulation is stuck and it has been terminated")
             print('X' * 200)
@@ -68,7 +67,7 @@ class MDoperator:
         else:
             x = np.array(values)
             x_norm = (x - np.min(x)) / (np.max(x) - np.min(x))
-            if np.std(x_norm) < 0.3:
+            if np.std(x_norm) < self.par['Tolerance']:
                 print('\nSimulation might be stuck. Running the relaxation protocol.')
                 print("")
                 return True
