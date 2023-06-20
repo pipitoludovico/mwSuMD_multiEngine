@@ -25,7 +25,7 @@ class Checker(mwInputParser):
         print('#' * 200)
         print('Checking if trajectory is stuck with values: ' + str(vals) +
               ". Total fails accumulated: " + str(accumulatedFails))
-        if MDoperator.checkIfStuck(vals, accumulatedFails) is True:
+        if MDoperator(self.initialParameters, self.folder).checkIfStuck(vals, accumulatedFails) is True:
             self.relaxSystem()
             accumulatedFails += 1
         else:

@@ -59,12 +59,14 @@ class mwInputParser:
                 print('You need a reference folder with a reference pdb in it if you use the RMSD as a metric.')
                 exit()
             if len(os.listdir(f'{self.folder}/system/reference')) > 0:
-                for reference in os.listdir(f'{self.folder}/system/reference'):
-                    if reference.endswith('.pdb') or reference.endswith('.gro'):
-                        self.initialParameters['REFERENCE'] = reference
-                    else:
-                        print("Put a reference pdb file in the 'reference' folder inside system and rerun.")
-                        exit()
+                print("Reference folder found.")
+                files = os.listdir(f'{self.folder}/system/reference')
+                reference = next((file for file in files if file.endswith('.pdb')), None)
+                if reference:
+                    self.initialParameters['REFERENCE'] = reference
+                else:
+                    print("Put a reference pdb file in the 'reference' folder inside system and rerun.")
+                    exit()
 
         if self.initialParameters['NumberCV'] == 1 and self.initialParameters['Metric_1'] == 'RMSD':
             checkRMSDoption()
@@ -80,6 +82,8 @@ class mwInputParser:
     def getSettingsFromInputFile(self):
         u = mda.Universe(f"{self.folder}/system/{self.initialParameters['PDB']}")
         # Default settings:
+        self.initialParameters['Metric_1'] = None
+        self.initialParameters['Metric_2'] = None
         self.initialParameters['Restart'] = None
         self.initialParameters['CUSTOMFILE'] = None
         self.initialParameters['Timestep'] = 2
@@ -110,29 +114,39 @@ class mwInputParser:
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['RelaxTime'] = float(line.split('=')[1].strip())
 
-                if line.startswith('Tolerance'):
-                    if line.split('=')[1].strip() != '' and float(line.split("=")[1].strip()) in range(0, 101):
-                        self.initialParameters['Tolerance'] = float(line.split('=')[1].strip()) / 100
-                    else:
-                        raise ValueError("Tolerance range valid: 0 - 100")
+                elif line.startswith('Tolerance'):
+                    if line.split('=')[1].strip() != '':
+                        if float(line.split("=")[1].strip()) in range(0, 101):
+                            self.initialParameters['Tolerance'] = float(line.split('=')[1].strip()) / 100
+                        else:
+                            raise ValueError("Tolerance range valid: 0 - 100")
 
-                if line.startswith('NumberCV'):
-                    if line.split('=')[1].strip() != '' and int(line.split('=')[1].strip()) in range(1, 3):
-                        self.initialParameters['NumberCV'] = int(line.split('=')[1].strip())
+                elif line.startswith('NumberCV'):
+                    if line.split('=')[1].strip() != '':
+                        if int(line.split('=')[1].strip()) in range(1, 3):
+                            self.initialParameters['NumberCV'] = int(line.split('=')[1].strip())
+                        else:
+                            raise ValueError("Only NumberCV 1 or 2 allowed")
                     else:
-                        raise ValueError("Only NumberCV 1 or 2 allowed")
+                        raise ValueError("Please input the number of CVs (1 or 2 allowed)")
 
-                if line.startswith('Metric_1'):
-                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip().upper() in self.allowedMetrics:
-                        self.initialParameters['Metric_1'] = line.split('=')[1].strip().upper()
+                elif line.startswith('Metric_1'):
+                    if line.split('=')[1].strip() != '':
+                        if line.split('=')[1].strip().upper() in self.allowedMetrics:
+                            self.initialParameters['Metric_1'] = line.split('=')[1].strip().upper()
+                        else:
+                            raise ValueError("Invalid Metric 1. Only metrics allowed: ", self.allowedMetrics)
                     else:
-                        raise ValueError("Invalid Metric 1. Only metrics allowed: ", self.allowedMetrics)
+                        print("No Metric 1 chosen")
 
-                if line.startswith('Metric_2'):
-                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip().upper() in self.allowedMetrics:
-                        self.initialParameters['Metric_2'] = line.split('=')[1].strip().upper()
+                elif line.startswith('Metric_2'):
+                    if line.split('=')[1].strip() != '':
+                        if line.split('=')[1].strip().upper() in self.allowedMetrics:
+                            self.initialParameters['Metric_2'] = line.split('=')[1].strip().upper()
+                        else:
+                            raise ValueError("Invalid Metric 2. Only metrics allowed: ", self.allowedMetrics)
                     else:
-                        raise ValueError("Invalid Metric 2. Only metrics allowed: ", self.allowedMetrics)
+                        print("No Metric 2 chosen")
 
                 if line.startswith('Cutoff_1'):
                     if line.split('=')[1].strip() != '':
@@ -166,7 +180,7 @@ class mwInputParser:
                     else:
                         raise ValueError("Please set the Savefreq in your input file as an integer number.")
 
-                if line.startswith('Sel_'):
+                if line.startswith(f'Sel_'):
                     if line.split('=')[1].strip() != '':
                         if len(u.select_atoms(f"{line.split('=')[1].strip()}")) != 0:
                             self.selection_list.append(line.split('=')[1].strip())
@@ -189,6 +203,14 @@ class mwInputParser:
                 if line.startswith('Fails'):
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['Fails'] = int(line.split('=')[1].strip())
+
+        if not self.initialParameters.get('Metric_1') and not self.initialParameters.get('Metric_2'):
+            raise ValueError(
+                "\nPlease make sure if you choose at least one metric to supervise (Distance, Contacts, RMSD, HB)")
+        if (not self.initialParameters.get('Metric_1') or not self.initialParameters.get(
+                'Metric_2')) and self.initialParameters.get('NumberCV') == 2:
+            raise ValueError(
+                "\nPlease make sure if you use CV2 to specify all the CVs choosing one metric to supervise (Distance, Contacts, RMSD, HB)")
 
     def argumentParser(self):
 

@@ -1,4 +1,5 @@
 import time
+import os
 
 from .MDoperations import MDoperator
 from .MDsettings import MDsetter
@@ -25,6 +26,9 @@ class ProtocolRunner(mwInputParser):
         print('#' * 200)
 
         begin = time.perf_counter()
+        # purging previous tmp folder:
+        if os.path.exists('./tmp'):
+            os.system('rm -r ./tmp')
         MDsetter(self.initialParameters).createInputFile()
         Runner(self.initialParameters).runMD()
         # compute metrics
