@@ -21,14 +21,18 @@ class suMD1(mwInputParser):
     def run_mwSuMD(self):
         suMD1(self.parameters).countTraj_logTraj(self.output_to_check)
         if self.parameters['NumberCV'] == 1:
-            if self.parameters['Transition_1'] == 'positive':
+            if self.parameters['Metric_1']:
+                x = 1
+            else:
+                x = 2
+            if self.parameters[f'Transition_{x}'] == 'positive':
                 self.output_to_check = 0
-                while self.output_to_check < self.parameters['Cutoff_1']:
+                while self.output_to_check < self.parameters[f'Cutoff_{x}']:
                     self.output_to_check = self.runProtocol()
 
-            if self.parameters['Transition_1'] == 'negative':
+            if self.parameters[f'Transition_{x}'] == 'negative':
                 self.output_to_check = 10 ** 6
-                while self.output_to_check > self.parameters['Cutoff_1']:
+                while self.output_to_check > self.parameters[f'Cutoff_{x}']:
                     self.output_to_check = self.runProtocol()
         else:
             if self.parameters['Transition_1'] == 'positive' and self.parameters['Transition_2'] == 'positive':

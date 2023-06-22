@@ -206,11 +206,11 @@ class mwInputParser:
 
         if not self.initialParameters.get('Metric_1') and not self.initialParameters.get('Metric_2'):
             raise ValueError(
-                "\nPlease make sure if you choose at least one metric to supervise (Distance, Contacts, RMSD, HB)")
+                "Please make sure if you choose at least one metric to supervise (Distance, Contacts, RMSD, HB)")
         if (not self.initialParameters.get('Metric_1') or not self.initialParameters.get(
                 'Metric_2')) and self.initialParameters.get('NumberCV') == 2:
             raise ValueError(
-                "\nPlease make sure if you use CV2 to specify all the CVs choosing one metric to supervise (Distance, Contacts, RMSD, HB)")
+                "Please make sure if you use CV2 to specify all the CVs choosing one metric to supervise (Distance, Contacts, RMSD, HB)")
 
     def argumentParser(self):
 

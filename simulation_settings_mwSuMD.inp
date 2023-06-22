@@ -14,14 +14,14 @@ Tolerance =
 Output = output
 ########################################################################
 # Supervision on one or two metrics?
-NumberCV = 2
+NumberCV = 1
 
 # List of selection to work with (MDAnalysis selection language)
 # Distance (Sel_1 and Sel_2); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_1 and Sel_2)
 # Transition_1 or 2 can only be set to positive or negative
 # The Cutoff is the value at which the simulation will stop once the metric has reached this number
 
-Metric_1 = Distance
+Metric_1 = 
 Sel_1 = segid P2 and resid 2
 Sel_2 = segid P1 and resid 317
 Cutoff_1 = 3

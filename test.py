@@ -1238,41 +1238,41 @@ import os
 #
 # print(f"%s;\n" % 'paraTypeCharmm\ton' if initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n')
 
-# import MDAnalysis as Mda
-# import MDAnalysis.analysis.rms
-#
-# import numpy as np
-#
-# sel_1 = "segid P2 and resid 2"
-# sel_2 = "segid P1 and resid 317"
-# psf = 'aaa/NEUTRAL_fis.hmr.psf'
-# xtc = 'aaa/wrapped.xtc'
-#
-# u = Mda.Universe(psf, xtc)
-# sel1 = u.select_atoms(sel_1)
-# sel2 = u.select_atoms(sel_2)
-#
-# distances = []
-# for ts in u.trajectory:
-#     if ts is not None:
-#         com1 = sel1.center_of_mass()
-#         com2 = sel2.center_of_mass()
-#
-#         distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
-#         distances.append(distance)
-# mean_lin = np.mean(distances)
-# distMetric = (mean_lin * distances[-1]) ** 0.5
-#
-# u = Mda.Universe(psf, xtc)
-# ref = Mda.Universe('system/NEUTRAL_fis.pdb')
-# R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
-# R.run()
-# rmsd = R.rmsd.T
-# data = list(rmsd[3])
-# mean_rmsd = sum(data) / len(data)
-# last_rmsd = data[-1]
-# distMetric2 = (mean_rmsd * last_rmsd) ** 0.5
-# print(distMetric2)
+#import MDAnalysis as Mda
+#import MDAnalysis.analysis.rms
+
+#import numpy as np
+
+#sel_1 = "segid P0 and (resnum 140:200) or (resnum 230:335) or (resnum 346:400) and name CA"
+#sel_2 = "segid P0 and resnum 31:128 and name CA"
+#psf = 'walker_1/NEUTRAL_fis.pdb'
+#xtc = 'walker_1/wrapped.xtc'
+
+#u = Mda.Universe(psf, xtc)
+#sel1 = u.select_atoms(sel_1)
+#sel2 = u.select_atoms(sel_2)
+
+#distances = []
+#for ts in u.trajectory:
+#    if ts is not None:
+#        com1 = sel1.center_of_mass()
+#        com2 = sel2.center_of_mass()
+
+#        distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
+#        distances.append(distance)
+#mean_lin = np.mean(distances)
+#distMetric = (mean_lin * distances[-1]) ** 0.5
+
+#u = Mda.Universe(psf, xtc)
+#ref = Mda.Universe('walker_1/reference.pdb')
+#R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
+#R.run()
+#rmsd = R.rmsd.T
+#data = list(rmsd[3])
+#mean_rmsd = sum(data) / len(data)
+#last_rmsd = data[-1]
+#distMetric2 = (mean_rmsd * last_rmsd) ** 0.5
+#print(distMetric2)
 
 # WRAPPING ACEMD DUE TO ERRORS
 # import os
@@ -1377,13 +1377,13 @@ import os
 #
 # print(cpi)
 
-test = "Banana"
-pizza = ['cane', 'ananas', 'bau']
-
-if test.isdigit():
-    print("INT")
-else:
-    print("pizza")
+# test = "Banana"
+# pizza = ['cane', 'ananas', 'bau']
+#
+# if test.isdigit():
+#     print("INT")
+# else:
+#     print("pizza")
 # #
 # # if test == 2 and 'ananas' in pizza:
 # #     print("OK")
@@ -1394,3 +1394,34 @@ else:
 # sele = 'protein and name CA'
 # if len(u.select_atoms(sele)) != 0:
 #     print("OK")
+
+# import MDAnalysis as Mda
+#
+# def getRMSD(sel_1=None, sel_2=None):
+#     import MDAnalysis.analysis.rms
+#     sel_1 = "segid P0 and (resnum 140:200) or (resnum 230:335) or (resnum 346:400) and name CA"
+#     sel_2 = "segid P0 and resnum 31:128 and name CA"
+#
+#     pdb = './walker_1/reference.pdb'
+#     psf = './walker_1/NEUTRAL_fis.psf'
+#     xtc = './walker_1/wrapped.xtc'
+#
+#     u = Mda.Universe(psf, xtc)
+#     ref = Mda.Universe(pdb)
+#     if len(u.select_atoms(sel_1)) == 0 or len(u.select_atoms(sel_2)) == 0:
+#         print(self.selection_error)
+#         os.kill(os.getpid(), signal.SIGKILL)
+#         raise ValueError
+#     else:
+#         R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
+#         R.run()
+#         rmsd = R.rmsd.T
+#         data = list(rmsd[3])
+#         mean_rmsd = sum(data) / len(data)
+#         last_rmsd = data[-1]
+#
+#         distMetric = (mean_rmsd * last_rmsd) ** 0.5
+#         print("RMSD_METRIC: (mean * last) ** 0.5: ", distMetric)
+#         return distMetric, data, data[-1]
+#
+# getRMSD()
