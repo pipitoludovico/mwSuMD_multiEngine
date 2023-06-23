@@ -38,25 +38,16 @@ class MetricsParser(mwInputParser):
                     results.append(pool.apply(self.calculateMetricsMP, args=(q, x, self.selection_list)))
                     ret = q.get()
                     if self.initialParameters['NumberCV'] == 1:
-                        print("*ret[0] ", *ret[0])
-                        print("*ret[1] ", *ret[1])
                         self.score_metrics.append(*ret[0])
                         self.metric_in_last_frames.append(*ret[1])
                     else:
-                        print("ret GENERALE", ret)
-                        print("ret[0][0] = last metric del metrica: ", ret[0][0])
-                        print("ret[1][0] = tutte le metriche: ", ret[1][0])
                         last_frame_metric_1.append(ret[0][0])
                         last_frame_metric_2.append(ret[0][1])
-                        print("ret[0][1] = last metrica 2 = ", ret[0][1])
-                        print("ret[1][1] = tutte le metriche 2", ret[1][1])
                         all_m_1.append(ret[1][0])
                         all_m_2.append(ret[1][1])
             if self.initialParameters['NumberCV'] == 2:
                 self.metric_in_last_frames = last_frame_metric_1, last_frame_metric_2,
                 self.walkers_metrics = all_m_1, all_m_2
-                print("self.metric_in_last_frames", last_frame_metric_1, last_frame_metric_2)
-                print("self.walker_metrics (all m1 all m2) ", all_m_1, all_m_2)
             self.initialParameters['Walkers'] = self.walkers_number_snapshot
         except:
             print("\nMetric calculation failed. Check if all the simulations ended well.")
@@ -94,7 +85,9 @@ class MetricsParser(mwInputParser):
                         Logger(self.initialParameters['Root']).logData(1, walker, metric_1, all_metrics,
                                                                        np.mean(all_metrics), last_metrics,
                                                                        score_metrics)
-                        Logger(self.initialParameters['Root']).logData(2, walker, metric_2, [], [], [], [])
+                        Logger(self.initialParameters['Root']).logData(2, walker, metric_2, all_metrics,
+                                                                       np.mean(all_metrics), last_metrics,
+                                                                       score_metrics)
         except Exception:
             print(
                 "Metric collection and calculation failed. Make sure the trajectories produced make sense and were successfully completed")

@@ -1238,41 +1238,41 @@ import os
 #
 # print(f"%s;\n" % 'paraTypeCharmm\ton' if initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n')
 
-#import MDAnalysis as Mda
-#import MDAnalysis.analysis.rms
+# import MDAnalysis as Mda
+# import MDAnalysis.analysis.rms
 
-#import numpy as np
+# import numpy as np
 
-#sel_1 = "segid P0 and (resnum 140:200) or (resnum 230:335) or (resnum 346:400) and name CA"
-#sel_2 = "segid P0 and resnum 31:128 and name CA"
-#psf = 'walker_1/NEUTRAL_fis.pdb'
-#xtc = 'walker_1/wrapped.xtc'
+# sel_1 = "segid P0 and (resnum 140:200) or (resnum 230:335) or (resnum 346:400) and name CA"
+# sel_2 = "segid P0 and resnum 31:128 and name CA"
+# psf = 'walker_1/NEUTRAL_fis.pdb'
+# xtc = 'walker_1/wrapped.xtc'
 
-#u = Mda.Universe(psf, xtc)
-#sel1 = u.select_atoms(sel_1)
-#sel2 = u.select_atoms(sel_2)
+# u = Mda.Universe(psf, xtc)
+# sel1 = u.select_atoms(sel_1)
+# sel2 = u.select_atoms(sel_2)
 
-#distances = []
-#for ts in u.trajectory:
+# distances = []
+# for ts in u.trajectory:
 #    if ts is not None:
 #        com1 = sel1.center_of_mass()
 #        com2 = sel2.center_of_mass()
 
 #        distance = Mda.lib.distances.distance_array(com1, com2)[0][0]
 #        distances.append(distance)
-#mean_lin = np.mean(distances)
-#distMetric = (mean_lin * distances[-1]) ** 0.5
+# mean_lin = np.mean(distances)
+# distMetric = (mean_lin * distances[-1]) ** 0.5
 
-#u = Mda.Universe(psf, xtc)
-#ref = Mda.Universe('walker_1/reference.pdb')
-#R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
-#R.run()
-#rmsd = R.rmsd.T
-#data = list(rmsd[3])
-#mean_rmsd = sum(data) / len(data)
-#last_rmsd = data[-1]
-#distMetric2 = (mean_rmsd * last_rmsd) ** 0.5
-#print(distMetric2)
+# u = Mda.Universe(psf, xtc)
+# ref = Mda.Universe('walker_1/reference.pdb')
+# R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
+# R.run()
+# rmsd = R.rmsd.T
+# data = list(rmsd[3])
+# mean_rmsd = sum(data) / len(data)
+# last_rmsd = data[-1]
+# distMetric2 = (mean_rmsd * last_rmsd) ** 0.5
+# print(distMetric2)
 
 # WRAPPING ACEMD DUE TO ERRORS
 # import os
@@ -1425,3 +1425,50 @@ import os
 #         return distMetric, data, data[-1]
 #
 # getRMSD()
+
+import mdtraj as md
+import numpy as np
+
+def compute_center_of_mass(traj=None, select=None):
+    """Compute the center of mass for each frame.
+    Parameters
+    ----------
+    traj : Trajectory
+        Trajectory to compute center of mass for
+    select : str, optional, default=all
+        a mdtraj.Topology selection string that
+        defines the set of atoms of which to calculate
+        the center of mass, the default is all atoms
+    Returns
+    -------
+    com : np.ndarray, shape=(n_frames, 3)
+         Coordinates of the center of mass for each frame
+    """
+    xtc = 'merged_from_0.xtc'
+    topology = 'controllo.psf'
+    traj = md.load(xtc, top=topology)
+    select = 'segid P0'
+    # create a np array
+    com = np.empty((traj.n_frames, 3))
+
+    # get alll the atoms in the system
+    if select is None:
+        masses = np.array([a.element.mass for a in traj.top.atoms])
+        masses /= masses.sum()
+
+        xyz = traj.xyz
+
+    # get masses of selected atoms
+    else:
+        atoms_of_interest = traj.topology.select(select)
+
+        masses = np.array([traj.top.atom(i).element.mass for i in atoms_of_interest])
+        masses /= masses.sum()
+
+        # compute COM
+        xyz = traj.xyz[:, atoms_of_interest]
+
+    for i, x in enumerate(xyz):
+        com[i, :] = x.astype('float64').T.dot(masses)
+    print(com)
+    return com
