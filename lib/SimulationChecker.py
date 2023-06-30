@@ -10,7 +10,7 @@ from .TrajectoryOperator import TrajectoryOperator
 
 class Checker(mwInputParser):
     def __init__(self):
-        super(Checker).__init__()
+        super(Checker, self).__init__()
         self.best_metric_result = None
         self.best_average_metric_2 = None
         self.best_average_metric_1 = None
@@ -25,7 +25,8 @@ class Checker(mwInputParser):
         print('#' * 200)
         print('Checking if trajectory is stuck with values: ' + str(vals) +
               ". Total fails accumulated: " + str(accumulatedFails))
-        if MDoperator(self.initialParameters, self.folder).checkIfStuck(vals, accumulatedFails) is True:
+        mdOperator = MDoperator(self.initialParameters, self.folder)
+        if mdOperator.checkIfStuck(vals, accumulatedFails) is True:
             self.relaxSystem()
             accumulatedFails += 1
         else:

@@ -10,7 +10,7 @@ from .Runners import Runner
 
 class ProtocolRunner(mwInputParser):
     def __init__(self):
-        super(ProtocolRunner).__init__()
+        super(ProtocolRunner, self).__init__()
         self.best_metric_result = None
         self.best_average_metric_2 = None
         self.best_average_metric_1 = None
