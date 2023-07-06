@@ -1,7 +1,6 @@
-import multiprocessing as mp
 import pandas as pd
 
-from lib import *
+from mwSuMD_lib import *
 
 GPUoperations.ProcessManager()
 pars = Parser.mwInputParser()
