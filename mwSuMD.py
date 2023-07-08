@@ -6,7 +6,7 @@ GPUoperations.ProcessManager()
 pars = Parser.mwInputParser()
 settings, selection_list, parameterFolderPath = pars.getSettings()
 settings_df = pd.DataFrame(sorted(list(settings.items())), columns=['Setting', 'Parameter'])
-with open('settings.txt', 'a') as f:
+with open('mwSuMD_settings.txt', 'a') as f:
     dfAsString = settings_df.to_string(header=False, index=False)
     f.write(dfAsString)
     f.write("\n")
