@@ -22,7 +22,6 @@ class Runner(mwInputParser):
             self.customProductionFile = self.initialParameters['CUSTOMFILE']
         else:
             self.customProductionFile = None
-        print('mwSuMD is working in ' + os.getcwd())
         print("Trajectory count: " + str(self.trajCount))
         self.runSimulation()
 
@@ -84,10 +83,8 @@ class Runner(mwInputParser):
                 for GPUbatch in GPUbatches:
                     results.append(pool.apply(self.runGPU_batch, args=(self.trajCount, walk_count, GPUbatch, q)))
                     walk_count += len(GPUbatch)
-                print(f"Waiting for all processes to finish...")
                 while not q.empty():
                     q.get()
-                print(f"All batches finished.")
             pool.close()
             pool.terminate()
             self.trajCount += 1

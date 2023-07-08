@@ -17,6 +17,8 @@ class mwInputParser:
     metric_1 = 0
     metric_2 = 0
     excludedGPUS = []
+    from warnings import filterwarnings
+    filterwarnings(action='ignore')
 
     def __init__(self):
         self.customInputFileExtension = ('namd', 'inp', 'mdp')
@@ -59,7 +61,6 @@ class mwInputParser:
                 print('You need a reference folder with a reference pdb in it if you use the RMSD as a metric.')
                 exit()
             if len(os.listdir(f'{self.folder}/system/reference')) > 0:
-                print("Reference folder found.")
                 files = os.listdir(f'{self.folder}/system/reference')
                 reference = next((file for file in files if file.endswith('.pdb')), None)
                 if reference:
@@ -278,10 +279,14 @@ class mwInputParser:
                 logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")
         elif self.trajCount != 0 and (metric == 0 or metric == 10 ** 6):
             with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(self.trajCount) + " RESUMED " + str(metric) + "\n")
+                logF.write(str(self.trajCount) + " RESUMED:\t" + "Metric 1:" + str(
+                    self.initialParameters["Metric_1"]) + "Metric 2:\t" + str(
+                    self.initialParameters["Metric_2"] + "\n"))
         elif self.initialParameters['Relax'] is True:
             with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(self.trajCount) + " RELAXATION PROTOCOL  " + str(metric) + "\n")
+                logF.write(str(self.trajCount) + " Relaxation protocol for Metric 1\t:" + str(
+                    self.initialParameters["Metric_1"]) + "\tMetric 2:\t" + str(
+                    self.initialParameters["Metric_2"] + "With values:" + str(metric) + "\n"))
         else:
             with open('walkerSummary.log', 'a') as logF:
                 logF.write(str(self.trajCount) + " " + str(metric) + "\n")

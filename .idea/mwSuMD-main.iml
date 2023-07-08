@@ -12,8 +12,9 @@
       <excludeFolder url="file://$MODULE_DIR$/trajectories" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/walker_1" />
+      <excludeFolder url="file://$MODULE_DIR$/parameters" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.10 (mwSuMD-main)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.8" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

@@ -110,7 +110,7 @@ class Getters(mwInputParser):
             os.kill(os.getpid(), signal.SIGKILL)
             raise ValueError
         else:
-            R = Mda.analysis.rms.RMSD(u, ref, tol_mass=10, select="%s" % sel_1, groupselections=["%s" % sel_2])
+            R = Mda.analysis.rms.RMSD(u, ref, tol_mass=100, select="%s" % sel_1, groupselections=["%s" % sel_2])
             R.run()
             rmsd = R.rmsd.T
             data = list(rmsd[3])
@@ -122,7 +122,6 @@ class Getters(mwInputParser):
             return distMetric, data, data[-1]
 
     def getHB_score(self, sel_1, sel_2):
-        print("getting HB in folder in: " + str(os.getcwd()))
         psf = None
         xtc = "wrapped.xtc"
         if self.par['Forcefield'] == 'GROMOS':

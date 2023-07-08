@@ -15,8 +15,6 @@ class TrajectoryOperator(mwInputParser):
     def wrap(self, folder):
         try:
             os.chdir(f'{self.folder}/tmp/walker_' + str(folder))
-            print('wrapping in ' + os.getcwd())
-            print("")
             ext = ('xtc', 'dcd')
             trajFile = None
             psf = None
@@ -62,7 +60,6 @@ class TrajectoryOperator(mwInputParser):
             with Mda.Writer('wrapped.xtc', ag) as w:
                 for ts in u.trajectory:
                     w.write(ag)
-            print("Wrapping " + str(folder) + " successfully completed")
             os.chdir(self.folder)
         except:
             print("Wrapping failed: check your MD results in tmp/walker_x folders")

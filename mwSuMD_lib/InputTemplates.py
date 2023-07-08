@@ -11,8 +11,7 @@ class Template(mwInputParser):
 
         if self.initialParameters['MDEngine'] == 'ACEMD':
             self.inputFile = [
-                'restart %s\n' % 'on\n' if self.trajCount != 0 else '',
-                'restart %s\n' % 'off' if self.trajCount == 0 else '',
+                'restart\toff',
                 'minimize        0\n',
                 'run            %sps\n' % self.initialParameters['Timewindow'],
                 'timeStep        %s\n' % self.initialParameters['Timestep'],

@@ -17,29 +17,23 @@ Output = output
 NumberCV = 1
 
 # List of selection to work with (MDAnalysis selection language)
-# Distance (Sel_1 and Sel_2); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_1 and Sel_2)
+# Distance (Sel_1 and Sel_2); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_1 and Sel_2) ; HB (Sel_1 and Sel_2)
 # Transition_1 or 2 can only be set to positive or negative
 # The Cutoff is the value at which the simulation will stop once the metric has reached this number
 
-Metric_1 = 
+Metric_1 = Distance
 Sel_1 = segid P2 and resid 2
 Sel_2 = segid P1 and resid 317
-Cutoff_1 = 3
-Transition_1 = negative
+Cutoff_1 = 5
+Transition_1 = positive
 
-Metric_2 = RMSD
+Metric_2 = HB
 Sel_3 = segid P1 and name CA
 Sel_4 = segid P0 and name CA
 Cutoff_2 = 200
 Transition_2 = positive
 
 #####################################################################
-# plumed input file for metadynamics etc during  mwSuMD
-PLUMED =
-
-# selction for ligand - needed only if HB_score to be used (not tested)
-ligand_HB =
-######################################################################
 
 ### Algorithm and MD settings
 # number of walkers

@@ -75,8 +75,6 @@ class Logger:
 
     @staticmethod
     def logSlope(data):
-        print("Loggers data:")
-        print(data)
         # maxDist = max((dist, value) for dist, value in data.items())
         mD = max(dist for dist in data.values())
         with open('slope_logs', 'w') as slopeLog:

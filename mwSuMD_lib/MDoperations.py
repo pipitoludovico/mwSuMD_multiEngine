@@ -15,7 +15,6 @@ class MDoperator:
         """Handle the restart files and the xtc storage"""
         for r in range(1, int(self.par['Walkers']) + 1):
             if r == best_walker:
-                print("Renaming the restart files and moving the best walker's restart bin files")
                 os.chdir('tmp/walker_%s' % str(r))
                 # moving the best frame to the trajectory folder
                 os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
@@ -56,7 +55,7 @@ class MDoperator:
         tprPreparation.wait()
 
     def checkIfStuck(self, values, accumulatedFails) -> bool:
-        if accumulatedFails > self.par['Fails']:
+        if accumulatedFails > self.par['Fails']*int(self.par['NumberCV']):
             print('X' * 200)
             print("\nThe simulation is stuck and it has been terminated")
             print('X' * 200)

@@ -74,7 +74,7 @@ class Checker(mwInputParser):
                 self.walker_metrics[0], self.walker_metrics[1], self.averages[0], self.averages[1])
             self.best_metric_result = [self.best_average_metric_1, self.best_average_metric_2]
 
-        MetricsParser().countTraj_logTraj(["RELAXATION PROTOCOL SCORE: " + str(self.best_walker_score) + " Metric: "
+        MetricsParser().countTraj_logTraj(["RELAXATION PROTOCOL SCORE:\t" + str(self.best_walker_score) + "\tMetrics: "
                                            + str(self.best_metric_result)])
         print("\nRelaxation Protocol Ended")
         print('#' * 200)

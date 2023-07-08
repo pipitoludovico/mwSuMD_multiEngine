@@ -10,8 +10,8 @@ from .Parser import *
 class MetricsParser(mwInputParser):
     def __init__(self):
         super(mwInputParser, self).__init__()
-        import warnings
-        warnings.filterwarnings(action='ignore')
+        from warnings import filterwarnings
+        filterwarnings(action='ignore')
         self.walkers_metrics = []
         self.metric_in_last_frames = []
         self.score_metrics = []
