@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='mwSuMD',
-    version='1.10',
+    version='1.12',
     description='mwSuMD dependencies',
     author='Giuseppe Deganutti, Ludovico Pipitò',
     author_email='pipitol@uni.coventry.ac.uk',

@@ -1,48 +1,51 @@
 ### Is this a restart? YES or NO
 Restart = NO
 ########################################################################
-### Selection for wrapping (default "protein")
-Wrap = protein
+### Selection for wrapping (default "protein") - ACEMD only  - why is it acemd only?
+Wrap = protein and name CA
 ########################################################################
-# Relaxation protocol time in case of stuck condition [Default = 5 ns]
-RelaxTime = 
-# number of fails allowed [Default = 5]
-Fails = 
-# Tolerance to determine if a simulation is stuck [Default = 30]
-Tolerance = 
 # Output name of the files
-Output = output
+Output = GLP1_binding_step_2
+# number of fails allowed [Default = 5]
+Fails = 2
+# # Tolerance to determine if a simulation is stuck [Default = 30]
+Tolerance = 20
+#
+# Relaxation protocol time in case of stuck condition [Default = 5 ns]
+RelaxTime = 1
 ########################################################################
 # Supervision on one or two metrics?
-NumberCV = 1
+NumberCV = 2
 
 # List of selection to work with (MDAnalysis selection language)
-# Distance (Sel_1 and Sel_2); RMSD (Sel_1=alignment and Sel_2=RMSD selection) ; Contacts (Sel_1 and Sel_2) ; HB (Sel_1 and Sel_2)
+# Distance (Sel_1 and Sel_2); RMSD (Sel_1=Reference and Sel_2=RMSD of this selection) ; Contacts (Sel_1 and Sel_2); HB (sel_1 or sel_2);
 # Transition_1 or 2 can only be set to positive or negative
 # The Cutoff is the value at which the simulation will stop once the metric has reached this number
 
-Metric_1 = Distance
-Sel_1 = segid P2 and resid 2
-Sel_2 = segid P1 and resid 317
-Cutoff_1 = 5
-Transition_1 = positive
+Metric_1 = RMSD
+Sel_1 = segid P0 and (resnum 140:200) or (resnum 230:335) or (resnum 346:400) and name CA
+Sel_2 = segid P1 and resnum 7:20 and not name H*
+Cutoff_1 = 1
+Transition_1 = negative
 
-Metric_2 = HB
-Sel_3 = segid P1 and name CA
-Sel_4 = segid P0 and name CA
-Cutoff_2 = 200
-Transition_2 = positive
+Metric_2 =  RMSD
+Sel_3 = segid P0 and (resnum 140:200) or (resnum 230:335) or (resnum 346:400) and name CA
+Sel_4 = segid P0 and resnum 31:128 and name CA
+Cutoff_2 = 1
+Transition_2 = negative
 
 #####################################################################
+# plumed input file for metadynamics etc during  mwSuMD
+PLUMED =
 
+######################################################################
 ### Algorithm and MD settings
 # number of walkers
-Walkers = 3
+Walkers = 2
 
-#each simulation length in ps  - ACEMD only -
-Timewindow = 40
-#fs - ACEMD only - why?
+# Each simulation length in ps
+Timewindow = 20
+# expressed in fs
 Timestep = 4
-#ps - ACEMD only - same
+# expressed in ps
 Savefreq = 20
-

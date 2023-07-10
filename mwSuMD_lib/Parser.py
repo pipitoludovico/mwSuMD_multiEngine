@@ -1,7 +1,8 @@
 import argparse
 import os
 import subprocess
-import MDAnalysis as mda
+import signal
+import MDAnalysis as Mda
 
 
 class mwInputParser:
@@ -30,6 +31,12 @@ class mwInputParser:
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
             print('Input file for SuMD simulation required')
             quit()
+        if not os.path.exists(f'{self.folder}/plumed'):
+            self.initialParameters['PLUMED'] = None
+        else:
+            for file in os.listdir(self.folder + "/plumed"):
+                if file.endswith('.inp'):
+                    self.initialParameters['PLUMED'] = f'{self.folder}/plumed/{file}'
 
     def checkEngine(self):
         self.initialParameters['MDEngine'] = 'GROMACS' if any(
@@ -69,10 +76,7 @@ class mwInputParser:
                     print("Put a reference pdb file in the 'reference' folder inside system and rerun.")
                     exit()
 
-        if self.initialParameters['NumberCV'] == 1 and self.initialParameters['Metric_1'] == 'RMSD':
-            checkRMSDoption()
-        if self.initialParameters['NumberCV'] == 2 or self.initialParameters['Metric_1'] == 'RMSD' or \
-                self.initialParameters['Metric_2'] == 'RMSD':
+        if self.initialParameters['Metric_1'] == 'RMSD' or self.initialParameters['Metric_2'] == 'RMSD':
             checkRMSDoption()
 
     def getForcefields(self):
@@ -81,7 +85,7 @@ class mwInputParser:
             if any(fileSys.endswith('.prmtop') for fileSys in os.listdir(f'{self.folder}/system')) else 'GROMOS'
 
     def getSettingsFromInputFile(self):
-        u = mda.Universe(f"{self.folder}/system/{self.initialParameters['PDB']}")
+        u = Mda.Universe(f"{self.folder}/system/{self.initialParameters['PDB']}")
         # Default settings:
         self.initialParameters['Metric_1'] = None
         self.initialParameters['Metric_2'] = None
@@ -99,8 +103,7 @@ class mwInputParser:
                 print(
                     "Warning: Make sure your custom input file is pointing at the binaries in the new restart folder!")
                 self.initialParameters['CUSTOMFILE'] = f"{self.folder}/system/{customFile}"
-                if self.trajCount == 0 and self.initialParameters[
-                    'Restart'] == 'NO':  # first run we sort post-equilibration files
+                if self.trajCount == 0 and self.initialParameters['Restart'] == 'NO':
                     for extension in self.outExtensions:
                         subprocess.Popen(f'cp {self.folder}/system/*.{extension} restarts/previous.{extension}',
                                          shell=True)
@@ -115,14 +118,14 @@ class mwInputParser:
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['RelaxTime'] = float(line.split('=')[1].strip())
 
-                elif line.startswith('Tolerance'):
+                if line.startswith('Tolerance'):
                     if line.split('=')[1].strip() != '':
                         if float(line.split("=")[1].strip()) in range(0, 101):
                             self.initialParameters['Tolerance'] = float(line.split('=')[1].strip()) / 100
                         else:
                             raise ValueError("Tolerance range valid: 0 - 100")
 
-                elif line.startswith('NumberCV'):
+                if line.startswith('NumberCV'):
                     if line.split('=')[1].strip() != '':
                         if int(line.split('=')[1].strip()) in range(1, 3):
                             self.initialParameters['NumberCV'] = int(line.split('=')[1].strip())
@@ -131,14 +134,12 @@ class mwInputParser:
                     else:
                         raise ValueError("Please input the number of CVs (1 or 2 allowed)")
 
-                elif line.startswith('Metric_1'):
+                if line.startswith('Metric_1'):
                     if line.split('=')[1].strip() != '':
                         if line.split('=')[1].strip().upper() in self.allowedMetrics:
                             self.initialParameters['Metric_1'] = line.split('=')[1].strip().upper()
                         else:
                             raise ValueError("Invalid Metric 1. Only metrics allowed: ", self.allowedMetrics)
-                    else:
-                        print("No Metric 1 chosen")
 
                 elif line.startswith('Metric_2'):
                     if line.split('=')[1].strip() != '':
@@ -146,8 +147,6 @@ class mwInputParser:
                             self.initialParameters['Metric_2'] = line.split('=')[1].strip().upper()
                         else:
                             raise ValueError("Invalid Metric 2. Only metrics allowed: ", self.allowedMetrics)
-                    else:
-                        print("No Metric 2 chosen")
 
                 if line.startswith('Cutoff_1'):
                     if line.split('=')[1].strip() != '':
@@ -208,13 +207,12 @@ class mwInputParser:
         if not self.initialParameters.get('Metric_1') and not self.initialParameters.get('Metric_2'):
             raise ValueError(
                 "Please make sure if you choose at least one metric to supervise (Distance, Contacts, RMSD, HB)")
-        if (not self.initialParameters.get('Metric_1') or not self.initialParameters.get(
-                'Metric_2')) and self.initialParameters.get('NumberCV') == 2:
+        if self.initialParameters.get('NumberCV') == 2 and (
+                not self.initialParameters.get('Metric_1') or not self.initialParameters.get('Metric_2')):
             raise ValueError(
                 "Please make sure if you use CV2 to specify all the CVs choosing one metric to supervise (Distance, Contacts, RMSD, HB)")
 
     def argumentParser(self):
-
         ap = argparse.ArgumentParser()
         ap.add_argument("-m", '--mode', type=str, default='parallel', required=False,
                         help="specify -m parallel or serial mode [Default = parallel]")
@@ -224,7 +222,29 @@ class mwInputParser:
                         help=' use -c to define a specific command you want to use to run your engine.'
                              'Use "" to define the command: "gmx mdrun -deffnm npt -bonded gpu". '
                              'Be aware of the GPU batch division and let mwSuMD sort the GPUs.')
+        ap.add_argument("-k", '--kill', required=False, action='store_true',
+                        help="Stop mwSuMD from the current working directory")
+        ap.add_argument("-j", '--join', nargs='*', required=False,
+                        help="Merge the trajectories from one step to another: e.g. -j 1 10")
         args = ap.parse_args()
+
+        if args.kill is None:
+            import os
+            os.system('val=$(<.mypid ) && kill -9 $val')
+            os.kill(os.getpid(), signal.SIGKILL)
+        if args.join is not None:
+            import Merger
+            merger = Merger.TrajMerger()
+            merger.loadTrajectories()
+            if args.join == 'all':
+                merger.mergeAll()
+            if len(args.join) != 0:
+                merger.mergeFrom(args.join[0], args.join[1])
+            else:
+                print(
+                    "Error: incorrect arguments for -j. -join needs 2 number to set the starting and ending steps to be merged")
+                exit()
+            exit()
 
         if 'parallel' in vars(args).values():
             self.initialParameters['Mode'] = 'parallel'
@@ -239,13 +259,6 @@ class mwInputParser:
         self.initialParameters['EXCLUDED_GPUS'] = None
         if args.exclude is not None and len(args.exclude) != 0:
             self.initialParameters['EXCLUDED_GPUS'] = [int(x) for x in args.exclude]
-
-        if not os.path.isdir(f'{self.folder}/plumed'):
-            self.initialParameters['PLUMED'] = None
-        else:
-            for file in os.listdir(self.folder + "/plumed"):
-                if file.endswith('.inp'):
-                    self.initialParameters['PLUMED'] = f'{self.folder}/plumed/{file}'
 
         with open(self.inputFile, "r") as infile:
             for line in infile:
