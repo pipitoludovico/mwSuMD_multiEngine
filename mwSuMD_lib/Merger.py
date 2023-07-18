@@ -16,7 +16,7 @@ class TrajMerger:
                 self.topology = topology
         for traj in os.listdir('trajectories'):
             if traj.endswith('.xtc'):
-                self.trajList.append(traj)
+                self.trajList.append('trajectories/' + traj)
 
         natsort = lambda s: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', s)]
         self.sortedTrajs = (sorted(self.trajList, key=natsort))
@@ -33,7 +33,7 @@ class TrajMerger:
             start = 0
         if end == -1:
             end = 'final_step'
-        selection = self.sortedTrajs[start:end]
+        selection = self.sortedTrajs[int(start):int(end)]
         Universe = Mda.Universe(f'system/' + self.topology, *selection)
         atomsel = Universe.select_atoms('all')
         with Mda.Writer(f'merged_from_{start}_to_{end}.xtc') as W:

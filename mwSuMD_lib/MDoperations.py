@@ -57,10 +57,10 @@ class MDoperator:
     def checkIfStuck(self, values, accumulatedFails) -> bool:
         if accumulatedFails > self.par['Fails']*int(self.par['NumberCV']):
             print('X' * 200)
-            print("\nThe simulation is stuck and it has been terminated")
+            print("\nThe simulation is stuck and it has been terminated\n")
             print('X' * 200)
             with open('walkerSummary.log', 'a') as logFile:
-                logFile.write('\nSimulation seemed stuck and it has been terminated')
+                logFile.write('\nSimulation seemed stuck and it has been terminated\n')
                 logFile.close()
             exit()
         else:

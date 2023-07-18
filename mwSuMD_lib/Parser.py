@@ -118,6 +118,15 @@ class mwInputParser:
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['RelaxTime'] = float(line.split('=')[1].strip())
 
+                if line.startswith('Restart'):
+                    mwInputParser.initialParameters['Restart'] = line.split('=')[1].strip().upper()
+
+                if line.startswith('Output'):
+                    mwInputParser.initialParameters['Output'] = line.split('=')[1].strip()
+
+                if line.startswith('ligand_HB'):
+                    mwInputParser.initialParameters['ligand_HB'] = line.split('=')[1].strip()
+
                 if line.startswith('Tolerance'):
                     if line.split('=')[1].strip() != '':
                         if float(line.split("=")[1].strip()) in range(0, 101):
@@ -222,18 +231,21 @@ class mwInputParser:
                         help=' use -c to define a specific command you want to use to run your engine.'
                              'Use "" to define the command: "gmx mdrun -deffnm npt -bonded gpu". '
                              'Be aware of the GPU batch division and let mwSuMD sort the GPUs.')
-        ap.add_argument("-k", '--kill', required=False, action='store_true',
+        ap.add_argument("-k", '--kill', required=False, action='store_true', default=False,
                         help="Stop mwSuMD from the current working directory")
         ap.add_argument("-j", '--join', nargs='*', required=False,
-                        help="Merge the trajectories from one step to another: e.g. -j 1 10")
+                        help="Merge the trajectories from one step to another: e.g. -j 1 10 or -j all to merge every step.")
+
         args = ap.parse_args()
 
-        if args.kill is None:
+        if args.kill is True:
             import os
+
             os.system('val=$(<.mypid ) && kill -9 $val')
             os.kill(os.getpid(), signal.SIGKILL)
         if args.join is not None:
-            import Merger
+            from mwSuMD_lib import Merger
+
             merger = Merger.TrajMerger()
             merger.loadTrajectories()
             if args.join == 'all':
@@ -245,6 +257,8 @@ class mwInputParser:
                     "Error: incorrect arguments for -j. -join needs 2 number to set the starting and ending steps to be merged")
                 exit()
             exit()
+
+        args = ap.parse_args()
 
         if 'parallel' in vars(args).values():
             self.initialParameters['Mode'] = 'parallel'
@@ -280,26 +294,28 @@ class mwInputParser:
             directory = f'{self.folder}/restarts'
         else:
             directory = f'{self.folder}/system'
-        self.initialParameters.update(
-            {extension: file for file in os.listdir(directory) for extension in self.outExtensions if
-             file.endswith(extension)})
+        self.initialParameters.update({extension: file for file in os.listdir(directory) for extension in self.outExtensions if file.endswith(extension) and 'minimzed' not in file})
 
     def countTraj_logTraj(self, metric):
         """ At what cycle number mwSuMD was stopped? """
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
+        if self.initialParameters.get('Metric_1') is None:
+            self.initialParameters['Metric_1'] = 'No Metric 1 chosen'
+        if self.initialParameters.get('Metric_2') is None:
+            self.initialParameters['Metric_2'] = 'No Metric 2 chosen'
         if self.trajCount == 0 and (metric == 0 or metric == 10 ** 6):
             with open('walkerSummary.log', 'w') as logF:
                 logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")
         elif self.trajCount != 0 and (metric == 0 or metric == 10 ** 6):
             with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(self.trajCount) + " RESUMED:\t" + "Metric 1:" + str(
-                    self.initialParameters["Metric_1"]) + "Metric 2:\t" + str(
-                    self.initialParameters["Metric_2"] + "\n"))
+                logF.write(str(self.trajCount) + "\nCheckpoint with Metric 1:" + (
+                    self.initialParameters["Metric_1"]) + "\tMetric 2: " + (self.initialParameters[
+                                                                                "Metric_2"] + f" and the following selections: \n{self.selection_list}\n"))
         elif self.initialParameters['Relax'] is True:
             with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(self.trajCount) + " Relaxation protocol for Metric 1\t:" + str(
-                    self.initialParameters["Metric_1"]) + "\tMetric 2:\t" + str(
-                    self.initialParameters["Metric_2"] + "With values:" + str(metric) + "\n"))
+                logF.write(str(self.trajCount) + "\nClassic Protocol with Metric 1\t:" + (
+                    self.initialParameters["Metric_1"]) + "\tMetric 2:" + (self.initialParameters[
+                                                                               "Metric_2"] + f" and the following selections: \n{self.selection_list}\n"))
         else:
             with open('walkerSummary.log', 'a') as logF:
                 logF.write(str(self.trajCount) + " " + str(metric) + "\n")

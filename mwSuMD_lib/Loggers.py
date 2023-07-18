@@ -51,28 +51,6 @@ class Logger:
                 write.writerow(walkers_metrics_2)
                 write.writerow(walkers_metrics)
 
-    #
-    # @staticmethod
-    # def logContact_misc(timeseries, mean_contacts, last_contacts, distMetric):
-    #     with open('/contacts_crude.log', 'a') as distF:
-    #         distF.write('contacts: %s, mean: %s, last: %s, score: %s\n' % (
-    #             " ".join(map(str, timeseries)), str(mean_contacts), str(last_contacts), str(distMetric)))
-    #
-    # @staticmethod
-    # def logDistance(logDistances, log_mean_distance, log_last_distance, log_distMetric):
-    #     with open('/distance_crude.log', 'a') as distF:
-    #         distF.write('distances: %s, mean: %s, last: %s, score: %s\n' % (
-    #             " ".join(map(str, logDistances)), str(log_mean_distance),
-    #             str(log_last_distance), str(log_distMetric)))
-    #
-    # @staticmethod
-    # def HbLogger(nContacts, frame, HBscore):
-    #     with open('/HB_scores_crude.log', 'a') as scoreF:
-    #         scoreF.write(
-    #             'number wat mols: %s, number HB: %s, HB_score: %s\n' % (str(nContacts),
-    #                                                                     str(frame),
-    #                                                                     str(HBscore)))
-
     @staticmethod
     def logSlope(data):
         # maxDist = max((dist, value) for dist, value in data.items())
