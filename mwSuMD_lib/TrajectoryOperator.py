@@ -13,6 +13,7 @@ class TrajectoryOperator(mwInputParser):
         self.setting_error = f"File or setting missing. "
 
     def wrap(self, folder):
+        u = None
         try:
             os.chdir(f'{self.folder}/tmp/walker_' + str(folder))
             ext = ('xtc', 'dcd')
@@ -44,7 +45,7 @@ class TrajectoryOperator(mwInputParser):
 
             try:
                 u = Mda.Universe(psf, trajFile)
-            except:
+            except FileNotFoundError:
                 print("No trajectory or psf found. Check your simulation parameters and make sure production went well")
                 os.kill(os.getpid(), signal.SIGKILL)
 

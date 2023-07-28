@@ -37,9 +37,9 @@ class ArgParser:
 
             merger = Merger.TrajMerger()
             merger.loadTrajectories()
-            if args.join == 'all':
+            if len(args.join) == 1 and args.join[0] == 'all':
                 merger.mergeAll()
-            if len(args.join) != 0:
+            elif len(args.join) == 2 and 'all' not in args.join:
                 merger.mergeFrom(args.join[0], args.join[1])
             else:
                 print(

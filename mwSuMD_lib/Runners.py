@@ -1,7 +1,5 @@
 import multiprocessing as mp
-import os
 import time
-import traceback
 
 from .GPUoperations import ProcessManager
 from .MDoperations import *
@@ -113,14 +111,14 @@ class Runner(mwInputParser):
 
     def lauchEngine(self, trajCount, walk_count, GPU, customFile=None):
         command = ''
-        core_division = (int(len(os.sched_getaffinity(0))/self.initialParameters["Walkers"]))
+        core_division = (int(len(os.sched_getaffinity(0)) / self.initialParameters["Walkers"]))
         taks_master = f'-nt {core_division} -npme -1 -ntmpi 0 -ntomp 0 -ntomp_pme 0 -pin on -pme gpu -nb gpu -bonded gpu -update gpu'
         plumed = f'-plumed {self.par["PLUMED"]}' if self.par['PLUMED'] is not None else ''
 
         if self.par['MDEngine'] == 'GROMACS':
             MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount, customFile)
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is None:
-                command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} -gpu_id {GPU} {taks_master} -pinoffset {GPU*core_division} -nstlist {self.initialParameters["Timewindow"]} &> gromacs.log'
+                command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} -gpu_id {GPU} {taks_master} -pinoffset {GPU * core_division} -nstlist {self.initialParameters["Timewindow"]} &> gromacs.log'
             elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is None:
                 command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} &> gromacs.log'
             elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:

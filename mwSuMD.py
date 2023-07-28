@@ -1,6 +1,13 @@
+#!/usr/bin/env python3
 import pandas as pd
 
-from mwSuMD_lib import *
+from mwSuMD_lib import GPUoperations
+from mwSuMD_lib import Parser
+from mwSuMD_lib import SuMD
+from mwSuMD_lib import SimulationChecker
+from mwSuMD_lib import ArgParser
+
+ArgParser.ArgParser()
 
 GPUoperations.ProcessManager()
 pars = Parser.mwInputParser()

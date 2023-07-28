@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import os
 import traceback
 from multiprocessing import Manager
 import time
@@ -26,47 +27,38 @@ class MetricsParser(mwInputParser):
             return self.walkers_metrics, self.metric_in_last_frames
 
     def createMetricList(self):
+        manager = None
+        q = None
         if self.initialParameters['Relax'] is True:
             self.initialParameters['Walkers'] = 1
-            print("Relax mode: calculating metrics: ", self.initialParameters['Relax'], "Walker set to relax: ", self.initialParameters['Walkers'])
+            print("Relax mode: calculating metrics: ", self.initialParameters['Relax'], "Walker set to relax: ",
+                  self.initialParameters['Walkers'])
         last_frame_metric_1, last_frame_metric_2, all_m_1, all_m_2 = [], [], [], []
-        print("Init Manager")
-        manager = Manager()
-        print("Init queue")
-        q = manager.Queue()
-        print("Calculating Metrics:")
-        results = []
-        with mp.Pool() as pool:
-            for x in range(1, self.initialParameters['Walkers'] + 1):
-                results.append(pool.apply(self.calculateMetricsMP, args=(q, x, self.selection_list)))
-                ret = q.get()
-                if not ret:
-                    print('queue->get non inizializzato o vuoto')
 
-                if self.initialParameters['NumberCV'] == 1:
-                    self.score_metrics.append(*ret[0])
-                    self.metric_in_last_frames.append(*ret[1])
-                else:
-                    last_frame_metric_1.append(ret[0][0])
-                    last_frame_metric_2.append(ret[0][1])
-                    all_m_1.append(ret[1][0])
-                    all_m_2.append(ret[1][1])
-        TIMEOUT = 20
-        start = time.time()
-        while time.time() - start <= TIMEOUT:
-            if all(p is None or not p.is_alive() for p in results):
-                break
-            time.sleep(.1)
-        else:
-            print("timed out, killing all processes after 20 seconds of inactivity")
-            for p in results:
-                if p is not None:
-                    p.terminate()
-                    p.join()
-        if self.initialParameters['NumberCV'] == 2:
-            self.metric_in_last_frames = last_frame_metric_1, last_frame_metric_2,
-            self.walkers_metrics = all_m_1, all_m_2
-        self.initialParameters['Walkers'] = self.walkers_number_snapshot
+        manager = Manager()
+        q = manager.Queue()
+        results = []
+        try:
+            with mp.Pool() as pool:
+                for x in range(1, self.initialParameters['Walkers'] + 1):
+                    results.append(pool.apply(self.calculateMetricsMP, args=(q, x, self.selection_list)))
+                    ret = q.get()
+                    if self.initialParameters['NumberCV'] == 1:
+                        self.score_metrics.append(*ret[0])
+                        self.metric_in_last_frames.append(*ret[1])
+                    else:
+                        last_frame_metric_1.append(ret[0][0])
+                        last_frame_metric_2.append(ret[0][1])
+                        all_m_1.append(ret[1][0])
+                        all_m_2.append(ret[1][1])
+            if self.initialParameters['NumberCV'] == 2:
+                self.metric_in_last_frames = last_frame_metric_1, last_frame_metric_2,
+                self.walkers_metrics = all_m_1, all_m_2
+            self.initialParameters['Walkers'] = self.walkers_number_snapshot
+            q.shutdown()
+        except:
+            print("\nMetric calculation failed. Check if all the simulations ended well.")
+            raise Exception(traceback.format_exc())
 
     def calculateMetricsMP(self, queue, walker, selection_list):
         score_metrics, last_metrics, all_metrics = [], [], []
