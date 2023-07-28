@@ -1,8 +1,6 @@
 import multiprocessing as mp
-import os
 import traceback
 from multiprocessing import Manager
-import time
 
 from .Getters import *
 from .Loggers import Logger
@@ -27,8 +25,6 @@ class MetricsParser(mwInputParser):
             return self.walkers_metrics, self.metric_in_last_frames
 
     def createMetricList(self):
-        manager = None
-        q = None
         if self.initialParameters['Relax'] is True:
             self.initialParameters['Walkers'] = 1
             print("Relax mode: calculating metrics: ", self.initialParameters['Relax'], "Walker set to relax: ",
