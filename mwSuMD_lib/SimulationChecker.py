@@ -21,12 +21,12 @@ class Checker(mwInputParser):
         self.bestWalker = None
         self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
 
-    def checkIfFailed(self, vals, accumulatedFails):
+    def checkIfFailed(self, vals1=None, vals2=None, accumulatedFails=0):
         print('#' * 200)
-        print('Checking if trajectory is stuck with values: ' + str(vals) +
+        print('Checking if trajectory is stuck with values: ' + str(vals1) +
               ". Total fails accumulated: " + str(accumulatedFails))
         mdOperator = MDoperator(self.initialParameters, self.folder)
-        if mdOperator.checkIfStuck(vals, accumulatedFails) is True:
+        if mdOperator.checkIfStuck([vals1, vals2], accumulatedFails) is True:
             self.relaxSystem()
             accumulatedFails += 1
         else:

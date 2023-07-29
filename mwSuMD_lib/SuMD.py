@@ -71,8 +71,7 @@ class suMD1(mwInputParser):
             if self.parameters['NumberCV'] == 1:
                 self.fails += checker.checkIfFailed(self.checkVals_1, self.fails)
             else:
-                self.fails += checker.checkIfFailed(self.checkVals_1, self.fails)
-                self.fails += checker.checkIfFailed(self.checkVals_2, self.fails)
+                self.fails += checker.checkIfFailed(self.checkVals_1, self.checkVals_2, self.fails)
             self.checkVals_1.clear()
             self.checkVals_2.clear()
 

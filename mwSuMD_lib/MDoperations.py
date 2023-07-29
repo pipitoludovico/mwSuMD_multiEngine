@@ -55,7 +55,7 @@ class MDoperator:
         tprPreparation.wait()
 
     def checkIfStuck(self, values, accumulatedFails) -> bool:
-        if accumulatedFails > self.par['Fails']*int(self.par['NumberCV']):
+        if accumulatedFails > self.par['Fails'] * int(self.par['NumberCV']):
             print('X' * 200)
             print("\nThe simulation is stuck and it has been terminated\n")
             print('X' * 200)
@@ -64,9 +64,14 @@ class MDoperator:
                 logFile.close()
             exit()
         else:
-            x = np.array(values)
-            x_norm = (x - np.min(x)) / (np.max(x) - np.min(x))
-            if np.std(x_norm) < self.par['Tolerance']:
+            failCount = 0
+            for vals in values:
+                if vals is not None:
+                    x = np.array(vals)
+                    x_norm = (x - np.min(x)) / (np.max(x) - np.min(x))
+                    if np.std(x_norm) < self.par['Tolerance']:
+                        failCount += 1
+            if failCount == self.par['NumberCV']:
                 print('\nSimulation might be stuck. Running the relaxation protocol.')
                 print("")
                 return True
