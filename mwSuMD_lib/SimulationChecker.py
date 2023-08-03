@@ -71,8 +71,10 @@ class Checker(mwInputParser):
             self.bestWalker, self.best_walker_score, self.best_average_metric_1, self.best_average_metric_2 = MetricsParser().getBestWalker(
                 self.walker_metrics[0], self.walker_metrics[1], self.averages[0], self.averages[1])
             self.best_metric_result = [self.best_average_metric_1, self.best_average_metric_2]
-        MetricsParser().countTraj_logTraj(["RELAXATION PROTOCOL SCORE: " + str(self.best_walker_score) + "\tMetrics: " + str(self.best_metric_result)])
-        self.trajCount += 1
+        with open('walkerSummary.log', 'a') as walkerSummary:
+            info_to_write = str(self.trajCount) + " RELAXATION PROTOCOL SCORE: " + str(self.best_walker_score) + " Metrics: " + str(self.best_metric_result) + "\n"
+            walkerSummary.write(info_to_write)
+        # self.trajCount += 1
         print("\nRelaxation Protocol Ended")
         print('#' * 200)
         print('\n\n')

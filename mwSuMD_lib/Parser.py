@@ -244,7 +244,7 @@ class mwInputParser:
                                                                                 "Metric_2"] + f" and the following selections: \n{self.selection_list}\n"))
         elif self.initialParameters['Relax'] is True:
             with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(self.trajCount-1) + "\nClassic Protocol with Metric 1\t:" + (
+                logF.write(str(self.trajCount) + "\nClassic Protocol with Metric 1\t:" + (
                     self.initialParameters["Metric_1"]) + "\tMetric 2:" + (self.initialParameters[
                                                                                "Metric_2"] + f" and the following selections: \n{self.selection_list}\n"))
         else:
