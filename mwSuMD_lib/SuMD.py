@@ -54,6 +54,8 @@ class suMD1(mwInputParser):
                 self.metric_1, self.metric_2 = 10 ** 6, 0
                 while self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 < self.parameters['Cutoff_2']:
                     self.output_to_check[0], self.output_to_check[1] = self.runProtocol()
+        print("FINAL RELAXATION PROTOCOL:")
+        Checker().relaxSystem()
 
     def runProtocol(self):
         mwInputParser().getRestartOutput()

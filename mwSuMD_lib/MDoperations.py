@@ -8,7 +8,8 @@ class MDoperator:
     def __init__(self, par, root):
         self.par = par
         self.folder = root
-        self.initialTrajectoriesInFolder = len([trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
+        self.initialTrajectoriesInFolder = len(
+            [trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
         self.cycle = None
 
     def saveStep(self, best_walker):

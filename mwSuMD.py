@@ -4,7 +4,6 @@ import pandas as pd
 from mwSuMD_lib import GPUoperations
 from mwSuMD_lib import Parser
 from mwSuMD_lib import SuMD
-from mwSuMD_lib import SimulationChecker
 from mwSuMD_lib import ArgParser
 
 ArgParser.ArgParser()
@@ -28,8 +27,6 @@ def main():
         sumd = SuMD.suMD1(settings)
         sumd.run_mwSuMD()
         print("\nRunning final relaxation protocol")
-        settings['Relax'] = True
-        SimulationChecker.Checker().relaxSystem()
     exit()
 
 
