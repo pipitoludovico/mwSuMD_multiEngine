@@ -8,9 +8,11 @@ class MDoperator:
     def __init__(self, par, root):
         self.par = par
         self.folder = root
-        self.cycle = len(os.listdir(f'{self.folder}/trajectories'))
+        self.initialTrajectoriesInFolder = len([trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
+        self.cycle = None
 
     def saveStep(self, best_walker):
+        self.cycle = self.initialTrajectoriesInFolder
         os.makedirs('trajectories', exist_ok=True)
         """Handle the restart files and the xtc storage"""
         for r in range(1, int(self.par['Walkers']) + 1):
@@ -18,6 +20,7 @@ class MDoperator:
                 os.chdir('tmp/walker_%s' % str(r))
                 # moving the best frame to the trajectory folder
                 os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
+                self.cycle += 1
                 # moving and renaming the binary files to the restart folder
                 if self.par['MDEngine'] != 'GROMACS':
                     os.system(f'cp *.coor {self.folder}/restarts/previous.coor')
@@ -34,14 +37,13 @@ class MDoperator:
                     os.system('cp COLVAR  %s/restarts/ ' % self.folder)
                     os.system('cp grid.dat  %s/restarts/ ' % self.folder)
         print("FINISHED SAVING FRAMES")
-        self.cycle += 1
         os.chdir(self.folder)
         os.system('rm -r tmp')
         self.par['Relax'] = False
 
     def prepareTPR(self, walk_count, trajcount, customFile=None):
-        gro = f'{self.par["Root"]}/system/{self.par["GRO"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.gro'
-        cpt = f'{self.par["Root"]}/system/{self.par["CPT"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.cpt'
+        gro = f'{self.par["Root"]}/system/{self.par["GRO"]}' if self.initialTrajectoriesInFolder == 0 else f'{self.par["Root"]}/restarts/previous.gro'
+        cpt = f'{self.par["Root"]}/system/{self.par["CPT"]}' if self.initialTrajectoriesInFolder == 0 else f'{self.par["Root"]}/restarts/previous.cpt'
         if customFile is None:
             command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
                       f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \

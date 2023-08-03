@@ -22,7 +22,7 @@ class ArgParser:
         ap.add_argument("-k", '--kill', required=False, action='store_true', default=False,
                         help="Stop mwSuMD from the current working directory")
         ap.add_argument("-j", '--join', nargs='*', required=False,
-                        help="Merge the trajectories from one step to another: e.g. -j 1 10 or -j all to merge every step.")
+                        help="Merge the trajectories from one step to another: e.g. -j 1 10, -j 10 , or -j all to merge every step.")
         ap.add_argument('files', nargs='*')
 
         args = ap.parse_args()
@@ -32,22 +32,22 @@ class ArgParser:
 
             os.system('val=$(<.mypid ) && kill -9 $val')
             os.kill(os.getpid(), signal.SIGKILL)
+
         if args.join is not None:
             from mwSuMD_lib import Merger
-
             merger = Merger.TrajMerger()
             merger.loadTrajectories()
-            if len(args.join) == 1 and args.join[0] == 'all':
+            if len(args.join) == 1 and 'all' in args.join[0]:
                 merger.mergeAll()
+            elif len(args.join) == 1 and 'all' not in args.join:
+                merger.mergeFromToEnd(args.join[0])
             elif len(args.join) == 2 and 'all' not in args.join:
-                merger.mergeFrom(args.join[0], args.join[1])
+                merger.mergeFromTo(args.join[0], args.join[1])
             else:
                 print(
                     "Error: incorrect arguments for -j. -join needs 2 number to set the starting and ending steps to be merged")
                 exit()
             exit()
-
-        args = ap.parse_args()
 
         if 'parallel' in vars(args).values():
             mwInputParser.initialParameters['Mode'] = 'parallel'

@@ -1,7 +1,5 @@
-import argparse
 import os
 import subprocess
-import signal
 import MDAnalysis as Mda
 
 
@@ -221,73 +219,6 @@ class mwInputParser:
             raise ValueError(
                 "Please make sure if you use CV2 to specify all the CVs choosing one metric to supervise (Distance, Contacts, RMSD, HB)")
 
-    def argumentParser(self):
-        ap = argparse.ArgumentParser()
-        ap.add_argument("-m", '--mode', type=str, default='parallel', required=False,
-                        help="specify -m parallel or serial mode [Default = parallel]")
-        ap.add_argument('-e', '--exclude', nargs='*', required=False,
-                        help=' use -e to exclude a list of GPUs from being used by mwSuMD: e.g. -e 0 3')
-        ap.add_argument('-c', '--command', type=str, nargs='?', required=False,
-                        help=' use -c to define a specific command you want to use to run your engine.'
-                             'Use "" to define the command: "gmx mdrun -deffnm npt -bonded gpu". '
-                             'Be aware of the GPU batch division and let mwSuMD sort the GPUs.')
-        ap.add_argument("-k", '--kill', required=False, action='store_true', default=False,
-                        help="Stop mwSuMD from the current working directory")
-        ap.add_argument("-j", '--join', nargs='*', required=False,
-                        help="Merge the trajectories from one step to another: e.g. -j 1 10 or -j all to merge every step.")
-
-        args = ap.parse_args()
-
-        if args.kill is True:
-            import os
-
-            os.system('val=$(<.mypid ) && kill -9 $val')
-            os.kill(os.getpid(), signal.SIGKILL)
-        if args.join is not None:
-            from mwSuMD_lib import Merger
-
-            merger = Merger.TrajMerger()
-            merger.loadTrajectories()
-            if args.join == 'all':
-                merger.mergeAll()
-            if len(args.join) != 0:
-                merger.mergeFrom(args.join[0], args.join[1])
-            else:
-                print(
-                    "Error: incorrect arguments for -j. -join needs 2 number to set the starting and ending steps to be merged")
-                exit()
-            exit()
-
-        args = ap.parse_args()
-
-        if 'parallel' in vars(args).values():
-            self.initialParameters['Mode'] = 'parallel'
-        elif 'serial' in vars(args).values():
-            self.initialParameters['Mode'] = 'serial'
-
-        self.initialParameters['COMMAND'] = None
-        if args.command is not None:
-            self.initialParameters['COMMAND'] = args.command
-            print(self.initialParameters['COMMAND'])
-
-        self.initialParameters['EXCLUDED_GPUS'] = None
-        if args.exclude is not None and len(args.exclude) != 0:
-            self.initialParameters['EXCLUDED_GPUS'] = [int(x) for x in args.exclude]
-
-        with open(self.inputFile, "r") as infile:
-            for line in infile:
-                if line.startswith('#'):
-                    continue
-
-                if line.startswith('Restart'):
-                    self.initialParameters['Restart'] = line.split('=')[1].strip().upper()
-
-                if line.startswith('Output'):
-                    self.initialParameters['Output'] = line.split('=')[1].strip()
-
-                if line.startswith('ligand_HB'):
-                    self.initialParameters['ligand_HB'] = line.split('=')[1].strip()
-
     def getRestartOutput(self):
         os.makedirs('restarts', exist_ok=True)
         if self.trajCount != 0 or self.initialParameters['Restart'] == 'YES':
@@ -323,5 +254,5 @@ class mwInputParser:
     def getSettings(self):
         print("Loading setting parameters...")
         self.checkEngine(), self.getParameters(), self.getForcefields()
-        self.getSettingsFromInputFile(), self.getReferencePDB(), self.argumentParser(), self.getRestartOutput()
+        self.getSettingsFromInputFile(), self.getReferencePDB(), self.getRestartOutput()
         return self.initialParameters, self.selection_list, self.parameterFolderPath

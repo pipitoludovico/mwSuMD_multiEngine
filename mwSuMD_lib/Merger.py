@@ -28,11 +28,15 @@ class TrajMerger:
             for ts in Universe.trajectory:
                 W.write(atomsel)
 
-    def mergeFrom(self, start=1, end=-1):
-        if start == '' or start is None:
-            start = 0
-        if end == -1:
-            end = 'final_step'
+    def mergeFromToEnd(self, start=0):
+        selection = self.sortedTrajs[int(start):]
+        Universe = Mda.Universe(f'system/' + self.topology, *selection)
+        atomsel = Universe.select_atoms('all')
+        with Mda.Writer(f'merged_from_{start}_to_lastStep.xtc') as W:
+            for ts in Universe.trajectory:
+                W.write(atomsel)
+
+    def mergeFromTo(self, start=0, end=-1):
         selection = self.sortedTrajs[int(start):int(end)]
         Universe = Mda.Universe(f'system/' + self.topology, *selection)
         atomsel = Universe.select_atoms('all')

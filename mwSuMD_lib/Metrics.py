@@ -51,7 +51,6 @@ class MetricsParser(mwInputParser):
                 self.metric_in_last_frames = last_frame_metric_1, last_frame_metric_2,
                 self.walkers_metrics = all_m_1, all_m_2
             self.initialParameters['Walkers'] = self.walkers_number_snapshot
-            q.shutdown()
         except:
             print("\nMetric calculation failed. Check if all the simulations ended well.")
             raise Exception(traceback.format_exc())

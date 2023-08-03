@@ -13,12 +13,8 @@ GPUoperations.ProcessManager()
 pars = Parser.mwInputParser()
 settings, selection_list, parameterFolderPath = pars.getSettings()
 settings_df = pd.DataFrame(sorted(list(settings.items())), columns=['Setting', 'Parameter'])
-with open('mwSuMD_settings.txt', 'a') as f:
-    dfAsString = settings_df.to_string(header=False, index=False)
-    f.write(dfAsString)
-    f.write("\n")
-print(settings_df)
 
+print(settings_df)
 print("If you want to use your personal setting for simulating, please, place it the system folder, call it \n"
       "production.inp/namd/mdp (according to your engine) and mwSuMD will use that instead of the default file. \n"
       "If you choose to do so, make sure it points to a folder named 'restart' to look for the restart binaries.\n")
