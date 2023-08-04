@@ -26,7 +26,6 @@ def main():
     else:
         sumd = SuMD.suMD1(settings)
         sumd.run_mwSuMD()
-        print("\nRunning final relaxation protocol")
     exit()
 
 
