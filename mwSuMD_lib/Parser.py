@@ -23,7 +23,7 @@ class mwInputParser:
         self.customInputFileExtension = ('namd', 'inp', 'mdp')
         self.outExtensions = ('cpt', 'cpi', 'gro', 'tpr', 'coor', 'vel', 'xsc')
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
-        self.initialParametersameter_extensions = ('.param', '.prmtop', '.prm', '.par')
+        self.initialParametersameter_extensions = ('.param', '.prm', '.par')
         self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
         self.allowedMetrics = ("DISTANCE", "RMSD", "CONTACTS")
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
@@ -74,7 +74,7 @@ class mwInputParser:
                     print("Put a reference pdb file in the 'reference' folder inside system and rerun.")
                     exit()
 
-        if self.initialParameters['Metric_1'] == 'RMSD' or self.initialParameters['Metric_2'] == 'RMSD':
+        if self.initialParameters.get('Metric_1') == 'RMSD' or self.initialParameters.get('Metric_2') == 'RMSD':
             checkRMSDoption()
 
     def getForcefields(self):
@@ -107,8 +107,11 @@ class mwInputParser:
                                          shell=True)
 
         with open(self.inputFile, "r") as infile:
+            self.initialParameters['NumberCV'] = None
             self.initialParameters['RelaxTime'] = 5
             self.initialParameters['Relax'] = False
+            self.initialParameters['Metric_1'] = None
+            self.initialParameters['Metric_2'] = None
             for line in infile:
                 if line.startswith('#'):
                     continue
@@ -187,14 +190,6 @@ class mwInputParser:
                     else:
                         raise ValueError("Please set the Savefreq in your input file as an integer number.")
 
-                if line.startswith(f'Sel_'):
-                    if line.split('=')[1].strip() != '':
-                        if len(u.select_atoms(f"{line.split('=')[1].strip()}")) != 0:
-                            self.selection_list.append(line.split('=')[1].strip())
-                        else:
-                            raise ValueError(
-                                "You atom pointed to 0 atoms: please check your selection with your structure file")
-
                 if line.startswith('Transition_1'):
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['Transition_1'] = line.split('=')[1].strip().lower()
@@ -211,6 +206,18 @@ class mwInputParser:
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['Fails'] = int(line.split('=')[1].strip())
 
+                if line.startswith("Sel_"):
+                    if line.split('=')[1].strip() != '':
+                        if len(u.select_atoms(f"{line.split('=')[1].strip()}")) != 0:
+                            self.selection_list.append(line.split('=')[1].strip())
+                        else:
+                            raise ValueError(
+                                "One of your selection pointed to 0 atoms: please check your selection with your structure file")
+
+        if self.initialParameters['NumberCV'] == 2 and (
+                self.initialParameters.get('Metric_1') is None or self.initialParameters.get('Metric_2') is None):
+            raise ValueError('Make sure to select both Metric 1 and 2 if NumberCV = 2!')
+
         if not self.initialParameters.get('Metric_1') and not self.initialParameters.get('Metric_2'):
             raise ValueError(
                 "Please make sure if you choose at least one metric to supervise (Distance, Contacts, RMSD, HB)")
@@ -225,7 +232,9 @@ class mwInputParser:
             directory = f'{self.folder}/restarts'
         else:
             directory = f'{self.folder}/system'
-        self.initialParameters.update({extension: file for file in os.listdir(directory) for extension in self.outExtensions if file.endswith(extension) and 'minimzed' not in file})
+        self.initialParameters.update(
+            {extension: file for file in os.listdir(directory) for extension in self.outExtensions if
+             file.endswith(extension) and 'minimzed' not in file})
 
     def countTraj_logTraj(self, metric):
         """ At what cycle number mwSuMD was stopped? """

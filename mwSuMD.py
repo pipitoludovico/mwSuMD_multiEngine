@@ -3,7 +3,7 @@ import os.path
 
 import pandas as pd
 
-if not os.path.exists('./system:'):
+if not os.path.exists('./system'):
     print('\nPlease make your ./system folder with the equilibrated system files and outputs')
     exit()
 

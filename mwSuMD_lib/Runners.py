@@ -128,9 +128,9 @@ class Runner(mwInputParser):
             if customFile is not None and self.initialParameters['COMMAND'] is not None:
                 command = f'{self.initialParameters["COMMAND"]} --device {GPU} production.inp 1> acemd.log'
             if customFile is not None and self.initialParameters['COMMAND'] is None:
-                command = f'acemd3 --device {GPU} production.inp 1> acemd.log'
+                command = f'acemd --device {GPU} production.inp 1> acemd.log'
             if customFile is None and self.initialParameters['COMMAND'] is None:
-                command = f'acemd3 --device {GPU} input_{walk_count}_{trajCount}.inp 1> acemd.log'
+                command = f'acemd --device {GPU} input_{walk_count}_{trajCount}.inp 1> acemd.log'
 
         elif self.par['MDEngine'] == 'NAMD':
             command = f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
