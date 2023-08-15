@@ -38,22 +38,22 @@ class suMD1(mwInputParser):
             if self.parameters['Transition_1'] == 'positive' and self.parameters['Transition_2'] == 'positive':
                 self.metric_1, self.metric_2 = 0, 0
                 while self.metric_1 < self.parameters['Cutoff_1'] and self.metric_2 < self.parameters['Cutoff_2']:
-                    self.output_to_check[0], self.output_to_check[1] = self.runProtocol()
+                    self.metric_1, self.metric_2 = self.runProtocol()
 
             if self.parameters['Transition_1'] == 'positive' and self.parameters['Transition_2'] == 'negative':
                 self.metric_1, self.metric_2 = 0, 10 ** 6
                 while self.metric_1 < self.parameters['Cutoff_1'] and self.metric_2 > self.parameters['Cutoff_2']:
-                    self.output_to_check[0], self.output_to_check[1] = self.runProtocol()
+                    self.metric_1, self.metric_2 = self.runProtocol()
 
             if self.parameters['Transition_1'] == 'negative' and self.parameters['Transition_2'] == 'negative':
                 self.metric_1, self.metric_2 = 10 ** 6, 10 ** 6
                 while self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 > self.parameters['Cutoff_2']:
-                    self.output_to_check[0], self.output_to_check[1] = self.runProtocol()
+                    self.metric_1, self.metric_2 = self.runProtocol()
 
             if self.parameters['Transition_1'] == 'negative' and self.parameters['Transition_2'] == 'positive':
                 self.metric_1, self.metric_2 = 10 ** 6, 0
                 while self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 < self.parameters['Cutoff_2']:
-                    self.output_to_check[0], self.output_to_check[1] = self.runProtocol()
+                    self.metric_1, self.metric_2 = self.runProtocol()
         print("#" * 200 + "\nTHRESHOLD METRICS REACHED: FINAL RELAXATION PROTOCOL:\n" + "#" * 200)
         Checker().relaxSystem()
 
@@ -76,5 +76,4 @@ class suMD1(mwInputParser):
                 self.fails += checker.checkIfFailed(self.checkVals_1, self.checkVals_2, self.fails)
             self.checkVals_1.clear()
             self.checkVals_2.clear()
-
         return self.output_to_check

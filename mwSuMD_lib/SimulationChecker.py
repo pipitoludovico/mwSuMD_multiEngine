@@ -45,7 +45,7 @@ class Checker(mwInputParser):
         os.chdir('tmp/walker_1')
         for file in os.listdir(os.getcwd()):
             if file.endswith('.inp'):
-                subprocess.Popen(f'acemd --device 0 {file} 1> relax.log', shell=True).wait()
+                subprocess.Popen(f'acemd3 --device 0 {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.namd'):
                 subprocess.Popen(f'namd3 +p8 +devices 0 {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.mdp'):
