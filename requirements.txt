@@ -1,4 +1,5 @@
 GPUtil==1.4.0
-MDAnalysis==2.5.0
-numpy==1.25.2
+MDAnalysis==2.6.1
+numpy==1.24.3
 pandas==2.0.3
+setuptools==65.5.0

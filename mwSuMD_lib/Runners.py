@@ -35,8 +35,8 @@ class Runner(mwInputParser):
                 raise Exception("No trajectory found. Check your tmp folder.")
         with mp.Pool() as p:
             p.map(trajOperator.wrap, range(1, self.par['Walkers'] + 1))
-            p.terminate()
-            p.join()
+        p.close()
+        p.join()
 
     def runGPU_batch(self, trajCount, walk_count, GPUbatch, queue):
         processes = []
@@ -79,12 +79,13 @@ class Runner(mwInputParser):
             results = []
             with mp.Pool(processes=len(lenIDs)) as pool:
                 for GPUbatch in GPUbatches:
-                    results.append(pool.apply(self.runGPU_batch, args=(self.trajCount, walk_count, GPUbatch, q)))
+                    results.append(pool.apply_async(self.runGPU_batch, args=(self.trajCount, walk_count, GPUbatch, q)))
                     walk_count += len(GPUbatch)
-                while not q.empty():
+                for result in results:
+                    result.wait()
                     q.get()
             pool.close()
-            pool.terminate()
+            pool.join()
             self.trajCount += 1
             end_time_parallel = time.perf_counter()
             print(f"Time taken with multiprocessing: {end_time_parallel - start_time_parallel:.2f} seconds")

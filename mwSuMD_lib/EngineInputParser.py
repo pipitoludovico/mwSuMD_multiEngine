@@ -16,8 +16,7 @@ class EngineInputs(mwInputParser):
     def getInputFile(self):
         if self.initialParameters['Relax'] is True:
             self.par['Timewindow'] = self.par['RelaxTime'] * 1000
-            print("\nTemporary changing the timewindow for relaxation protocol to: " + str(
-                self.par['Timewindow']) + " ps.")
+            print("\nTemporary changing the timewindow for relaxation protocol to: " + str(self.par['Timewindow']) + " ps.")
 
         restartInput = Template().inputFile
         if self.par['Restart'] == 'YES' or self.trajCount != 0:

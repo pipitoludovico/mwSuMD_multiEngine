@@ -1,5 +1,6 @@
 import os
 import subprocess
+import pkg_resources
 import MDAnalysis as Mda
 
 
@@ -10,7 +11,12 @@ class mwInputParser:
     initialParameters = {'Root': os.getcwd()}
     selection_list = []
     walker_metrics = []
-    parameterFolderPath = os.path.abspath('parameters')
+    package_dir = ''
+    if 'parameters' not in os.listdir(folder):
+        package_dir = pkg_resources.resource_filename('mwSuMD_lib', 'parameters')
+        parameterFolderPath = os.path.abspath(package_dir)
+    else:
+        parameterFolderPath = os.path.abspath('parameters')
     new_value = 0
     max_value = 0
     metric_1 = 0
@@ -83,7 +89,11 @@ class mwInputParser:
             if any(fileSys.endswith('.prmtop') for fileSys in os.listdir(f'{self.folder}/system')) else 'GROMOS'
 
     def getSettingsFromInputFile(self):
-        u = Mda.Universe(f"{self.folder}/system/{self.initialParameters['PDB']}")
+        if self.initialParameters.get('MDEngine') != 'GROMACS':
+            u = Mda.Universe(f"{self.folder}/system/{self.initialParameters['PDB']}")
+        else:
+            u = Mda.Universe(f"{self.folder}/system/{self.initialParameters['GRO']}")
+
         # Default settings:
         self.initialParameters['Metric_1'] = None
         self.initialParameters['Metric_2'] = None
@@ -208,6 +218,7 @@ class mwInputParser:
 
                 if line.startswith("Sel_"):
                     if line.split('=')[1].strip() != '':
+                        print("SELECTION: ", line.split('=')[1].strip())
                         if len(u.select_atoms(f"{line.split('=')[1].strip()}")) != 0:
                             self.selection_list.append(line.split('=')[1].strip())
                         else:
@@ -261,7 +272,8 @@ class mwInputParser:
                 logF.write(str(self.trajCount) + " " + str(metric) + "\n")
 
     def getSettings(self):
-        print("Loading setting parameters...")
+        if self.trajCount == 0:
+            print("Loading setting parameters...")
         self.checkEngine(), self.getParameters(), self.getForcefields()
         self.getSettingsFromInputFile(), self.getReferencePDB(), self.getRestartOutput()
         return self.initialParameters, self.selection_list, self.parameterFolderPath

@@ -15,6 +15,8 @@ class ArgParser:
                         help="specify -m parallel or serial mode [Default = parallel]")
         ap.add_argument('-e', '--exclude', nargs='*', required=False,
                         help=' use -e to exclude a list of GPUs from being used by mwSuMD: e.g. -e 0 3')
+        ap.add_argument('-r', '--replicas', type=int, required=False,
+                        help=' use -r to set a number of replicas to run.')
         ap.add_argument('-c', '--command', type=str, nargs='?', required=False,
                         help=' use -c to define a specific command you want to use to run your engine.'
                              'Use "" to define the command: "gmx mdrun -deffnm npt -bonded gpu". '
@@ -48,6 +50,11 @@ class ArgParser:
                     "Error: incorrect arguments for -j. -join needs 2 number to set the starting and ending steps to be merged")
                 exit()
             exit()
+
+        if args.replicas:
+            mwInputParser.initialParameters['REPLICAS'] = args.replicas
+        else:
+            mwInputParser.initialParameters['REPLICAS'] = 1
 
         if 'parallel' in vars(args).values():
             mwInputParser.initialParameters['Mode'] = 'parallel'

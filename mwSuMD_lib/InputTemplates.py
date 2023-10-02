@@ -164,4 +164,4 @@ class Template(mwInputParser):
                               '; Dispersion correction\n',
                               'DispCorr                = EnerPres  ; account for cut-off vdW scheme\n',
                               '; Velocity generation\n',
-                              'gen_vel                 = yes        ; Velocity generation is off \n']
+                              'gen_vel                 = no        ; Velocity generation is off \n']

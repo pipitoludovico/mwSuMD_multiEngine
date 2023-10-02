@@ -36,8 +36,10 @@ class MetricsParser(mwInputParser):
         results = []
         try:
             with mp.Pool() as pool:
-                for x in range(1, self.initialParameters['Walkers'] + 1):
+                for x in range(1, self.initialParameters.get('Walkers') + 1):
+                    print("Calculating walker #:", x)
                     results.append(pool.apply(self.calculateMetricsMP, args=(q, x, self.selection_list)))
+                while not q.empty():
                     ret = q.get()
                     if self.initialParameters['NumberCV'] == 1:
                         self.score_metrics.append(*ret[0])
@@ -47,6 +49,8 @@ class MetricsParser(mwInputParser):
                         last_frame_metric_2.append(ret[0][1])
                         all_m_1.append(ret[1][0])
                         all_m_2.append(ret[1][1])
+            pool.close()
+            pool.join()
             if self.initialParameters['NumberCV'] == 2:
                 self.metric_in_last_frames = last_frame_metric_1, last_frame_metric_2,
                 self.walkers_metrics = all_m_1, all_m_2

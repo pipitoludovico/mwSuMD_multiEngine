@@ -48,11 +48,11 @@ class MDoperator:
         if customFile is None:
             command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
                       f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \
-                      f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr -maxwarn 1 &>tpr_log.log'
+                      f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr -maxwarn 3 &>tpr_log.log'
         else:
             command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
                       f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \
-                      f' -o production.tpr -maxwarn 1 &>tpr_log.log'
+                      f' -o production.tpr -maxwarn 3 &>tpr_log.log'
 
         tprPreparation = subprocess.Popen(command, shell=True)
         tprPreparation.wait()
