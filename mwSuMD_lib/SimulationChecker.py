@@ -20,7 +20,7 @@ class Checker(mwInputParser):
         self.scores = None
         self.best_value = None
         self.bestWalker = None
-        self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
+        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.GPUIDs = ProcessManager.getGPUids()
 
     def checkIfFailed(self, vals1=None, vals2=None, accumulatedFails=0):
@@ -41,20 +41,26 @@ class Checker(mwInputParser):
         print('#' * 200)
         # The relaxation protocol starts here
         self.initialParameters['Relax'] = True
-        GPU = self.GPUIDs[0]
+        manager = ProcessManager()
+        GPUs = manager.getGPUids()
+        # let's exclude the GPU id if we want to keep a GPU for other jobs
+        if self.initialParameters['EXCLUDED_GPUS'] is not None:
+            print("EXCLUDED GPU:", self.initialParameters['EXCLUDED_GPUS'])
+            for excluded in self.initialParameters['EXCLUDED_GPUS']:
+                GPUs.remove(excluded)
+        strGPU = map(str, GPUs)
+        jointGPUs = ','.join(strGPU)
         # we create a special input file that has a longer runtime (5ns default or user-defined)
         MDsetter(self.initialParameters).createInputFile()
         # we run this inside walker_1 for convenience
         os.chdir('tmp/walker_1')
         for file in os.listdir(os.getcwd()):
             if file.endswith('.inp'):
-                subprocess.Popen(f'acemd3 --device {GPU} {file} 1> relax.log', shell=True).wait()
+                subprocess.Popen(f'acemd3 --device {jointGPUs} {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.namd'):
-                subprocess.Popen(f'namd3 +p8 +devices {GPU} {file} 1> relax.log', shell=True).wait()
+                subprocess.Popen(f'namd3 +p8 +devices {jointGPUs} {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.mdp'):
-                subprocess.Popen(
-                    f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr -extend {int(self.initialParameters["RelaxTime"] * 1000)} -o {self.initialParameters["Output"]}_{self.trajCount}.tpr &>tpr_log.log',
-                    shell=True).wait()
+                subprocess.Popen(f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr -extend {int(self.initialParameters["RelaxTime"] * 1000)} -o {self.initialParameters["Output"]}_{self.trajCount}.tpr &>tpr_log.log', shell=True).wait()
                 command = f'gmx mdrun -deffnm {self.initialParameters["Output"]}_{self.trajCount}'
                 subprocess.Popen(command, shell=True).wait()
         os.chdir(f'{self.folder}')

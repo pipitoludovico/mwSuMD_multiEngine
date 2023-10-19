@@ -16,7 +16,7 @@ class Getters(mwInputParser):
         self.deNume = None
         self.nume = None
         self.com = None
-        self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
+        self.trajCount = len([traj for traj in os.listdir(f'{self.folder}/trajectories') if traj.endswith('.xtc')])
         self.selection_error = "One of your selection from setting file was None. Check that your selection matches a part of your system with MDA atomselection language."
 
     def getDistance(self, sel_1, sel_2):

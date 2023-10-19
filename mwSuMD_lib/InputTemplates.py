@@ -6,7 +6,7 @@ from .Parser import mwInputParser
 class Template(mwInputParser):
     def __init__(self):
         super(mwInputParser, self).__init__()
-        self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
+        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.root = self.initialParameters['Root']
 
         if self.initialParameters['MDEngine'] == 'ACEMD':

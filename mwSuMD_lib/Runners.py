@@ -12,7 +12,7 @@ class Runner(mwInputParser):
         self.par = par
         super(mwInputParser, self).__init__()
         self.walk_count = 1
-        self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
+        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.customProductionFile = None
 
     def runMD(self):

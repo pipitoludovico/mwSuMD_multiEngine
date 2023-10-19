@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 import os.path
 
+from mwSuMD_lib import ArgParser
+ArgParser.ArgParser()
+
 if not os.path.exists('./system'):
     print('\nPlease make your ./system folder with the equilibrated system files and outputs')
     exit()
 
 from mwSuMD_lib import GPUoperations
 from mwSuMD_lib import SuMD
-from mwSuMD_lib import ArgParser
 
-ArgParser.ArgParser()
 # Get PID:
 GPUoperations.ProcessManager()
 

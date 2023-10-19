@@ -10,7 +10,7 @@ class EngineInputs(mwInputParser):
         super(mwInputParser, self).__init__()
         self.par = par
         self.timewindow = self.initialParameters['Timewindow']
-        self.trajCount = len(os.listdir(f'{self.folder}/trajectories'))
+        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         mwInputParser().getRestartOutput()
 
     def getInputFile(self):

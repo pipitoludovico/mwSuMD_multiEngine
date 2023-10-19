@@ -30,7 +30,7 @@ class mwInputParser:
         self.outExtensions = ('cpt', 'cpi', 'gro', 'tpr', 'coor', 'vel', 'xsc')
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
         self.initialParametersameter_extensions = ('.param', '.prm', '.par')
-        self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
+        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.allowedMetrics = ("DISTANCE", "RMSD", "CONTACTS")
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
             print('Input file for SuMD simulation required')
@@ -95,8 +95,8 @@ class mwInputParser:
             u = Mda.Universe(f"{self.folder}/system/{self.initialParameters['GRO']}")
 
         # Default settings:
-        self.initialParameters['Metric_1'] = None
-        self.initialParameters['Metric_2'] = None
+        self.initialParameters['Metric_1'] = "No Metric1 Chosen"
+        self.initialParameters['Metric_2'] = "No Metric2 Chosen"
         self.initialParameters['Restart'] = None
         self.initialParameters['CUSTOMFILE'] = None
         self.initialParameters['Timestep'] = 2
@@ -120,8 +120,8 @@ class mwInputParser:
             self.initialParameters['NumberCV'] = None
             self.initialParameters['RelaxTime'] = 5
             self.initialParameters['Relax'] = False
-            self.initialParameters['Metric_1'] = None
-            self.initialParameters['Metric_2'] = None
+            self.initialParameters['Metric_1'] = "No Metric1 Chosen"
+            self.initialParameters['Metric_2'] = "No Metric2 Chosen"
             for line in infile:
                 if line.startswith('#'):
                     continue
@@ -249,11 +249,7 @@ class mwInputParser:
 
     def countTraj_logTraj(self, metric):
         """ At what cycle number mwSuMD was stopped? """
-        self.trajCount = len([x for x in os.scandir(f'{self.folder}/trajectories')])
-        if self.initialParameters.get('Metric_1') is None:
-            self.initialParameters['Metric_1'] = 'No Metric 1 chosen'
-        if self.initialParameters.get('Metric_2') is None:
-            self.initialParameters['Metric_2'] = 'No Metric 2 chosen'
+        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         if self.trajCount == 0 and (metric == 0 or metric == 10 ** 6):
             with open('walkerSummary.log', 'w') as logF:
                 logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")

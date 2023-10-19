@@ -11,6 +11,7 @@ class suMD1(mwInputParser):
     parameters, selection_list, parameterFolderPath = pars.getSettings()
     if not parameters.get('NumberCV'):
         print("Please set the NumberCV in the input file")
+        exit()
     settings_df = pd.DataFrame(sorted(list(parameters.items())), columns=['Setting', 'Parameter'])
     print(settings_df)
 
@@ -96,15 +97,24 @@ class suMD1(mwInputParser):
         selectionShapshot = self.selection_list.copy()
         self.selection_list.clear()
         self.parameters, self.selection_list, self.parameterFolderPath = self.pars.getSettings()
-        print("snapshot: ", selectionShapshot)
-        print("list: ", self.selection_list)
-        if parametersSnapshot != self.parameters or selectionShapshot != self.selection_list:
+        tempParametersSnapshot = self.parameters.copy()
+        try:
+            del parametersSnapshot['coor'], parametersSnapshot['vel'], parametersSnapshot['xsc']
+            del tempParametersSnapshot['coor'], tempParametersSnapshot['vel'], tempParametersSnapshot['xsc']
+        except:
+            del parametersSnapshot['cpt'], parametersSnapshot['gro'], parametersSnapshot['tpr']
+            del tempParametersSnapshot['cpt'], tempParametersSnapshot['gro'], tempParametersSnapshot['tpr']
+
+        if parametersSnapshot != tempParametersSnapshot or selectionShapshot != self.selection_list:
             temp = set(self.selection_list) - set(selectionShapshot)
             selectionShapshot.clear()
             changes = []
             for key, value in self.parameters.items():
-                if key in parametersSnapshot and parametersSnapshot[key] != value:
-                    changes.append(f"{key}: {value}")
+                if key == 'coor' or key == 'vel' or key == 'xsc':
+                    continue
+                else:
+                    if key in parametersSnapshot and parametersSnapshot[key] != value:
+                        changes.append(f"{key}: {value}")
             with open('walkerSummary.log', 'a') as walkCheck:
                 walkCheck.write(f"Changed settings during protocol: {changes} {temp}\n")
             changes.clear()
