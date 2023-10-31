@@ -30,7 +30,7 @@ class MDoperator:
 
                 elif self.par['MDEngine'] == 'GROMACS':
                     os.system(f'cp *.gro {self.folder}/restarts/previous.gro')
-                    os.system(f'cp *.cpt {self.folder}/restarts/previous.cpt')
+                    os.system(f'cp *_{self.cycle}.cpt {self.folder}/restarts/previous.cpt')
                     os.system(f'cp *.tpr {self.folder}/restarts/previous.tpr')
 
                 elif self.par['PLUMED'] is not None:
