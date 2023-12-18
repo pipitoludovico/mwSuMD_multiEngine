@@ -1,6 +1,9 @@
 import os
 
 from .Parser import mwInputParser
+from warnings import filterwarnings
+
+filterwarnings(action='ignore')
 
 
 class Template(mwInputParser):
@@ -15,8 +18,10 @@ class Template(mwInputParser):
                 'minimize        0\n',
                 'run            %sps\n' % self.initialParameters.get('Timewindow'),
                 'timeStep        %s\n' % self.initialParameters.get('Timestep'),
-                '%s' % f'parmfile ../../system/{self.initialParameters.get("PRMTOP")}\n' if self.initialParameters['Forcefield'] == 'AMBER' else '\n',
-                f'structure\t../../system/{self.initialParameters.get("PSF")}\n' if self.initialParameters.get('PSF') is not None else '\n',
+                '%s' % f'parmfile ../../system/{self.initialParameters.get("PRMTOP")}\n' if self.initialParameters[
+                                                                                                'Forcefield'] == 'AMBER' else '\n',
+                f'structure\t../../system/{self.initialParameters.get("PSF")}\n' if self.initialParameters.get(
+                    'PSF') is not None else '\n',
                 'coordinates             ../../system/%s\n' % self.initialParameters.get('PDB'),
                 'temperature     310\n',
                 'PME             on\n',
@@ -27,7 +32,8 @@ class Template(mwInputParser):
                 'thermostatTemperature   310\n',
                 'barostat                off\n',
                 'trajectoryFile          %s_%s.xtc\n' % (self.initialParameters.get('Output'), str(self.trajCount)),
-                'trajectoryPeriod               %s\n' % int(self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep') / 10 ** 3)),
+                'trajectoryPeriod               %s\n' % int(
+                    self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep') / 10 ** 3)),
                 f'binCoordinates          ../../system/%s\n' % self.initialParameters.get('coor'),
                 f'extendedSystem          ../../system/%s\n' % self.initialParameters.get('xsc'),
                 'binVelocities           ../../system/%s\n' % self.initialParameters.get('vel')]
@@ -57,17 +63,21 @@ class Template(mwInputParser):
                               'firsttimestep\t$firsttime\n',
                               'set temp\t313.15;\n',
                               'outputEnergies %s\n' % int(
-                                  self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep') / 10 ** 3)),
+                                  self.initialParameters.get("Savefreq") / (
+                                              self.initialParameters.get('Timestep') / 10 ** 3)),
                               'dcdfreq\t%s;\t\n' % int(
-                                  self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep') / 10 ** 3)),
+                                  self.initialParameters.get("Savefreq") / (
+                                              self.initialParameters.get('Timestep') / 10 ** 3)),
                               'dcdUnitCell\tyes;\n',
 
                               'xstFreq\t%s;\t\n' % int(
                                   self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
 
                               '# Force-Field Parameters\n',
-                              "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n',
-                              '%s;\n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}' if self.initialParameters["Forcefield"] == "AMBER" else "\n",
+                              "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters[
+                                                                    'Forcefield'] == 'CHARMM' else 'amber\ton\n',
+                              '%s;\n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}' if
+                              self.initialParameters["Forcefield"] == "AMBER" else "\n",
                               'exclude                 scaled1-4\n',
                               '1-4scaling              1.0\n',
                               'switching               on\n',
@@ -109,8 +119,10 @@ class Template(mwInputParser):
                               'langevinPistonTemp      $temp;              \n',
                               '\n',
                               '\n',
-                              'numsteps\t%s;\n' % int(self.initialParameters['Timewindow'] / (self.initialParameters['Timestep'] / 10 ** 3)),
-                              'run\t%s;\n' % int(self.initialParameters['Timewindow'] / (self.initialParameters['Timestep'] / 10 ** 3))]
+                              'numsteps\t%s;\n' % int(self.initialParameters['Timewindow'] / (
+                                          self.initialParameters['Timestep'] / 10 ** 3)),
+                              'run\t%s;\n' % int(self.initialParameters['Timewindow'] / (
+                                          self.initialParameters['Timestep'] / 10 ** 3))]
 
         if self.initialParameters['MDEngine'] == 'GROMACS':
             self.inputFile = ['title                   = %s\n' % self.initialParameters['Output'],
@@ -119,7 +131,7 @@ class Template(mwInputParser):
                               'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' %
                               int(self.initialParameters['Timewindow'] / (self.initialParameters['Timestep'] / 1000)),
                               'dt                      = %s     ; Timestep/1000 \n' % float(
-                                  self.initialParameters['Timestep'] / 10**3),
+                                  self.initialParameters['Timestep'] / 10 ** 3),
                               '; Output control\n',
                               'nstxout                 = 0         ; suppress bulky .trr file by specifying \n',
                               'nstvout                 = 0         ; 0 for output frequency of nstxout,\n',

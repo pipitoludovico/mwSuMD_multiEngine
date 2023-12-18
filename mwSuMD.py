@@ -1,28 +1,34 @@
 #!/usr/bin/env python3
 import os.path
 
-from mwSuMD_lib import ArgParser
-ArgParser.ArgParser()
-
 if not os.path.exists('./system'):
     print('\nPlease make your ./system folder with the equilibrated system files and outputs')
     exit()
 
 from mwSuMD_lib import GPUoperations
-from mwSuMD_lib import SuMD
+from mwSuMD_lib import ArgParser
+from mwSuMD_lib import Loggers
 
-# Get PID:
+parser = ArgParser.ArgParser()
+openMM = parser.argumentParser()
 GPUoperations.ProcessManager()
-
-print("If you want to use your personal setting for simulating, please, place it the system folder, call it \n"
-      "production.inp/namd/mdp (according to your engine) and mwSuMD will use that instead of the default file. \n"
-      "If you choose to do so, make sure it points to a folder named 'restart' to look for the restart binaries.\n")
+Loggers.Logger.LogToFile('ad', '',
+                         "If you want to use your personal setting for simulating, please, place it the system folder, call it \n "
+                         "production.inp/namd/mdp (according to your engine) and mwSuMD will use that instead of the default file. \n"
+                         "If you choose to do so, make sure it points to a folder named 'restart' to look for the restart binaries.\n")
 
 
 def main():
-    sumd = SuMD.suMD1()
-    sumd.run_mwSuMD()
-    exit()
+    if not openMM:
+        from mwSuMD_lib import SuMD
+        multiSumd = SuMD.suMD1()
+        multiSumd.run_mwSuMD()
+        exit()
+    else:
+        from mwSuMD_lib import openSuMD
+        openSumd = openSuMD.suMD1()
+        openSumd.run_openMwSuMD()
+        exit()
 
 
 if __name__ == '__main__':

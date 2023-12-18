@@ -1,6 +1,7 @@
 import os
 
 import GPUtil
+from .Loggers import Logger
 
 
 class ProcessManager:
@@ -30,7 +31,7 @@ class ProcessManager:
         for GPU in GPUs:
             gpu_ids.append(GPU.id)
         if len(gpu_ids) != 0:
-            print("Available GPUS: ", gpu_ids)
+            Logger.LogToFile('a', '', f"Available GPUS: {gpu_ids}")
             return gpu_ids
         else:
             print("Please leave at least one GPU to run mwSuMD and run again.")

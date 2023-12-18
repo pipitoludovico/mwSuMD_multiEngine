@@ -6,16 +6,21 @@ from .Getters import *
 from .Loggers import Logger
 from .Parser import *
 
+from signal import signal, SIGPIPE, SIG_DFL
+
+filterwarnings(action='ignore')
+signal(SIGPIPE, SIG_DFL)
+
 
 class MetricsParser(mwInputParser):
     def __init__(self):
         super(mwInputParser, self).__init__()
-        from warnings import filterwarnings
-        filterwarnings(action='ignore')
+
         self.walkers_metrics = []
         self.metric_in_last_frames = []
         self.score_metrics = []
         self.walkers_number_snapshot = self.initialParameters['Walkers']
+        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
 
     def getChosenMetrics(self):
         self.createMetricList()
@@ -27,8 +32,8 @@ class MetricsParser(mwInputParser):
     def createMetricList(self):
         if self.initialParameters['Relax'] is True:
             self.initialParameters['Walkers'] = 1
-            print("Relax mode: calculating metrics: ", self.initialParameters['Relax'], "Walker set to relax: ",
-                  self.initialParameters['Walkers'])
+            Logger.LogToFile('a', self.trajCount,
+                             f"Relax mode: calculating metrics: {self.initialParameters['Relax']}, Walker set to relax: {self.initialParameters['Walkers']}")
         last_frame_metric_1, last_frame_metric_2, all_m_1, all_m_2 = [], [], [], []
 
         manager = Manager()
@@ -37,7 +42,7 @@ class MetricsParser(mwInputParser):
         try:
             with mp.Pool() as pool:
                 for x in range(1, self.initialParameters.get('Walkers') + 1):
-                    print("Calculating walker #:", x)
+                    Logger.LogToFile('a', self.trajCount, f"Calculating walker #: {x}")
                     results.append(pool.apply(self.calculateMetricsMP, args=(q, x, self.selection_list)))
                 while not q.empty():
                     ret = q.get()
@@ -56,8 +61,13 @@ class MetricsParser(mwInputParser):
                 self.walkers_metrics = all_m_1, all_m_2
             self.initialParameters['Walkers'] = self.walkers_number_snapshot
         except:
-            print("\nMetric calculation failed. Check if all the simulations ended well.")
-            raise Exception(traceback.format_exc())
+            pool.close()
+            pool.join()
+            Logger.LogToFile('a', self.trajCount,
+                             "\nMetric calculation failed. Check if all the simulations ended well.")
+            exit()
+        # except:
+        #     raise Exception(traceback.format_exc())
 
     def calculateMetricsMP(self, queue, walker, selection_list):
         score_metrics, last_metrics, all_metrics = [], [], []
@@ -93,9 +103,9 @@ class MetricsParser(mwInputParser):
                                                                        np.mean(all_metrics), last_metrics,
                                                                        score_metrics)
         except Exception:
-            print(
-                "Metric collection and calculation failed. Make sure the trajectories produced make sense and were successfully completed")
-            print(traceback.format_exc())
+            Logger.LogToFile('a', self.trajCount,
+                             "Metric collection and calculation failed. Make sure the trajectories produced make sense and were successfully completed")
+            Logger.LogToFile('a', self.trajCount, traceback.format_exc())
             raise
         finally:
             os.chdir(self.folder)
@@ -159,8 +169,8 @@ class MetricsParser(mwInputParser):
                 list(score_sum)
                 max_score = max(score_sum)
                 max_index = score_sum.index(max_score) + 1
-                print("")
                 return max_index, max_score, args[2][max_index - 1], args[3][max_index - 1]
         except:
-            print("Not all MDs produced the same amount of frames. Please check your MD results and restart.")
-            raise Exception(traceback.format_exc())
+            Logger.LogToFile('a', self.trajCount,
+                             "Not all MDs produced the same amount of frames. Please check your MD results and restart.")
+            Logger.LogToFile('ad', self.trajCount, traceback.format_exc())

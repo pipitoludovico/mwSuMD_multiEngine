@@ -1,19 +1,20 @@
 import os
 import pandas as pd
-from .Parser import mwInputParser
-from .Protocol import ProtocolRunner
-from .SimulationChecker import Checker
+
+from mwSuMD_lib.Parser import mwInputParser
+from .openProtocol import ProtocolRunner
+from .openSimulationChecker import Checker
 from .Loggers import Logger
-
-from warnings import filterwarnings
-
-filterwarnings(action='ignore')
 
 
 class suMD1(mwInputParser):
     pars = mwInputParser()
-    parameters, selection_list, parameterFolderPath = pars.getSettings()
+    parameters, selection_list, paramFolder = pars.getSettings()
+    if not parameters.get('NumberCV'):
+        print("Please set the NumberCV in the input file")
+        exit()
     settings_df = pd.DataFrame(sorted(list(parameters.items())), columns=['Setting', 'Parameter'])
+    print(settings_df)
 
     def __init__(self):
         super(mwInputParser, self).__init__()
@@ -24,9 +25,8 @@ class suMD1(mwInputParser):
         self.bestWalker = None
         self.fails = 0
         self.cycle = len(os.listdir(f'{self.folder}/trajectories'))
-        Logger.PrintSettingsToFile("w", self.cycle, str(self.settings_df))
 
-    def run_mwSuMD(self):
+    def run_openMwSuMD(self):
 
         suMD1().countTraj_logTraj(self.output_to_check)
         if self.parameters['NumberCV'] == 1:
@@ -97,7 +97,7 @@ class suMD1(mwInputParser):
         parametersSnapshot = self.parameters.copy()
         selectionShapshot = self.selection_list.copy()
         self.selection_list.clear()
-        self.parameters, self.selection_list, self.parameterFolderPath = self.pars.getSettings()
+        self.parameters, self.selection_list, self.paramFolder = self.pars.getSettings()
         tempParametersSnapshot = self.parameters.copy()
         if self.cycle != 0:
             try:

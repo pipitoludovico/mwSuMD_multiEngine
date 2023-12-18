@@ -7,6 +7,7 @@ from MDAnalysis.analysis.hydrogenbonds import HydrogenBondAnalysis
 from MDAnalysis.lib.distances import distance_array
 
 from .Parser import mwInputParser
+from .Loggers import Logger
 
 
 class Getters(mwInputParser):
@@ -18,6 +19,8 @@ class Getters(mwInputParser):
         self.com = None
         self.trajCount = len([traj for traj in os.listdir(f'{self.folder}/trajectories') if traj.endswith('.xtc')])
         self.selection_error = "One of your selection from setting file was None. Check that your selection matches a part of your system with MDA atomselection language."
+        from warnings import filterwarnings
+        filterwarnings(action='ignore')
 
     def getDistance(self, sel_1, sel_2):
         psf = None
@@ -41,7 +44,7 @@ class Getters(mwInputParser):
             for ts in u.trajectory:
                 if ts is not None:
                     if len(sel1) == 0 and len(sel2) == 0:
-                        print(self.selection_error)
+                        Logger.LogToFile('a', self.trajCount, self.selection_error)
                         os.kill(os.getpid(), signal.SIGKILL)
                         raise ValueError
                     else:
@@ -49,10 +52,9 @@ class Getters(mwInputParser):
                         distances.append(distance)
             mean_lin = np.mean(distances)
             distMetric = (mean_lin * distances[-1]) ** 0.5
-            print("Distmetric (mean * last) ** 0.5: ", distMetric)
             return distMetric, distances, distances[-1]
         except:
-            print("Distance calculation in walker ", os.getcwd(), " failed.")
+            Logger.LogToFile('a', self.trajCount, f"Distance calculation in walker {os.getcwd()} failed.")
             return -1, [-1], -1
 
     def getContacts(self, sel_1, sel_2):
@@ -71,14 +73,15 @@ class Getters(mwInputParser):
         try:
             u = Mda.Universe(psf, xtc)
             if len(u.select_atoms(sel_1)) == 0 and len(u.select_atoms(sel_2)) == 0:
-                print(self.selection_error)
+                Logger.LogToFile('a', self.trajCount, self.selection_error)
                 os.kill(os.getpid(), signal.SIGKILL)
                 raise ValueError
             else:
                 selection_1 = u.select_atoms(sel_1)
                 selection_2 = u.select_atoms(sel_2)
 
-                timeseries = [(distance_array(selection_1.positions, selection_2.positions, box=u.dimensions) < 3).sum() for
+                timeseries = [(distance_array(selection_1.positions, selection_2.positions, box=u.dimensions) < 3).sum()
+                              for
                               ts
                               in
                               u.trajectory if ts is not None]
@@ -87,10 +90,9 @@ class Getters(mwInputParser):
                 last_contacts = timeseries[-1]
 
                 distMetric = (mean_contacts * last_contacts) ** 0.5
-                print("ContactsMetric: (mean * last) ** 0.5: ", distMetric)
                 return distMetric, timeseries, timeseries[-1]
         except:
-            print("Contact calculation in walker ", os.getcwd(), " failed.")
+            Logger.LogToFile('a', self.trajCount, f"Contact calculation in walker {os.getcwd()} failed.")
             return -1, [-1], -1
 
     def getRMSD(self, sel_1, sel_2):
@@ -114,7 +116,7 @@ class Getters(mwInputParser):
             u = Mda.Universe(psf, xtc)
             ref = Mda.Universe(pdb)
             if len(u.select_atoms(sel_1)) == 0 or len(u.select_atoms(sel_2)) == 0:
-                print(self.selection_error)
+                Logger.LogToFile('a', self.trajCount, self.selection_error)
                 os.kill(os.getpid(), signal.SIGKILL)
                 raise ValueError
             else:
@@ -126,10 +128,9 @@ class Getters(mwInputParser):
                 last_rmsd = data[-1]
 
                 distMetric = (mean_rmsd * last_rmsd) ** 0.5
-                print("RMSD_METRIC: (mean * last) ** 0.5: ", distMetric)
                 return distMetric, data, data[-1]
         except:
-            print("RMSD calculation in walker ", os.getcwd(), " failed.")
+            Logger.LogToFile('a', self.trajCount, f"RMSD calculation in walker {os.getcwd()} failed.")
             return -1, [-1], -1
 
     def getHB_score(self, sel_1, sel_2):
@@ -151,14 +152,13 @@ class Getters(mwInputParser):
                                           f"or (({str(sel_2)} and type O) or ({str(sel_2)} and type H))")
                 water_sele = u.select_atoms('(resname SOL and name OW) or (type OH2) or (type H1) or (type H2)')
                 if lig_sele.n_atoms == 0:
-                    print("Your ligand selection produced 0 atoms"
-                          "Check if your selection is correct or present in the psf/pdb")
+                    Logger.LogToFile('a', self.trajCount, "Your ligand selection produced 0 atoms. Check if your selection is correct or present in the psf/pdb")
                     exit()
                 if water_sele.n_atoms == 0:
-                    print("Warning: no molecule waters were detected."
-                          "Make sure your system doesn't have implicit solvent or has not been filtered")
+                    Logger.LogToFile('a', self.trajCount, "Warning: no molecule waters were detected. Make sure your system doesn't have implicit solvent or has not been filtered")
 
-                waterCont = [(distance_array(lig_sele.positions, water_sele.positions, box=u.dimensions) < 3).sum() for ts
+                waterCont = [(distance_array(lig_sele.positions, water_sele.positions, box=u.dimensions) < 3).sum() for
+                             ts
                              in
                              u.trajectory if ts is not None]
 
@@ -176,12 +176,11 @@ class Getters(mwInputParser):
                     # if no H bond is found, we compute the number of water contacts
                     # to determine the degree of solvation of the ligand
                     distMetric = (((np.mean(waterCont)) * waterCont[-1]) ** 0.5)
-                    print("HB_METRIC: (mean * last) ** 0.5: ", distMetric)
                     return distMetric, waterCont, mean_contacts
             else:
-                print(self.selection_error)
+                Logger.LogToFile('a', self.trajCount, self.selection_error)
                 os.kill(os.getpid(), signal.SIGKILL)
                 raise ValueError
         except:
-            print("Contacts calculation in walker ", os.getcwd(), " failed.")
+            Logger.LogToFile('a', self.trajCount, f"Contacts calculation in walker {os.getcwd()} failed.")
             return -1, [-1], -1

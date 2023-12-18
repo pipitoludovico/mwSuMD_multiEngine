@@ -1,7 +1,10 @@
 import os
 import subprocess
-
 import numpy as np
+from .Loggers import Logger
+from warnings import filterwarnings
+
+filterwarnings(action='ignore')
 
 
 class MDoperator:
@@ -30,14 +33,14 @@ class MDoperator:
 
                 elif self.par['MDEngine'] == 'GROMACS':
                     os.system(f'cp *.gro {self.folder}/restarts/previous.gro')
-                    os.system(f'cp *_{self.cycle}.cpt {self.folder}/restarts/previous.cpt')
+                    os.system(f'cp "$(ls -t *.cpt | head -1)" {self.folder}/restarts/previous.cpt')
                     os.system(f'cp *.tpr {self.folder}/restarts/previous.tpr')
 
                 elif self.par['PLUMED'] is not None:
                     os.system('cp HILLS  %s/restarts/ ' % self.folder)
                     os.system('cp COLVAR  %s/restarts/ ' % self.folder)
                     os.system('cp grid.dat  %s/restarts/ ' % self.folder)
-        print("FINISHED SAVING FRAMES")
+        Logger.LogToFile('a', self.cycle, "FINISHED SAVING FRAMES")
         os.chdir(self.folder)
         os.system('rm -r tmp')
         self.par['Relax'] = False
@@ -58,7 +61,7 @@ class MDoperator:
         tprPreparation.wait()
 
     def checkIfStuck(self, values, accumulatedFails) -> bool:
-        if accumulatedFails > self.par['Fails'] * int(self.par['NumberCV']):
+        if accumulatedFails >= self.par['Fails'] * int(self.par['NumberCV']):
             print('X' * 200)
             print("\nThe simulation is stuck and it has been terminated\n")
             print('X' * 200)

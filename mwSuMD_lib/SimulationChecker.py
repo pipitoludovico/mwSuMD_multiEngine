@@ -7,6 +7,10 @@ from .Metrics import MetricsParser
 from .Parser import mwInputParser
 from .GPUoperations import ProcessManager
 from .TrajectoryOperator import TrajectoryOperator
+from .Loggers import Logger
+from warnings import filterwarnings
+
+filterwarnings(action='ignore')
 
 
 class Checker(mwInputParser):
@@ -24,9 +28,10 @@ class Checker(mwInputParser):
         self.GPUIDs = ProcessManager.getGPUids()
 
     def checkIfFailed(self, vals1=None, vals2=None, accumulatedFails=0):
-        print('#' * 200)
-        print('Checking if trajectory is stuck with values: ' + str(vals1) +
-              ". Total fails accumulated: " + str(accumulatedFails))
+        Logger.LogToFile("w", self.trajCount,
+                         "*" * 200 + '\nChecking if trajectory is stuck with values: ' + str(vals1) +
+                         ". Total fails accumulated: " + str(
+                             accumulatedFails) + "\nRunning RELAXATION protocol\n" + "#" * 200)
         mdOperator = MDoperator(self.initialParameters, self.folder)
         if mdOperator.checkIfStuck([vals1, vals2], accumulatedFails) is True:
             self.relaxSystem()
@@ -37,15 +42,14 @@ class Checker(mwInputParser):
         return accumulatedFails
 
     def relaxSystem(self):
-        print('Relaxation Protocol begins now:')
-        print('#' * 200)
+        Logger.LogToFile('a', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         # The relaxation protocol starts here
         self.initialParameters['Relax'] = True
         manager = ProcessManager()
         GPUs = manager.getGPUids()
         # let's exclude the GPU id if we want to keep a GPU for other jobs
         if self.initialParameters['EXCLUDED_GPUS'] is not None:
-            print("EXCLUDED GPU:", self.initialParameters['EXCLUDED_GPUS'])
+            Logger.LogToFile('ad', self.trajCount, f"EXCLUDED GPU: {self.initialParameters['EXCLUDED_GPUS']}")
             for excluded in self.initialParameters['EXCLUDED_GPUS']:
                 GPUs.remove(excluded)
         strGPU = map(str, GPUs)
@@ -60,7 +64,9 @@ class Checker(mwInputParser):
             elif file.endswith('.namd'):
                 subprocess.Popen(f'namd3 +p8 +devices {jointGPUs} {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.mdp'):
-                subprocess.Popen(f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr -extend {int(self.initialParameters["RelaxTime"] * 1000)} -o {self.initialParameters["Output"]}_{self.trajCount}.tpr &>tpr_log.log', shell=True).wait()
+                subprocess.Popen(
+                    f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr -extend {int(self.initialParameters["RelaxTime"] * 1000)} -o {self.initialParameters["Output"]}_{self.trajCount}.tpr &>tpr_log.log',
+                    shell=True).wait()
                 command = f'gmx mdrun -deffnm {self.initialParameters["Output"]}_{self.trajCount}'
                 subprocess.Popen(command, shell=True).wait()
         os.chdir(f'{self.folder}')
@@ -81,11 +87,10 @@ class Checker(mwInputParser):
                 self.walker_metrics[0], self.walker_metrics[1], self.averages[0], self.averages[1])
             self.best_metric_result = [self.best_average_metric_1, self.best_average_metric_2]
         with open('walkerSummary.log', 'a') as walkerSummary:
-            info_to_write = str(self.trajCount) + " RELAXATION PROTOCOL SCORE: " + str(self.best_walker_score) + " Metrics: " + str(self.best_metric_result) + "\n"
+            info_to_write = str(self.trajCount) + " RELAXATION PROTOCOL SCORE: " + str(
+                self.best_walker_score) + " Metrics: " + str(self.best_metric_result) + "\n"
             walkerSummary.write(info_to_write)
         # self.trajCount += 1
-        print("\nRelaxation Protocol Ended")
-        print('#' * 200)
-        print('\n\n')
+        Logger.LogToFile('ad', self.trajCount, "\nRelaxation Protocol Ended\n" + "#" * 200)
         # setting our check to False and end the protocol, beginning a new cycle.
         self.initialParameters['Relax'] = False

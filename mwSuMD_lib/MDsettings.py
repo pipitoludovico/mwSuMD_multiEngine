@@ -2,6 +2,9 @@ import os
 
 from .EngineInputParser import EngineInputs
 from .Parser import mwInputParser
+from warnings import filterwarnings
+
+filterwarnings(action='ignore')
 
 
 class MDsetter(mwInputParser):
@@ -9,7 +12,7 @@ class MDsetter(mwInputParser):
         super(mwInputParser, self).__init__()
         self.setterParameters = par
         self.walkers_snaphot = self.initialParameters['Walkers']
-        self.cycle = len(os.listdir(f'{self.folder}/trajectories'))
+        self.cycle = len([trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
         self.custom_input = None
 
     def createInputFile(self):
@@ -45,6 +48,7 @@ class MDsetter(mwInputParser):
                 mw_file.close()
                 # if in relaxation mode, we reset the number of walkers back to original
             else:
-                os.system(f'cp {self.initialParameters["CUSTOMFILE"]} {self.initialParameters["Root"]}/tmp/walker_{walker}')
+                os.system(
+                    f'cp {self.initialParameters["CUSTOMFILE"]} {self.initialParameters["Root"]}/tmp/walker_{walker}')
         self.initialParameters['Walkers'] = self.walkers_snaphot
         self.cycle += 1

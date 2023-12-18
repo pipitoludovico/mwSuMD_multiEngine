@@ -58,3 +58,30 @@ class Logger:
         with open('slope_logs', 'w') as slopeLog:
             for frames in range(1, len(data)):
                 slopeLog.write(str(frames) + "\t" + str(mD))
+
+    @staticmethod
+    def PrintSettingsToFile(mode, cycle, settings_df):
+        if mode == "w":
+            with open('settings.txt', 'w') as settingsFile:
+                settingsFile.write(f"Settings at cycle: {cycle}.\n")
+                settingsFile.write(settings_df)
+                settingsFile.write('\n')
+        if mode == "a":
+            with open('settings.txt', 'a') as settingsFile:
+                settingsFile.write(f"\nSettings at cycle: {cycle}.\n")
+                settingsFile.write(settings_df)
+                settingsFile.write('\n')
+
+    @staticmethod
+    def LogToFile(mode, cycle, message):
+        if mode == "w":
+            with open('LogFile.txt', 'w') as settingsFile:
+                settingsFile.write(f"Settings at cycle: {cycle}.\n")
+                settingsFile.write(message + "\n")
+        if mode == "a":
+            with open('LogFile.txt', 'a') as settingsFile:
+                settingsFile.write(f"\nSettings at cycle: {cycle}.\n")
+                settingsFile.write(message + "\n")
+        if mode == "ad":
+            with open('LogFile.txt', 'a') as settingsFile:
+                settingsFile.write(message + "\n")

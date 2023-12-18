@@ -1,40 +1,36 @@
+import warnings
 import argparse
-import signal
-import sys
-
 from .Parser import mwInputParser
+from .Loggers import Logger
+
+warnings.filterwarnings(action='ignore')
 
 
 class ArgParser:
     def __init__(self):
-        self.argumentParser()
+        pass
 
     @staticmethod
     def argumentParser():
         ap = argparse.ArgumentParser()
-        ap.add_argument("-m", '--mode', type=str, default='parallel', required=False,
-                        help="specify -m parallel or serial mode [Default = parallel]")
+        ap.add_argument("-m", '--mode', type=str, default='parallel', required=False, help="specify -m parallel or serial mode [Default = parallel]")
         ap.add_argument('-e', '--exclude', nargs='*', required=False,
                         help=' use -e to exclude a list of GPUs from being used by mwSuMD: e.g. -e 0 3')
-        ap.add_argument('-r', '--replicas', type=int, required=False,
-                        help=' use -r to set a number of replicas to run.')
         ap.add_argument('-c', '--command', type=str, nargs='?', required=False,
                         help=' use -c to define a specific command you want to use to run your engine.'
                              'Use "" to define the command: "gmx mdrun -deffnm npt -bonded gpu". '
                              'Be aware of the GPU batch division and let mwSuMD sort the GPUs.')
         ap.add_argument("-k", '--kill', required=False, action='store_true', default=False,
                         help="Stop mwSuMD from the current working directory")
-        ap.add_argument("-j", '--join', nargs='*', required=False,
-                        help="Merge the trajectories from one step to another: e.g. -j 1 10, -j 10 , or -j all to merge every step.")
-        ap.add_argument('files', nargs='*')
-
+        ap.add_argument("-j", '--join', nargs='*', required=False, help="Merge the trajectories from one step to another: e.g. -j 1 10, -j 10 , or -j all to merge every step.")
+        ap.add_argument("-openmm", '--openmm', required=False, action='store_true', help="add -openmm to run mwSuMD with OpenMM")
         args = ap.parse_args()
 
         if args.kill is True:
             import os
-
-            os.system('val=$(<.mypid ) && kill -9 $val')
-            os.kill(os.getpid(), signal.SIGKILL)
+            Logger.LogToFile('ad', "", "\nProcess terminated by user.")
+            os.system('val=$(<.mypid ) && kill -15 $val')
+            exit()
 
         if args.join is not None:
             from mwSuMD_lib import Merger
@@ -52,11 +48,6 @@ class ArgParser:
                 exit()
             exit()
 
-        if args.replicas:
-            mwInputParser.initialParameters['REPLICAS'] = args.replicas
-        else:
-            mwInputParser.initialParameters['REPLICAS'] = 1
-
         if 'parallel' in vars(args).values():
             mwInputParser.initialParameters['Mode'] = 'parallel'
         elif 'serial' in vars(args).values():
@@ -70,3 +61,10 @@ class ArgParser:
         mwInputParser.initialParameters['EXCLUDED_GPUS'] = None
         if args.exclude is not None and len(args.exclude) != 0:
             mwInputParser.initialParameters['EXCLUDED_GPUS'] = [int(x) for x in args.exclude]
+
+        if args.openmm:
+            openMM = True
+        else:
+            openMM = False
+
+        return openMM

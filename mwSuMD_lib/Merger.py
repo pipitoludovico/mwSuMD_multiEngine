@@ -1,6 +1,9 @@
 import os
 import re
 import MDAnalysis as Mda
+from warnings import filterwarnings
+
+filterwarnings(action='ignore')
 
 
 class TrajMerger:
@@ -18,7 +21,6 @@ class TrajMerger:
         for traj in os.listdir('trajectories'):
             if traj.endswith('.xtc'):
                 self.trajList.append('trajectories/' + traj)
-
         natsort = lambda s: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', s)]
         self.sortedTrajs = (sorted(self.trajList, key=natsort))
 
@@ -31,6 +33,7 @@ class TrajMerger:
 
     def mergeFromToEnd(self, start=0):
         selection = self.sortedTrajs[int(start):]
+        print("Printing from", selection[0], " to", selection[-1])
         Universe = Mda.Universe(f'system/' + self.topology, *selection, refresh_offset=True)
         atomsel = Universe.select_atoms('all')
         with Mda.Writer(f'merged_from_{start}_to_lastStep.xtc') as W:
@@ -39,9 +42,7 @@ class TrajMerger:
 
     def mergeFromTo(self, start=0, end=-1):
         selection = self.sortedTrajs[int(start):int(end)]
-        print(self.sortedTrajs[int(start)])
-        print(self.sortedTrajs[int(end)])
-
+        print("Printing from", selection[0], " to", selection[-1])
         Universe = Mda.Universe(f'system/' + self.topology, *selection, refresh_offset=True)
         atomsel = Universe.select_atoms('all')
         with Mda.Writer(f'merged_from_{start}_to_{end}.xtc') as W:

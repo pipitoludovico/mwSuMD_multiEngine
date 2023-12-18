@@ -2,6 +2,9 @@ import os
 import subprocess
 import pkg_resources
 import MDAnalysis as Mda
+from warnings import filterwarnings
+
+filterwarnings(action='ignore')
 
 
 class mwInputParser:
@@ -22,8 +25,6 @@ class mwInputParser:
     metric_1 = 0
     metric_2 = 0
     excludedGPUS = []
-    from warnings import filterwarnings
-    filterwarnings(action='ignore')
 
     def __init__(self):
         self.customInputFileExtension = ('namd', 'inp', 'mdp')
@@ -218,7 +219,6 @@ class mwInputParser:
 
                 if line.startswith("Sel_"):
                     if line.split('=')[1].strip() != '':
-                        print("SELECTION: ", line.split('=')[1].strip())
                         if len(u.select_atoms(f"{line.split('=')[1].strip()}")) != 0:
                             self.selection_list.append(line.split('=')[1].strip())
                         else:
