@@ -41,7 +41,7 @@ class Checker(mwInputParser):
         return accumulatedFails
 
     def relaxSystem(self):
-        Logger.LogToFile('a', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
+        Logger.LogToFile('ad', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         # The relaxation protocol starts here
         self.initialParameters['Relax'] = True
         manager = ProcessManager()

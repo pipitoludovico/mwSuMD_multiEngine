@@ -32,7 +32,7 @@ class ProcessManager:
         for GPU in GPUs:
             gpu_ids.append(GPU.id)
         if len(gpu_ids) != 0:
-            Logger.LogToFile('a', trajCount, f"Available GPUS: {gpu_ids}")
+            Logger.LogToFile('ad', trajCount, f"Available GPUS: {gpu_ids}")
             return gpu_ids
         else:
             print("Please leave at least one GPU to run mwSuMD and run again.")
