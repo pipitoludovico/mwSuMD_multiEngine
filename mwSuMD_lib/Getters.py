@@ -1,5 +1,5 @@
 import os
-import signal
+# import signal
 
 import MDAnalysis as Mda
 import numpy as np
@@ -45,7 +45,7 @@ class Getters(mwInputParser):
                 if ts is not None:
                     if len(sel1) == 0 and len(sel2) == 0:
                         Logger.LogToFile('a', self.trajCount, self.selection_error)
-                        os.kill(os.getpid(), signal.SIGKILL)
+                        # os.kill(os.getpid(), signal.SIGKILL)
                         raise ValueError
                     else:
                         distance = Mda.lib.distances.distance_array(sel1.center_of_mass(), sel2.center_of_mass())[0][0]
@@ -53,7 +53,8 @@ class Getters(mwInputParser):
             mean_lin = np.mean(distances)
             distMetric = (mean_lin * distances[-1]) ** 0.5
             return distMetric, distances, distances[-1]
-        except:
+        except Exception as e:
+            print("Exception: ", e)
             Logger.LogToFile('a', self.trajCount, f"Distance calculation in walker {os.getcwd()} failed.")
             return -1, [-1], -1
 
@@ -74,7 +75,7 @@ class Getters(mwInputParser):
             u = Mda.Universe(psf, xtc)
             if len(u.select_atoms(sel_1)) == 0 and len(u.select_atoms(sel_2)) == 0:
                 Logger.LogToFile('a', self.trajCount, self.selection_error)
-                os.kill(os.getpid(), signal.SIGKILL)
+                # os.kill(os.getpid(), signal.SIGKILL)
                 raise ValueError
             else:
                 selection_1 = u.select_atoms(sel_1)
@@ -91,7 +92,8 @@ class Getters(mwInputParser):
 
                 distMetric = (mean_contacts * last_contacts) ** 0.5
                 return distMetric, timeseries, timeseries[-1]
-        except:
+        except Exception as e:
+            print("Calculation failed:", e)
             Logger.LogToFile('a', self.trajCount, f"Contact calculation in walker {os.getcwd()} failed.")
             return -1, [-1], -1
 
@@ -117,7 +119,7 @@ class Getters(mwInputParser):
             ref = Mda.Universe(pdb)
             if len(u.select_atoms(sel_1)) == 0 or len(u.select_atoms(sel_2)) == 0:
                 Logger.LogToFile('a', self.trajCount, self.selection_error)
-                os.kill(os.getpid(), signal.SIGKILL)
+                # os.kill(os.getpid(), signal.SIGKILL)
                 raise ValueError
             else:
                 R = Mda.analysis.rms.RMSD(u, ref, tol_mass=100, select="%s" % sel_1, groupselections=["%s" % sel_2])
@@ -129,7 +131,8 @@ class Getters(mwInputParser):
 
                 distMetric = (mean_rmsd * last_rmsd) ** 0.5
                 return distMetric, data, data[-1]
-        except:
+        except Exception as e:
+            print("RMSD Exception: ", e)
             Logger.LogToFile('a', self.trajCount, f"RMSD calculation in walker {os.getcwd()} failed.")
             return -1, [-1], -1
 
@@ -179,8 +182,9 @@ class Getters(mwInputParser):
                     return distMetric, waterCont, mean_contacts
             else:
                 Logger.LogToFile('a', self.trajCount, self.selection_error)
-                os.kill(os.getpid(), signal.SIGKILL)
+                # os.kill(os.getpid(), signal.SIGKILL)
                 raise ValueError
-        except:
+        except Exception as e:
+            print("Contacts Exception: ", e)
             Logger.LogToFile('a', self.trajCount, f"Contacts calculation in walker {os.getcwd()} failed.")
             return -1, [-1], -1

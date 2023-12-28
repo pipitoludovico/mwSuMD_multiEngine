@@ -32,8 +32,7 @@ class Template(mwInputParser):
                 'thermostatTemperature   310\n',
                 'barostat                off\n',
                 'trajectoryFile          %s_%s.xtc\n' % (self.initialParameters.get('Output'), str(self.trajCount)),
-                'trajectoryPeriod               %s\n' % int(
-                    self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep') / 10 ** 3)),
+                'trajectoryPeriod               %s\n' % int((self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep')) * 10 ** 3)),
                 f'binCoordinates          ../../system/%s\n' % self.initialParameters.get('coor'),
                 f'extendedSystem          ../../system/%s\n' % self.initialParameters.get('xsc'),
                 'binVelocities           ../../system/%s\n' % self.initialParameters.get('vel')]

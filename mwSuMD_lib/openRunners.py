@@ -41,12 +41,16 @@ class Runner(mwInputParser):
 
     def runSimulation(self):
         # let's divide the available GPU in batches by the number of walkers
+
         manager = ProcessManager()
         GPUs = manager.getGPUids()
         # let's exclude the GPU id if we want to keep a GPU for other jobs
-        if self.initialParameters.get("EXCLUDED_GPUS"):
-            for excluded in self.initialParameters.get("EXCLUDED_GPUS"):
+        if self.initialParameters['EXCLUDED_GPUS'] is not None:
+            Logger.LogToFile('ad', self.trajCount, f"EXCLUDED GPU: {self.initialParameters['EXCLUDED_GPUS']}")
+            for excluded in self.initialParameters['EXCLUDED_GPUS']:
                 GPUs.remove(excluded)
+        strGPU = map(str, GPUs)
+
         GPUbatches, idList = manager.createBatches(walkers=self.par['Walkers'], total_gpu_ids=GPUs)
         Logger.LogToFile('ad', self.trajCount, '#' * 200)
         if self.initialParameters['Mode'] == 'parallel':
@@ -62,6 +66,9 @@ class Runner(mwInputParser):
             with mp.Pool(processes=len(idList)) as pool:
                 for GPUbatch in GPUbatches:
                     for GPU in GPUbatch:
+                        if self.initialParameters['Relax']:
+                            jointGPUs = ','.join(strGPU)
+                            GPU = jointGPUs
                         results.append(pool.apply_async(runner.runOPENMM, args=(walk_count, GPU)))
                         walk_count += 1
                 for res in results:

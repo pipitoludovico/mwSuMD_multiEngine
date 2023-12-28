@@ -25,20 +25,19 @@ class Checker(mwInputParser):
         self.best_value = None
         self.bestWalker = None
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
-        self.GPUIDs = ProcessManager.getGPUids()
 
     def checkIfFailed(self, vals1=None, vals2=None, accumulatedFails=0):
         Logger.LogToFile("w", self.trajCount,
-                         "*" * 200 + '\nChecking if trajectory is stuck with values: ' + str(vals1) +
-                         ". Total fails accumulated: " + str(
-                             accumulatedFails) + "\nRunning RELAXATION protocol\n" + "#" * 200)
+                         "#" * 200 + '\nChecking if trajectory is stuck with values: ' + str(vals1) +
+                         ". Total fails accumulated: " + str(accumulatedFails) + "\n" + "#" * 200)
         mdOperator = MDoperator(self.initialParameters, self.folder)
         if mdOperator.checkIfStuck([vals1, vals2], accumulatedFails) is True:
+            Logger.LogToFile("ad", self.trajCount, "\nRUNNING RELAXATION PROTOCOL" + "#" * 200)
             self.relaxSystem()
             accumulatedFails += 1
         else:
             accumulatedFails += 0
-            print("Number of fails accumulated: " + str(accumulatedFails))
+            Logger.LogToFile("ad", self.trajCount, "Number of fails accumulated: " + str(accumulatedFails) + "\n")
         return accumulatedFails
 
     def relaxSystem(self):
@@ -48,7 +47,7 @@ class Checker(mwInputParser):
         manager = ProcessManager()
         GPUs = manager.getGPUids()
         # let's exclude the GPU id if we want to keep a GPU for other jobs
-        if self.initialParameters['EXCLUDED_GPUS'] is not None:
+        if self.initialParameters['EXCLUDED_GPUS']:
             Logger.LogToFile('ad', self.trajCount, f"EXCLUDED GPU: {self.initialParameters['EXCLUDED_GPUS']}")
             for excluded in self.initialParameters['EXCLUDED_GPUS']:
                 GPUs.remove(excluded)
@@ -60,7 +59,7 @@ class Checker(mwInputParser):
         os.chdir('tmp/walker_1')
         for file in os.listdir(os.getcwd()):
             if file.endswith('.inp'):
-                subprocess.Popen(f'acemd3 --device {jointGPUs} {file} 1> relax.log', shell=True).wait()
+                subprocess.Popen(f'acemd --device {jointGPUs} {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.namd'):
                 subprocess.Popen(f'namd3 +p8 +devices {jointGPUs} {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.mdp'):
@@ -77,7 +76,6 @@ class Checker(mwInputParser):
         else:
             self.walker_metrics, self.averages = MetricsParser().getChosenMetrics()
         # then the last coordinate is saved
-        MDoperator(self.initialParameters, self.folder).saveStep(1)
         # we then extract the best metric/score and store it as a reference
         if self.initialParameters['NumberCV'] == 1:
             self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(
@@ -86,11 +84,10 @@ class Checker(mwInputParser):
             self.bestWalker, self.best_walker_score, self.best_average_metric_1, self.best_average_metric_2 = MetricsParser().getBestWalker(
                 self.walker_metrics[0], self.walker_metrics[1], self.averages[0], self.averages[1])
             self.best_metric_result = [self.best_average_metric_1, self.best_average_metric_2]
-        with open('walkerSummary.log', 'a') as walkerSummary:
-            info_to_write = str(self.trajCount) + " RELAXATION PROTOCOL SCORE: " + str(
-                self.best_walker_score) + " Metrics: " + str(self.best_metric_result) + "\n"
-            walkerSummary.write(info_to_write)
-        # self.trajCount += 1
+
+        MDoperator(self.initialParameters, self.folder).saveStep(1, self.best_walker_score, self.best_metric_result)
+
+        self.trajCount += 1
         Logger.LogToFile('ad', self.trajCount, "\nRelaxation Protocol Ended\n" + "#" * 200)
         # setting our check to False and end the protocol, beginning a new cycle.
         self.initialParameters['Relax'] = False

@@ -2,6 +2,7 @@ import os
 from warnings import filterwarnings
 from .InputTemplates import Template
 from .Parser import mwInputParser
+from .Loggers import Logger
 
 filterwarnings(action='ignore')
 
@@ -18,8 +19,7 @@ class EngineInputs(mwInputParser):
     def getInputFile(self):
         if self.initialParameters['Relax'] is True:
             self.par['Timewindow'] = self.par['RelaxTime'] * 1000
-            print("\nTemporary changing the timewindow for relaxation protocol to: " + str(
-                self.par['Timewindow']) + " ps.")
+            Logger.LogToFile('a', self.trajCount, "\nTemporary changing the timewindow for relaxation protocol to: " + str(self.par['Timewindow']) + " ps.")
 
         restartInput = Template().inputFile
         if self.par['Restart'] == 'YES' or self.trajCount != 0:

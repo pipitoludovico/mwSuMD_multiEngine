@@ -25,15 +25,6 @@ class RunnerOPENMM(mwInputParser):
             self.parameterFolderPath = os.path.abspath('parameters')
 
     def runOPENMM(self, walker_folder, gpu):
-        if self.initialParameters['Relax'] is True:
-            manager = ProcessManager()
-            GPUs = manager.getGPUids()
-            if self.initialParameters.get("EXCLUDED_GPUS"):
-                for excluded in self.initialParameters.get("EXCLUDED_GPUS"):
-                    GPUs.remove(excluded)
-            GPUbatches, idList = manager.createBatches(walkers=self.initialParameters['Walkers'], total_gpu_ids=GPUs)
-            strGPU = map(str, idList)
-            gpu = ','.join(strGPU)
         Logger.LogToFile("ad", self.trajCount, "Running in " + os.getcwd())
 
         self.timeWindow = self.initialParameters['Timewindow']

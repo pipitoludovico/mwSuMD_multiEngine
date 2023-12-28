@@ -39,13 +39,16 @@ class Runner(mwInputParser):
             if trajectory:
                 continue
             else:
-                raise Exception("No trajectory found. Check your tmp folder.")
+                Logger.LogToFile('ad', self.trajCount, "No trajectory found. Check your tmp folder.")
+                exit()
+
         try:
             with mp.Pool() as p:
                 p.map(trajOperator.wrap, range(1, self.par['Walkers'] + 1))
             p.close()
             p.join()
-        except:
+        except Exception as e:
+            print("Wrapping pool failed: ", e)
             p.close()
             p.join()
             exit()
@@ -98,13 +101,16 @@ class Runner(mwInputParser):
                     for result in results:
                         result.wait()
                         q.get()
+
                 pool.close()
                 pool.join()
                 self.trajCount += 1
                 end_time_parallel = time.perf_counter()
                 Logger.LogToFile("ad", self.trajCount,
                                  f"Time taken with multiprocessing: {end_time_parallel - start_time_parallel:.2f} seconds")
-            except:
+            except Exception as e:
+                print("Threads failed. Closing the pool prematurely.")
+                print(e)
                 pool.close()
                 pool.join()
                 exit()
@@ -138,26 +144,26 @@ class Runner(mwInputParser):
         if self.par['MDEngine'] == 'GROMACS':
             MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount, customFile)
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is None:
-                command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} -gpu_id {GPU} {taks_master} -pinoffset {(offset * GPU)} -nstlist {self.initialParameters["Timewindow"]} &> gromacs.log'
+                command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} -gpu_id {GPU} {taks_master} -pinoffset {(offset * GPU)} -nstlist {self.initialParameters["Timewindow"]} > gromacs.log'
             elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is None:
-                command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} &> gromacs.log'
+                command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} > gromacs.log'
             elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:
-                command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm production {plumed} &> gromacs.log'
+                command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm production {plumed} > gromacs.log'
 
         elif self.par['MDEngine'] == 'ACEMD':
             if customFile is not None and self.initialParameters['COMMAND'] is not None:
-                command = f'{self.initialParameters["COMMAND"]} --device {GPU} production.inp &> acemd.log'
+                command = f'{self.initialParameters["COMMAND"]} --device {GPU} production.inp > acemd.log'
             if customFile is not None and self.initialParameters['COMMAND'] is None:
-                command = f'acemd3 --device {GPU} production.inp &> acemd.log'
+                command = f'acemd --device {GPU} production.inp > acemd.log'
             if customFile is None and self.initialParameters['COMMAND'] is None:
-                command = f'acemd3 --device {GPU} input_{walk_count}_{trajCount}.inp &> acemd.log'
+                command = f'acemd --device {GPU} input_{walk_count}_{trajCount}.inp > acemd.log'
 
         elif self.par['MDEngine'] == 'NAMD':
-            command = f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
+            command = f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log' \
                 if customFile is not None and self.initialParameters['COMMAND'] is not None \
-                else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
+                else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log' \
                 if customFile is not None \
-                else f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log' \
+                else f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log' \
                 if self.initialParameters['COMMAND'] is not None \
-                else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd 1> namd.log'
+                else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log'
         return command

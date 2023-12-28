@@ -11,43 +11,49 @@ class MDoperator:
     def __init__(self, par, root):
         self.par = par
         self.folder = root
-        self.initialTrajectoriesInFolder = len(
-            [trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
-        self.cycle = None
+        self.extensions = ('.coor', '.xsc', '.vel', '.gro', '.cpt', '.tpr')
+        self.cycle = len([trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
 
-    def saveStep(self, best_walker):
-        self.cycle = self.initialTrajectoriesInFolder
-        os.makedirs('trajectories', exist_ok=True)
-        """Handle the restart files and the xtc storage"""
-        for r in range(1, int(self.par['Walkers']) + 1):
-            if r == best_walker:
-                os.chdir('tmp/walker_%s' % str(r))
-                # moving the best frame to the trajectory folder
-                os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
-                self.cycle += 1
-                # moving and renaming the binary files to the restart folder
-                if self.par['MDEngine'] != 'GROMACS':
-                    os.system(f'cp *.coor {self.folder}/restarts/previous.coor')
-                    os.system(f'cp *.xsc {self.folder}/restarts/previous.xsc')
-                    os.system(f'cp *.vel {self.folder}/restarts/previous.vel')
+    def saveStep(self, best_walker, walker_score, best_metric_result):
+        """Handles the restart files and the binary storage for OPENMM"""
+        os.chdir('tmp/walker_%s' % str(best_walker))
+        check = [binary for binary in os.listdir("./") if binary.endswith(self.extensions)]
+        if check:
+            self.cycle += 1
+            # moving the best frame to the trajectory folder
+            os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
+            if self.par['MDEngine'] != 'GROMACS':
+                os.system(f'cp *.coor {self.folder}/restarts/previous.coor')
+                os.system(f'cp *.xsc {self.folder}/restarts/previous.xsc')
+                os.system(f'cp *.vel {self.folder}/restarts/previous.vel')
+            elif self.par['MDEngine'] == 'GROMACS':
+                os.system(f'cp *.gro {self.folder}/restarts/previous.gro')
+                os.system(f'cp "$(ls -t *.cpt | head -1)" {self.folder}/restarts/previous.cpt')
+                os.system(f'cp *.tpr {self.folder}/restarts/previous.tpr')
+            elif self.par['PLUMED']:
+                os.system('cp HILLS  %s/restarts/ ' % self.folder)
+                os.system('cp COLVAR  %s/restarts/ ' % self.folder)
+                os.system('cp grid.dat  %s/restarts/ ' % self.folder)
+        else:
+            Logger.LogToFile('ad', self.cycle, "No binary saved: restarting from last checkpoint.")
 
-                elif self.par['MDEngine'] == 'GROMACS':
-                    os.system(f'cp *.gro {self.folder}/restarts/previous.gro')
-                    os.system(f'cp "$(ls -t *.cpt | head -1)" {self.folder}/restarts/previous.cpt')
-                    os.system(f'cp *.tpr {self.folder}/restarts/previous.tpr')
-
-                elif self.par['PLUMED'] is not None:
-                    os.system('cp HILLS  %s/restarts/ ' % self.folder)
-                    os.system('cp COLVAR  %s/restarts/ ' % self.folder)
-                    os.system('cp grid.dat  %s/restarts/ ' % self.folder)
-        Logger.LogToFile('a', self.cycle, "FINISHED SAVING FRAMES")
         os.chdir(self.folder)
+
+        if self.par['Relax']:
+            with open('walkerSummary.log', 'a') as walkerSummary:
+                info_to_write = " RELAXATION PROTOCOL SCORE: " + str(walker_score) + " Metrics: " + str(best_metric_result) + "\n"
+                walkerSummary.write(info_to_write)
+        else:
+            with open('walkerSummary.log', 'a') as walkerSummary:
+                info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Best Metric: " + str(walker_score) + " Last Metric: " + str(best_metric_result) + "\n"
+                walkerSummary.write(info_to_write)
+        Logger.LogToFile('a', self.cycle, "FINISHED SAVING FRAMES")
         os.system('rm -r tmp')
         self.par['Relax'] = False
 
     def prepareTPR(self, walk_count, trajcount, customFile=None):
-        gro = f'{self.par["Root"]}/system/{self.par["GRO"]}' if self.initialTrajectoriesInFolder == 0 else f'{self.par["Root"]}/restarts/previous.gro'
-        cpt = f'{self.par["Root"]}/system/{self.par["CPT"]}' if self.initialTrajectoriesInFolder == 0 else f'{self.par["Root"]}/restarts/previous.cpt'
+        gro = f'{self.par["Root"]}/system/{self.par["GRO"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.gro'
+        cpt = f'{self.par["Root"]}/system/{self.par["CPT"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.cpt'
         if customFile is None:
             command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
                       f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \

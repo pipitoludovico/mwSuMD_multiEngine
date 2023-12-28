@@ -23,11 +23,10 @@ class suMD1(mwInputParser):
         self.checkVals_2 = []
         self.bestWalker = None
         self.fails = 0
-        self.cycle = len(os.listdir(f'{self.folder}/trajectories'))
+        self.cycle = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         Logger.PrintSettingsToFile("w", self.cycle, str(self.settings_df))
 
     def run_mwSuMD(self):
-
         suMD1().countTraj_logTraj(self.output_to_check)
         if self.parameters['NumberCV'] == 1:
             if self.parameters['Metric_1']:
@@ -69,8 +68,9 @@ class suMD1(mwInputParser):
                 while self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 < self.parameters['Cutoff_2']:
                     self.compareAndUpdateSettings()
                     self.metric_1, self.metric_2 = self.runProtocol()
-        print("#" * 200 + "\nTHRESHOLD METRICS REACHED: FINAL RELAXATION PROTOCOL:\n" + "#" * 200)
-        Checker().relaxSystem()
+        Logger.LogToFile('w', self.cycle, "#" * 200 + "\nTHRESHOLD METRICS REACHED: FINAL RELAXATION PROTOCOL:\n" + "#" * 200)
+        checker = Checker()
+        checker.relaxSystem()
 
     def runProtocol(self):
         mwInputParser().getRestartOutput()
@@ -117,8 +117,14 @@ class suMD1(mwInputParser):
                 else:
                     if key in parametersSnapshot and parametersSnapshot[key] != value:
                         changes.append(f"{key}: {value}")
-            with open('walkerSummary.log', 'a') as walkCheck:
-                walkCheck.write(f"Changed settings during protocol: {changes} {temp}\n")
+            try:
+                with open('walkerSummary.log', 'a') as walkCheck:
+                    walkCheck.write(f"Changed settings during protocol: {changes} {temp}\n")
+            except Exception as e:
+                print(f"Error writing to file: {e}")
+                print(f"changes: {changes}")
+                print(f"temp: {temp}")
+
             Logger.PrintSettingsToFile("w", self.cycle, str(self.settings_df))
             changes.clear()
             del changes

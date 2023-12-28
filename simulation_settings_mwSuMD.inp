@@ -22,16 +22,16 @@ NumberCV = 2
 # Transition_1 or 2 can only be set to positive or negative
 # The Cutoff is the value at which the simulation will stop once the metric has reached this number
 
-Metric_1 = RMSD
-Sel_1 = segid P0 and (resnum 140:200) or (resnum 230:335) or (resnum 346:400) and name CA
-Sel_2 = segid P1 and resnum 7:20 and not name H*
-Cutoff_1 = 1
+Metric_1 = Distance
+Sel_1 = segid PROA and resnum 8 or resnum 23
+Sel_2 = resname DMQ
+Cutoff_1 = 2
 Transition_1 = negative
 
 Metric_2 =  RMSD
-Sel_3 = segid P0 and (resnum 140:200) or (resnum 230:335) or (resnum 346:400) and name CA
-Sel_4 = segid P0 and resnum 31:128 and name CA
-Cutoff_2 = 1
+Sel_3 = protein and name CA
+Sel_4 = noh resname DMQ
+Cutoff_2 = 2
 Transition_2 = negative
 
 #####################################################################

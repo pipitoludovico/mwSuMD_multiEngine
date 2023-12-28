@@ -26,12 +26,13 @@ class ProcessManager:
 
     @staticmethod
     def getGPUids():
+        trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         GPUs = GPUtil.getGPUs()
         gpu_ids = []
         for GPU in GPUs:
             gpu_ids.append(GPU.id)
         if len(gpu_ids) != 0:
-            Logger.LogToFile('a', '', f"Available GPUS: {gpu_ids}")
+            Logger.LogToFile('a', trajCount, f"Available GPUS: {gpu_ids}")
             return gpu_ids
         else:
             print("Please leave at least one GPU to run mwSuMD and run again.")

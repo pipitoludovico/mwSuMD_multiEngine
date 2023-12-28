@@ -1,4 +1,5 @@
 import os
+from .Loggers import Logger
 
 import numpy as np
 
@@ -7,27 +8,40 @@ class MDoperator:
     def __init__(self, par, root):
         self.par = par
         self.folder = root
-        self.cycle = len(os.listdir(f'{self.folder}/trajectories'))
+        self.extensions = ('.chk', '.xml')
+        self.cycle = len(
+            [trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
 
-    def saveStep(self, best_walker):
-        os.makedirs('trajectories', exist_ok=True)
+    def saveStep(self, best_walker, walker_score, best_metric_result):
         """Handle the restart files and the xtc storage"""
-        for r in range(1, int(self.par['Walkers']) + 1):
-            if r == best_walker:
-                print("Renaming the restart files and moving the best walker's restart bin files")
-                os.chdir('tmp/walker_%s' % str(r))
-                os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
-                # moving and renaming the binary files to the restart folder
-                os.system(f'cp *.chk {self.folder}/restarts/previous.chk')
-                os.system(f'cp *.xml {self.folder}/restarts/previous.xml')
+        os.chdir('tmp/walker_%s' % str(best_walker))
+        check = [binary for binary in os.listdir("./") if binary.endswith(self.extensions)]
+        if check:
+            self.cycle += 1
+            os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
+            # moving and renaming the binary files to the restart folder
+            os.system(f'cp *.chk {self.folder}/restarts/previous.chk')
+            os.system(f'cp *.xml {self.folder}/restarts/previous.xml')
+            Logger.LogToFile('a', self.cycle, "FINISHED SAVING FRAMES")
+            if self.par['PLUMED'] is not None:
+                os.system('cp HILLS  %s/restarts/ ' % self.folder)
+                os.system('cp COLVAR  %s/restarts/ ' % self.folder)
+                os.system('cp grid.dat  %s/restarts/ ' % self.folder)
+        else:
+            Logger.LogToFile('ad', self.cycle, "No binary saved: restarting from last checkpoint.")
 
-                if self.par['PLUMED'] is not None:
-                    os.system('cp HILLS  %s/restarts/ ' % self.folder)
-                    os.system('cp COLVAR  %s/restarts/ ' % self.folder)
-                    os.system('cp grid.dat  %s/restarts/ ' % self.folder)
-        print("FINISHED SAVING FRAMES")
-        self.cycle += 1
         os.chdir(self.folder)
+
+        if self.par['Relax']:
+            with open('walkerSummary.log', 'a') as walkerSummary:
+                info_to_write = " RELAXATION PROTOCOL SCORE: " + str(walker_score) + " Metrics: " + str(
+                    best_metric_result) + "\n"
+                walkerSummary.write(info_to_write)
+        else:
+            with open('walkerSummary.log', 'a') as walkerSummary:
+                info_to_write = "Best Walker: " + str(best_walker) + " Best Metric: " + str(
+                    walker_score) + " Last Metric: " + str(best_metric_result) + "\n"
+                walkerSummary.write(info_to_write)
         os.system('rm -r tmp')
         self.par['Relax'] = False
 
