@@ -17,7 +17,6 @@ class MDoperator:
         os.chdir('tmp/walker_%s' % str(best_walker))
         check = [binary for binary in os.listdir("./") if binary.endswith(self.extensions)]
         if check:
-            self.cycle += 1
             os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
             # moving and renaming the binary files to the restart folder
             os.system(f'cp *.chk {self.folder}/restarts/previous.chk')
@@ -31,6 +30,7 @@ class MDoperator:
             Logger.LogToFile('ad', self.cycle, "No binary saved: restarting from last checkpoint.")
 
         os.chdir(self.folder)
+        self.cycle += 1
 
         if self.par['Relax']:
             with open('walkerSummary.log', 'a') as walkerSummary:

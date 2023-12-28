@@ -69,8 +69,9 @@ class suMD1(mwInputParser):
                 while self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 < self.parameters['Cutoff_2']:
                     self.compareAndUpdateSettings()
                     self.metric_1, self.metric_2 = self.runProtocol()
-        print("#" * 200 + "\nTHRESHOLD METRICS REACHED: FINAL RELAXATION PROTOCOL:\n" + "#" * 200)
-        Checker().relaxSystem()
+        Logger.LogToFile('w', self.cycle, "#" * 200 + "\nTHRESHOLD METRICS REACHED: FINAL RELAXATION PROTOCOL:\n" + "#" * 200)
+        checker = Checker()
+        checker.relaxSystem()
 
     def runProtocol(self):
         mwInputParser().getRestartOutput()
