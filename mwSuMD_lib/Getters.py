@@ -1,5 +1,5 @@
 import os
-# import signal
+import signal
 
 import MDAnalysis as Mda
 import numpy as np
@@ -45,7 +45,7 @@ class Getters(mwInputParser):
                 if ts is not None:
                     if len(sel1) == 0 and len(sel2) == 0:
                         Logger.LogToFile('a', self.trajCount, self.selection_error)
-                        # os.kill(os.getpid(), signal.SIGKILL)
+                        os.kill(os.getpid(), signal.SIGKILL)
                         raise ValueError
                     else:
                         distance = Mda.lib.distances.distance_array(sel1.center_of_mass(), sel2.center_of_mass())[0][0]
@@ -75,7 +75,7 @@ class Getters(mwInputParser):
             u = Mda.Universe(psf, xtc)
             if len(u.select_atoms(sel_1)) == 0 and len(u.select_atoms(sel_2)) == 0:
                 Logger.LogToFile('a', self.trajCount, self.selection_error)
-                # os.kill(os.getpid(), signal.SIGKILL)
+                os.kill(os.getpid(), signal.SIGKILL)
                 raise ValueError
             else:
                 selection_1 = u.select_atoms(sel_1)
@@ -119,7 +119,7 @@ class Getters(mwInputParser):
             ref = Mda.Universe(pdb)
             if len(u.select_atoms(sel_1)) == 0 or len(u.select_atoms(sel_2)) == 0:
                 Logger.LogToFile('a', self.trajCount, self.selection_error)
-                # os.kill(os.getpid(), signal.SIGKILL)
+                os.kill(os.getpid(), signal.SIGKILL)
                 raise ValueError
             else:
                 R = Mda.analysis.rms.RMSD(u, ref, tol_mass=100, select="%s" % sel_1, groupselections=["%s" % sel_2])
@@ -182,7 +182,7 @@ class Getters(mwInputParser):
                     return distMetric, waterCont, mean_contacts
             else:
                 Logger.LogToFile('a', self.trajCount, self.selection_error)
-                # os.kill(os.getpid(), signal.SIGKILL)
+                os.kill(os.getpid(), signal.SIGKILL)
                 raise ValueError
         except Exception as e:
             print("Contacts Exception: ", e)

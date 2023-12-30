@@ -123,12 +123,17 @@ class mwInputParser:
             self.initialParameters['Relax'] = False
             self.initialParameters['Metric_1'] = "No Metric1 Chosen"
             self.initialParameters['Metric_2'] = "No Metric2 Chosen"
+            self.initialParameters['CheckEvery'] = None
             for line in infile:
                 if line.startswith('#'):
                     continue
                 if line.startswith('RelaxTime'):
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['RelaxTime'] = float(line.split('=')[1].strip())
+
+                if line.startswith('CheckEvery'):
+                    if line.split('=')[1].strip() != '':
+                        self.initialParameters['CheckEvery'] = float(line.split('=')[1].strip())
 
                 if line.startswith('Restart'):
                     mwInputParser.initialParameters['Restart'] = line.split('=')[1].strip().upper()
@@ -224,7 +229,8 @@ class mwInputParser:
                         else:
                             raise ValueError(
                                 "One of your selection pointed to 0 atoms: please check your selection with your structure file")
-
+        # cleaning Universe as the check is completed
+        del u
         if self.initialParameters['NumberCV'] == 2 and (
                 self.initialParameters.get('Metric_1') is None or self.initialParameters.get('Metric_2') is None):
             raise ValueError('Make sure to select both Metric 1 and 2 if NumberCV = 2!')

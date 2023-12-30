@@ -26,14 +26,14 @@ class TrajectoryOperator(mwInputParser):
             if self.initialParameters['Forcefield'] == 'CHARMM':
                 if self.initialParameters['PSF'] is None:
                     Logger.LogToFile('a', self.trajCount, self.setting_error)
-                    # os.kill(os.getpid(), signal.SIGKILL)
+                    os.kill(os.getpid(), signal.SIGKILL)
                     raise FileNotFoundError
                 else:
                     psf = '../../system/%s' % self.initialParameters['PSF']
             if self.initialParameters['Forcefield'] == 'AMBER':
                 if self.initialParameters['PRMTOP'] is None:
                     Logger.LogToFile('a', self.trajCount, self.setting_error)
-                    # os.kill(os.getpid(), signal.SIGKILL)
+                    os.kill(os.getpid(), signal.SIGKILL)
                     raise FileNotFoundError
                 else:
                     psf = '../../system/%s' % self.initialParameters['PRMTOP']
@@ -51,7 +51,7 @@ class TrajectoryOperator(mwInputParser):
             except FileNotFoundError:
                 Logger.LogToFile('a', self.trajCount,
                                  "No trajectory or psf found. Check your simulation parameters and make sure production went well")
-                # os.kill(os.getpid(), signal.SIGKILL)
+                os.kill(os.getpid(), signal.SIGKILL)
 
             selection = u.select_atoms(f"{self.initialParameters['Wrap']}")
             if len(selection.atoms) == 0:
@@ -67,6 +67,8 @@ class TrajectoryOperator(mwInputParser):
                 for ts in u.trajectory:
                     w.write(ag)
             os.chdir(self.folder)
-        except:
+        except Exception as e:
+            with open('wrappingLog.txt', 'a') as wrapLog:
+                wrapLog.write(f"Wrapping Exception in {os.getcwd()}. Exception: {e} ")
             Logger.LogToFile('a', self.trajCount, "Wrapping failed: check your MD results in tmp/walker_x folders")
-            exit()
+            os.kill(os.getpid(), signal.SIGKILL)

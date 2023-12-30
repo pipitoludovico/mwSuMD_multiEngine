@@ -10,7 +10,8 @@ Output = GLP1_binding_step_2
 Fails = 2
 # # Tolerance to determine if a simulation is stuck [Default = 30]
 Tolerance = 20
-#
+# Check every x steps:
+CheckEvery = 20
 # Relaxation protocol time in case of stuck condition [Default = 5 ns]
 RelaxTime = 1
 ########################################################################

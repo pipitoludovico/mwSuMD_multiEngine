@@ -101,7 +101,6 @@ class Runner(mwInputParser):
                     for result in results:
                         result.wait()
                         q.get()
-
                 pool.close()
                 pool.join()
                 self.trajCount += 1
