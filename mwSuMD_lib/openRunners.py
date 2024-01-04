@@ -56,7 +56,9 @@ class Runner(mwInputParser):
         if self.initialParameters['Mode'] == 'parallel':
             Logger.LogToFile("ad", self.trajCount, "\n\n")
             Logger.LogToFile("ad", self.trajCount, '*' * 200)
-            Logger.LogToFile("a", self.trajCount, "Running parallel mode")
+            Logger.LogToFile("ad", self.trajCount, "Running parallel mode")
+            Logger.LogToFile("ad", self.trajCount, "Running in " + os.getcwd())
+
             runner = RunnerOPENMM()
             manager = mp.Manager()
             q = manager.Queue()

@@ -25,8 +25,6 @@ class RunnerOPENMM(mwInputParser):
             self.parameterFolderPath = os.path.abspath('parameters')
 
     def runOPENMM(self, walker_folder, gpu):
-        Logger.LogToFile("ad", self.trajCount, "Running in " + os.getcwd())
-
         self.timeWindow = self.initialParameters['Timewindow']
         if self.initialParameters.get('Relax') is True:
             self.initialParameters['Timewindow'] = int(self.initialParameters['RelaxTime'] * 1000)
@@ -69,7 +67,7 @@ class RunnerOPENMM(mwInputParser):
             psf.setBox(x * unit.nanometers, y * unit.nanometers, z * unit.nanometers)
             integrator = openmm.LangevinIntegrator(310 * unit.kelvin, 1 / unit.picosecond, ts * unit.picoseconds)
             platform = openmm.Platform.getPlatformByName('CUDA')
-            properties = {'DeviceIndex': str(gpu)}
+            properties = {'DeviceIndex': str(gpu), 'Precision': 'mixed'}
             sim = app.Simulation(psf.topology, system, integrator, platform, properties)
 
         else:  # if FF = AMBER

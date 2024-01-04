@@ -53,6 +53,8 @@ class Checker(mwInputParser):
                 GPUs.remove(excluded)
         strGPU = map(str, GPUs)
         jointGPUs = ','.join(strGPU)
+        from random import choice
+        jointGPUs = choice(GPUs)
         # we create a special input file that has a longer runtime (5ns default or user-defined)
         MDsetter(self.initialParameters).createInputFile()
         # we run this inside walker_1 for convenience

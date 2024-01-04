@@ -25,7 +25,7 @@ def main():
         multiSumd.run_mwSuMD()
         exit()
     else:
-        print('openmm')
+        print('Running with openMM')
         from mwSuMD_lib import openSuMD
         openSumd = openSuMD.suMD1()
         openSumd.run_openMwSuMD()

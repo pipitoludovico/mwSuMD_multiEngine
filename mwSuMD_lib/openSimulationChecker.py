@@ -5,7 +5,6 @@ from .Metrics import MetricsParser
 from .Parser import mwInputParser
 from .openRunners import Runner
 from .Loggers import Logger
-from .GPUoperations import ProcessManager
 
 
 class Checker(mwInputParser):
@@ -53,7 +52,8 @@ class Checker(mwInputParser):
                 self.walker_metrics[0], self.walker_metrics[1], self.last_frame_metrics[0], self.last_frame_metrics[1])
             self.best_metric_result = [self.best_average_metric_1, self.best_average_metric_2]
 
-        MDoperator(self.initialParameters, self.folder).saveStep(self.bestWalker, self.best_walker_score, self.best_metric_result)
+        MDoperator(self.initialParameters, self.folder).saveStep(self.bestWalker, self.best_walker_score,
+                                                                 self.best_metric_result)
 
         Logger.LogToFile('ad', self.trajCount, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.trajCount += 1

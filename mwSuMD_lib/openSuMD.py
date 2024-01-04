@@ -16,7 +16,7 @@ class suMD1(mwInputParser):
     settings_df = pd.DataFrame(sorted(list(parameters.items())), columns=['Setting', 'Parameter'])
     print(settings_df)
 
-    def __init__(self):
+    def     __init__(self):
         super(mwInputParser, self).__init__()
         self.scores = None
         self.output_to_check = 0
@@ -110,13 +110,6 @@ class suMD1(mwInputParser):
         self.selection_list.clear()
         self.parameters, self.selection_list, self.paramFolder = self.pars.getSettings()
         tempParametersSnapshot = self.parameters.copy()
-        if self.cycle != 0:
-            try:
-                del parametersSnapshot['coor'], parametersSnapshot['vel'], parametersSnapshot['xsc']
-                del tempParametersSnapshot['coor'], tempParametersSnapshot['vel'], tempParametersSnapshot['xsc']
-            except:
-                del parametersSnapshot['cpt'], parametersSnapshot['gro'], parametersSnapshot['tpr']
-                del tempParametersSnapshot['cpt'], tempParametersSnapshot['gro'], tempParametersSnapshot['tpr']
 
         if parametersSnapshot != tempParametersSnapshot or selectionShapshot != self.selection_list:
             temp = set(self.selection_list) - set(selectionShapshot)
