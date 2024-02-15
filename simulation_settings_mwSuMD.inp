@@ -1,0 +1,52 @@
+### Is this a restart? YES or NO
+Restart = NO
+########################################################################
+### Selection for wrapping (default "protein") - ACEMD only  - why is it acemd only?
+Wrap = protein and name CA
+########################################################################
+# Output name of the files
+Output = GLP1_binding_step_2
+# number of fails allowed [Default = 5]
+Fails = 2
+# # Tolerance to determine if a simulation is stuck [Default = 30]
+Tolerance = 20
+# Check every x steps:
+CheckEvery = 20
+# Relaxation protocol time in case of stuck condition [Default = 5 ns]
+RelaxTime = 1
+########################################################################
+# Supervision on one or two metrics?
+NumberCV = 2
+
+# List of selection to work with (MDAnalysis selection language)
+# Distance (Sel_1 and Sel_2); RMSD (Sel_1=Reference and Sel_2=RMSD of this selection) ; Contacts (Sel_1 and Sel_2); HB (sel_1 or sel_2);
+# Transition_1 or 2 can only be set to positive or negative
+# The Cutoff is the value at which the simulation will stop once the metric has reached this number
+
+Metric_1 = Distance
+Sel_1 = segid PROA and resnum 8 or resnum 23
+Sel_2 = resname DMQ
+Cutoff_1 = 2
+Transition_1 = negative
+
+Metric_2 =  RMSD
+Sel_3 = protein and name CA
+Sel_4 = noh resname DMQ
+Cutoff_2 = 2
+Transition_2 = negative
+
+#####################################################################
+# plumed input file for metadynamics etc during  mwSuMD
+PLUMED =
+
+######################################################################
+### Algorithm and MD settings
+# number of walkers
+Walkers = 2
+
+# Each simulation length in ps
+Timewindow = 20
+# expressed in fs
+Timestep = 4
+# expressed in ps
+Savefreq = 20
