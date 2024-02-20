@@ -1,10 +1,10 @@
 import os
+import re
+
+import numpy as np
 from .Metrics import MetricsParser
 from .openRunners import Runner
 from .Loggers import Logger
-
-
-import numpy as np
 
 
 class MDoperator:
@@ -12,7 +12,8 @@ class MDoperator:
         self.par = par
         self.folder = root
         self.extensions = ('.chk', '.xml')
-        self.cycle = len([trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
+        self.cycle = len(
+            [trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
         self.best_metric_result = None
         self.best_average_metric_2 = None
         self.best_average_metric_1 = None
@@ -34,10 +35,21 @@ class MDoperator:
             os.system(f'cp *.chk {self.folder}/restarts/previous.chk')
             os.system(f'cp *.xml {self.folder}/restarts/previous.xml')
             Logger.LogToFile('a', self.cycle, "FINISHED SAVING FRAMES")
-            if self.par['PLUMED'] is not None:
-                os.system('cp HILLS  %s/restarts/ ' % self.folder)
-                os.system('cp COLVAR  %s/restarts/ ' % self.folder)
-                os.system('cp grid.dat  %s/restarts/ ' % self.folder)
+            if self.par['PLUMED']:
+                with open(self.par['PLUMED'], 'r') as plumedINP:
+                    for line in plumedINP.readlines():
+                        match = re.search(r'FILE=([^\s]+)', line)
+                        if match:
+                            outFile = match.group(1)
+                            Logger.LogToFile('ad', self.cycle, str(os.getcwd() + outFile))
+                            os.system(f'cp {outFile} %s/restarts/' % self.folder)
+                for filename in os.listdir("./"):
+                    if '.' not in filename:
+                        fullname = os.path.join("./", filename)
+                        os.system(f'cp {fullname}  %s/restarts/ ' % self.folder)
+                    if filename.endswith(".dat"):
+                        os.system(f'cp {filename} %s/restarts/' % self.folder)
+                os.system('cp plumed.log  %s/restarts/ ' % self.folder)
         else:
             Logger.LogToFile('ad', self.cycle, "No binary saved: restarting from last checkpoint.")
             with open('walkerSummary.log', 'a') as walkerSummary:
@@ -48,14 +60,18 @@ class MDoperator:
         with open('walkerSummary.log', 'a') as walkerSummary:
             if self.par['NumberCV'] == 1:
                 if self.par['Relax'] and check:
-                    info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(walker_score) + " Metrics: " + str(best_metric_result) + "\n"
+                    info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(walker_score) + " Metrics: " + str(
+                        best_metric_result) + "\n"
                 if not self.par['Relax'] and check:
-                    info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Best Metric: " + str(walker_score) + " Last Metric: " + str(best_metric_result) + "\n"
+                    info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Best Metric: " + str(
+                        walker_score) + " Last Metric: " + str(best_metric_result) + "\n"
             if self.par['NumberCV'] == 2:
                 if self.par['Relax'] and check:
-                    info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(walker_score) + " Metrics: " + str(best_metric_result) + "\n"
+                    info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(walker_score) + " Metrics: " + str(
+                        best_metric_result) + "\n"
                 if not self.par['Relax'] and check:
-                    info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Score Result: " + str(walker_score) + " Last Metrics from best: " + str(best_metric_result) + "\n"
+                    info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Score Result: " + str(
+                        walker_score) + " Last Metrics from best: " + str(best_metric_result) + "\n"
             walkerSummary.write(info_to_write)
 
         os.system('rm -r tmp')
@@ -64,7 +80,8 @@ class MDoperator:
     def checkIfStuck(self, values, accumulatedFails) -> bool:
         if accumulatedFails >= self.par['Fails'] * int(self.par['NumberCV']):
             with open('walkerSummary.log', 'a') as logFile:
-                logFile.write('\nSimulation seemed stuck. It will run the last relaxation protocol and it will be terminated\n')
+                logFile.write(
+                    '\nSimulation seemed stuck. It will run the last relaxation protocol and it will be terminated\n')
                 logFile.close()
             self.relaxSystem()
             exit()

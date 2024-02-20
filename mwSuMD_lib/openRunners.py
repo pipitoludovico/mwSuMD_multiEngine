@@ -65,10 +65,6 @@ class Runner(mwInputParser):
                     processes.append(future)
                     self.walk_count += 1
 
-        # for GPUbatch in GPUbatches:
-        #     for GPU in GPUbatch:
-        #         processes.append(setter.runOPENMM(self.walk_count, GPU))
-        #         self.walk_count += 1
         end_time_serial = time.perf_counter()
         final_time_serial = end_time_serial - start_time_serial
         Logger.LogToFile("ad", self.trajCount, f"Final Time: {final_time_serial:.2f} seconds")

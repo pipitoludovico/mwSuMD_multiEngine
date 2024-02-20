@@ -46,24 +46,6 @@ class Runner(mwInputParser):
             print("Wrapping failed: ", e)
             exit()
 
-    def runGPU_batch(self, trajCount, walk_count, GPUbatch, queue):
-        processes = []
-        for GPU in GPUbatch:
-            os.chdir('tmp/walker_' + str(walk_count))
-            command = self.lauchEngine(trajCount, walk_count, GPU,
-                                       self.customProductionFile)
-            process = subprocess.Popen(command, shell=True)  # , stdout=DEVNULL)
-            processes.append(process)
-            walk_count += 1
-            os.chdir(self.folder)
-            Logger.LogToFile('ad', self.trajCount, command)
-        # Wait for all subprocesses to finish
-        for process in processes:
-            process.wait()
-        for GPU in GPUbatch:
-            queue.put((trajCount, walk_count, GPU))  # Notify completion
-        return walk_count  # Return the updated walk_count value
-
     def runSimulation(self):
         # let's divide the available GPU in batches by the number of walkers
         manager = ProcessManager()
@@ -104,6 +86,25 @@ class Runner(mwInputParser):
         taks_master = f'-nt {num_threads} -pin on -pme gpu -nb gpu -bonded gpu -update gpu'
         plumed = f'-plumed {self.par["PLUMED"]}' if self.par['PLUMED'] is not None else ''
 
+        if self.initialParameters.get("PLUMED") and self.trajCount != 0:
+            plumedCopy = ''
+            with open(self.par['PLUMED'], 'r') as plumedINP:
+                for line in plumedINP.readlines():
+                    match = re.search(r'FILE=([^\s]+)', line)
+                    if match:
+                        outFile = match.group(1).split(',')
+                        for chunk in outFile:
+                            plumedCopy += f"cp ../../restarts/{chunk} .; "
+
+            for filename in os.listdir("../../restarts"):
+                if '.' not in filename:
+                    fullname = os.path.join("./", filename)
+                    plumedCopy += f'cp {fullname} .;'
+            if any(plumedFile.endswith(".dat") for plumedFile in os.listdir("../../restarts")):
+                plumedCopy += "cp ../../restarts/*.dat .;"
+        else:
+            plumedCopy = ''
+
         if self.par['MDEngine'] == 'GROMACS':
             MDoperator(self.initialParameters, self.folder).prepareTPR(walk_count, trajCount, customFile)
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is None:
@@ -113,7 +114,7 @@ class Runner(mwInputParser):
             elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:
                 command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm production {plumed} > gromacs.log'
 
-        elif self.par['MDEngine'] == 'ACEMD/OPENMM':
+        if self.par['MDEngine'] == 'ACEMD/OPENMM':
             if customFile is not None and self.initialParameters['COMMAND'] is not None:
                 command = f'{self.initialParameters["COMMAND"]} --device {GPU} production.inp > acemd.log'
             if customFile is not None and self.initialParameters['COMMAND'] is None:
@@ -121,7 +122,7 @@ class Runner(mwInputParser):
             if customFile is None and self.initialParameters['COMMAND'] is None:
                 command = f'acemd --device {GPU} input_{walk_count}_{trajCount}.inp > acemd.log'
 
-        elif self.par['MDEngine'] == 'NAMD':
+        if self.par['MDEngine'] == 'NAMD':
             command = f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log' \
                 if customFile is not None and self.initialParameters['COMMAND'] is not None \
                 else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log' \
@@ -129,4 +130,4 @@ class Runner(mwInputParser):
                 else f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log' \
                 if self.initialParameters['COMMAND'] is not None \
                 else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log'
-        return command
+        return plumedCopy + " " + command

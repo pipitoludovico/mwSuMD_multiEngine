@@ -34,6 +34,17 @@ class openMMsetter:
         else:
             with open('./restarts/previous.xml') as inputChk:  # else we look in the restarts
                 system = XmlSerializer.deserialize(inputChk.read())
+        if self.initialParameters.get("PLUMED"):
+            from openmmplumed import PlumedForce
+            plumedPath = self.initialParameters.get("PLUMED")
+            script = ""
+            with open(plumedPath, 'r') as pd:
+                # script += '"""\n'
+                for line in pd.readlines():
+                    script += line
+            # script += '"""\n'
+            print("PLUMED SCRIPT:\n", script)
+            system.addForce(PlumedForce(script))
 
         os.makedirs(f"tmp/walker_{walker_folder}", exist_ok=True)
         if self.initialParameters['Relax'] is True:

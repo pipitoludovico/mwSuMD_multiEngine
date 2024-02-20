@@ -22,6 +22,8 @@ class Template(mwInputParser):
                                                                                                 'Forcefield'] == 'AMBER' else '\n',
                 f'structure\t../../system/{self.initialParameters.get("PSF")}\n' if self.initialParameters.get(
                     'PSF') is not None else '\n',
+                "plumedFile\t%s\n" % (self.initialParameters.get('PLUMED')) if self.initialParameters.get(
+                    'PLUMED') is not None else "\n",
                 'coordinates             ../../system/%s\n' % self.initialParameters.get('PDB'),
                 'temperature     310\n',
                 'PME             on\n',
@@ -32,7 +34,8 @@ class Template(mwInputParser):
                 'thermostatTemperature   310\n',
                 'barostat                off\n',
                 'trajectoryFile          %s_%s.xtc\n' % (self.initialParameters.get('Output'), str(self.trajCount)),
-                'trajectoryPeriod               %s\n' % int((self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep')) * 10 ** 3)),
+                'trajectoryPeriod               %s\n' % int(
+                    (self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep')) * 10 ** 3)),
                 f'binCoordinates          ../../system/%s\n' % self.initialParameters.get('coor'),
                 f'extendedSystem          ../../system/%s\n' % self.initialParameters.get('xsc'),
                 'binVelocities           ../../system/%s\n' % self.initialParameters.get('vel')]
@@ -49,6 +52,9 @@ class Template(mwInputParser):
                               f'binVelocities\t{sys_folder}{self.initialParameters.get("vel")}\n'
                               f'extendedSystem\t{sys_folder}{self.initialParameters.get("xsc")}\n'
                               f'set xscfile [open {sys_folder}{self.initialParameters.get("xsc")}]\n'
+                              "plumed on\n" if self.initialParameters.get("PLUMED") is not None else "\n",
+                              "plumedfile\t%s\n" % self.initialParameters.get("PLUMED") if self.initialParameters.get(
+                                  'PLUMED') is not None else "\n",
                               'proc get_first_ts { xscfile } {\n',
                               '  set fd [open $xscfile r]\n',
                               '  gets $fd\n',
@@ -63,10 +69,10 @@ class Template(mwInputParser):
                               'set temp\t313.15;\n',
                               'outputEnergies %s\n' % int(
                                   self.initialParameters.get("Savefreq") / (
-                                              self.initialParameters.get('Timestep') / 10 ** 3)),
+                                          self.initialParameters.get('Timestep') / 10 ** 3)),
                               'dcdfreq\t%s;\t\n' % int(
                                   self.initialParameters.get("Savefreq") / (
-                                              self.initialParameters.get('Timestep') / 10 ** 3)),
+                                          self.initialParameters.get('Timestep') / 10 ** 3)),
                               'dcdUnitCell\tyes;\n',
 
                               'xstFreq\t%s;\t\n' % int(
@@ -119,9 +125,9 @@ class Template(mwInputParser):
                               '\n',
                               '\n',
                               'numsteps\t%s;\n' % int(self.initialParameters['Timewindow'] / (
-                                          self.initialParameters['Timestep'] / 10 ** 3)),
+                                      self.initialParameters['Timestep'] / 10 ** 3)),
                               'run\t%s;\n' % int(self.initialParameters['Timewindow'] / (
-                                          self.initialParameters['Timestep'] / 10 ** 3))]
+                                      self.initialParameters['Timestep'] / 10 ** 3))]
 
         if self.initialParameters['MDEngine'] == 'GROMACS':
             self.inputFile = ['title                   = %s\n' % self.initialParameters['Output'],

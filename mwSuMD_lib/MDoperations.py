@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import numpy as np
 from random import choice
@@ -41,14 +42,25 @@ class MDoperator:
                 os.system(f'cp *.coor {self.folder}/restarts/previous.coor')
                 os.system(f'cp *.xsc {self.folder}/restarts/previous.xsc')
                 os.system(f'cp *.vel {self.folder}/restarts/previous.vel')
-            elif self.par['MDEngine'] == 'GROMACS':
+            if self.par['MDEngine'] == 'GROMACS':
                 os.system(f'cp *.gro {self.folder}/restarts/previous.gro')
                 os.system(f'cp "$(ls -t *.cpt | head -1)" {self.folder}/restarts/previous.cpt')
                 os.system(f'cp *.tpr {self.folder}/restarts/previous.tpr')
-            elif self.par['PLUMED']:
-                os.system('cp HILLS  %s/restarts/ ' % self.folder)
-                os.system('cp COLVAR  %s/restarts/ ' % self.folder)
-                os.system('cp grid.dat  %s/restarts/ ' % self.folder)
+            if self.par['PLUMED']:
+                with open(self.par['PLUMED'], 'r') as plumedINP:
+                    for line in plumedINP.readlines():
+                        match = re.search(r'FILE=([^\s]+)', line)
+                        if match:
+                            outFile = match.group(1)
+                            Logger.LogToFile('ad', self.cycle, str(os.getcwd() + outFile))
+                            os.system(f'cp {outFile} %s/restarts/' % self.folder)
+                for filename in os.listdir("./"):
+                    if '.' not in filename:
+                        fullname = os.path.join("./", filename)
+                        os.system(f'cp {fullname}  %s/restarts/ ' % self.folder)
+                    if filename.endswith(".dat"):
+                        os.system(f'cp {filename} %s/restarts/' % self.folder)
+                os.system('cp plumed.log  %s/restarts/ ' % self.folder)
         else:
             Logger.LogToFile('ad', self.cycle, "No binary saved: restarting from last checkpoint.")
             with open('walkerSummary.log', 'a') as walkerSummary:

@@ -51,10 +51,6 @@ class Getters(mwInputParser):
             mean_lin = np.mean(distances)
             distMetric = (mean_lin * distances[-1]) ** 0.5
             return distMetric, distances, distances[-1]
-            # except Exception as e:
-            #     print("Exception: ", e)
-            #     Logger.LogToFile('a', self.trajCount, f"Distance calculation in walker {os.getcwd()} failed.")
-            #     raise ArithmeticError
 
         if metric == 'CONTACTS':
             try:
