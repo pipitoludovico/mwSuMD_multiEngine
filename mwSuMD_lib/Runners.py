@@ -99,7 +99,7 @@ class Runner(mwInputParser):
             for filename in os.listdir("../../restarts"):
                 if '.' not in filename:
                     fullname = os.path.join("./", filename)
-                    plumedCopy += f'cp {fullname} .;'
+                    plumedCopy += f'cp ../../restarts/{fullname} .;'
             if any(plumedFile.endswith(".dat") for plumedFile in os.listdir("../../restarts")):
                 plumedCopy += "cp ../../restarts/*.dat .;"
         else:

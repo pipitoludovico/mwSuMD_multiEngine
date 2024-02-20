@@ -55,13 +55,11 @@ class Runner(mwInputParser):
         processes = []
         setter = openMMsetter(self.initialParameters)
 
-        def run_openMM_async(walk_count, GPU_m):
-            return setter.runOPENMM(walk_count, GPU_m)
-
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        with concurrent.futures.ProcessPoolExecutor() as executor:
             for GPUbatch in GPUbatches:
                 for GPU in GPUbatch:
-                    future = executor.submit(run_openMM_async, self.walk_count, GPU)
+                    folder_path = f'tmp/walker_{self.walk_count}'
+                    future = executor.submit(setter.runOPENMM, self.walk_count, GPU, folder_path)
                     processes.append(future)
                     self.walk_count += 1
 

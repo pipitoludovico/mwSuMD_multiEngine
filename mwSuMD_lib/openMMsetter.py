@@ -19,7 +19,9 @@ class openMMsetter:
         else:
             self.parameterFolderPath = os.path.abspath('parameters')
 
-    def runOPENMM(self, walker_folder, gpu):
+    def runOPENMM(self, walker_folder, gpu, folder_path):
+        os.makedirs(folder_path, exist_ok=True)
+        os.chdir(folder_path)
         sim = None
         self.timeWindow = self.initialParameters['Timewindow']
         if self.initialParameters.get('Relax') is True:
@@ -29,24 +31,27 @@ class openMMsetter:
         ts = float(self.initialParameters.get('Timestep') / 1000)
 
         if self.trajCount == 0:  # if we start from 0 we check in system
-            with open('./system/equilibration_checkpnt.xml') as inputChk:
+            with open('../../system/equilibration_checkpnt.xml') as inputChk:
                 system = XmlSerializer.deserialize(inputChk.read())
         else:
-            with open('./restarts/previous.xml') as inputChk:  # else we look in the restarts
+            with open('../../restarts/previous.xml') as inputChk:  # else we look in the restarts
                 system = XmlSerializer.deserialize(inputChk.read())
-        if self.initialParameters.get("PLUMED"):
+        if self.initialParameters.get("PLUMED") and self.trajCount == 0:
             from openmmplumed import PlumedForce
             plumedPath = self.initialParameters.get("PLUMED")
             script = ""
             with open(plumedPath, 'r') as pd:
-                # script += '"""\n'
                 for line in pd.readlines():
                     script += line
-            # script += '"""\n'
-            print("PLUMED SCRIPT:\n", script)
             system.addForce(PlumedForce(script))
+        if self.initialParameters.get("PLUMED") and self.trajCount != 0:
+            print("A"*200)
+            print("COPIO HILLS")
+            for file in os.listdir('../../restarts'):
+                print(file)
+                if "." not in file:
+                    os.system(f"cp ../../restarts/{file} .")
 
-        os.makedirs(f"tmp/walker_{walker_folder}", exist_ok=True)
         if self.initialParameters['Relax'] is True:
             number_of_steps = int(
                 (self.initialParameters['RelaxTime'] * 1000) / (self.initialParameters['Timestep'] / 1000))
@@ -61,7 +66,7 @@ class openMMsetter:
                                      periodicBoxVectors=gro.getPeriodicBoxVectors(),
                                      includeDir='/usr/local/gromacs/share/gromacs/top')
             sim = app.Simulation(top.topology, system, integrator, platform, properties)
-            sim.context.setPositions(gro.positions)
+            # sim.context.setPositions(gro.positions)
 
         if self.initialParameters['Forcefield'] == 'CHARMM':
             pdb = app.PDBFile(f"{self.initialParameters['Root']}/system/{self.initialParameters['PDB']}")
@@ -71,6 +76,7 @@ class openMMsetter:
             x, y, z = boxLength[0], boxLength[1], boxLength[2]
             psf.setBox(x * nanometers, y * nanometers, z * nanometers)
             sim = app.Simulation(psf.topology, system, integrator, platform, properties)
+            # sim.context.setPositions(pdb.positions)
 
         if self.initialParameters['Forcefield'] == 'AMBER':
             params = f"{self.initialParameters['Root']}/system/{self.initialParameters['PRMTOP']}"
@@ -80,28 +86,30 @@ class openMMsetter:
             inpcrdPATH = f"{self.initialParameters['Root']}/system/" + inpcrd_
             inpcrd = app.AmberInpcrdFile(inpcrdPATH)
             sim = app.Simulation(prmtop.topology, system, integrator, platform, properties)
+            # sim.context.setPositions(inpcrd.positions)
             if inpcrd.boxVectors is not None:
                 sim.context.setPeriodicBoxVectors(*inpcrd.boxVectors)
 
         if self.trajCount == 0 and self.initialParameters['Restart'] == "NO":  # if we start from 0 we check in system
             sim.loadCheckpoint(f"{self.initialParameters['Root']}/system/equilibration_checkpnt.chk")
         else:
-            sim.loadCheckpoint("./restarts/previous.chk")
+            sim.loadCheckpoint("../../restarts/previous.chk")
         total_steps = int(number_of_steps)
 
         sim.reporters.append(app.StateDataReporter(
-            f"{self.initialParameters['Root']}/tmp/walker_{walker_folder}/openMM_{walker_folder}.log", saveFreq,
+            f"{self.initialParameters['Root']}/{folder_path }/openMM_{walker_folder}.log", saveFreq,
             step=True, totalSteps=total_steps, remainingTime=True, potentialEnergy=True, temperature=True))
         sim.reporters.append(app.DCDReporter(
-            f"{self.initialParameters['Root']}/tmp/walker_{walker_folder}/{self.initialParameters['Output']}_{walker_folder}.dcd",
+            f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.dcd",
             saveFreq, enforcePeriodicBox=True))
         sim.reporters.append(app.CheckpointReporter(
-            f"{self.initialParameters['Root']}/tmp/walker_{walker_folder}/{self.initialParameters['Output']}_{walker_folder}.chk",
+            f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.chk",
             saveFreq))
         sim.step(number_of_steps)
 
         # writing checkpoint and state
-        with open(f'tmp/walker_{walker_folder}/restart.xml', 'w') as output:
+        with open(f'restart.xml', 'w') as output:
             output.write(XmlSerializer.serialize(system))
         sim.reporters.clear()
         self.initialParameters['Timewindow'] = self.timeWindow
+        os.chdir(self.initialParameters.get('Root'))
