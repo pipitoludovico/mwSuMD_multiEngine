@@ -119,7 +119,6 @@ class MetricsParser(mwInputParser):
                             last_values[walker][metric] = max(all_metric_values)
 
                     metric_keys = list(averages[walker].keys())
-                    print(metric_keys)
                     numerator = averages[walker][metric_keys[0]]
                     denominator = averages[walker][metric_keys[1]]
                     score = (numerator / denominator) - 1
