@@ -34,7 +34,7 @@ class Getters(mwInputParser):
                     psf = gro
                 else:
                     psf = "../../system/%s" % self.initialParameters.get('TPR')
-        if metric == 'DISTANCE':
+        if str(metric).startswith('DISTANCE'):
             u = Mda.Universe(psf, xtc)
             sel1 = u.select_atoms(sel_1)
             sel2 = u.select_atoms(sel_2)
@@ -52,7 +52,7 @@ class Getters(mwInputParser):
             distMetric = (mean_lin * distances[-1]) ** 0.5
             return distMetric, distances, distances[-1]
 
-        if metric == 'CONTACTS':
+        if str(metric).startswith('CONTACTS'):
             try:
                 u = Mda.Universe(psf, xtc)
                 if len(u.select_atoms(sel_1)) == 0 and len(u.select_atoms(sel_2)) == 0:
@@ -76,7 +76,7 @@ class Getters(mwInputParser):
                 Logger.LogToFile('a', self.trajCount, f"Contact calculation in walker {os.getcwd()} failed.")
                 raise ArithmeticError
 
-        if metric == 'RMSD':
+        if str(metric).startswith('RMSD'):
             import MDAnalysis.analysis.rms
 
             pdb = f'{self.folder}/system/reference/' + str(self.initialParameters['REFERENCE'])
@@ -102,7 +102,7 @@ class Getters(mwInputParser):
                 Logger.LogToFile('a', self.trajCount, f"RMSD calculation in walker {os.getcwd()} failed.")
                 raise ArithmeticError
 
-        if metric == 'HB':
+        if str(metric).startswith('HB'):
             try:
                 u = Mda.Universe(psf, xtc)
                 if sel_1 or sel_2 is not None:
@@ -145,7 +145,7 @@ class Getters(mwInputParser):
                 Logger.LogToFile('a', self.trajCount, f"Contacts calculation in walker {os.getcwd()} failed.")
                 raise ArithmeticError
 
-        if metric == 'SOLVATION':
+        if str(metric).startswith('SOLVATION'):
             try:
                 u = Mda.Universe(psf, xtc)
                 if sel_1 or sel_2 is not None:

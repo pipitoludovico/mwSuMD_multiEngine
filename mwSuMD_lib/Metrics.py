@@ -53,6 +53,8 @@ class MetricsParser(mwInputParser):
                         self.calculateMetric(metric_2, selection_list[:2], walker)
 
                     if metric_1 and metric_2 and number_cv == 2:
+                        if metric_1 == metric_2:
+                            metric_2 += "_2"
                         self.calculateMetric(metric_1, selection_list[:2], walker)
                         self.calculateMetric(metric_2, selection_list[:2], walker)
 
@@ -117,6 +119,7 @@ class MetricsParser(mwInputParser):
                             last_values[walker][metric] = max(all_metric_values)
 
                     metric_keys = list(averages[walker].keys())
+                    print(metric_keys)
                     numerator = averages[walker][metric_keys[0]]
                     denominator = averages[walker][metric_keys[1]]
                     score = (numerator / denominator) - 1
