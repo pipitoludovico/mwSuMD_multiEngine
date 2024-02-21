@@ -121,7 +121,10 @@ class MetricsParser(mwInputParser):
                     metric_keys = list(averages[walker].keys())
                     numerator = averages[walker][metric_keys[0]]
                     denominator = averages[walker][metric_keys[1]]
-                    score = (numerator / denominator) - 1
+                    try:
+                        score = (numerator / denominator) - 1
+                    except ZeroDivisionError:
+                        score = 0
 
                     if self.initialParameters['Transition_1'] == 'negative':
                         score = score * -1
