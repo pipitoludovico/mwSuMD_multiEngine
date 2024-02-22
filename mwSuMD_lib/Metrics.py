@@ -53,8 +53,12 @@ class MetricsParser(mwInputParser):
                         self.calculateMetric(metric_2, selection_list[:2], walker)
 
                     if metric_1 and metric_2 and number_cv == 2:
+                        if metric_1 == metric_2:
+                            metric_2 += "_2"
+                        print("SELECTION LIST 1:", self.selection_list[:2])
+                        print("SELECTION LIST 2:", self.selection_list[2:])
                         self.calculateMetric(metric_1, selection_list[:2], walker)
-                        self.calculateMetric(metric_2, selection_list[:2], walker)
+                        self.calculateMetric(metric_2, selection_list[2:], walker)
 
                     os.chdir(self.folder)
                     for idx, report_metric in enumerate([metric_1, metric_2]):
@@ -88,6 +92,7 @@ class MetricsParser(mwInputParser):
 
     def getBestWalker(self, scores: dict):
         """Returns the walker with the best metric"""
+        print("SCORES ", scores)
         try:
             if self.initialParameters['NumberCV'] == 1:
 
@@ -101,25 +106,62 @@ class MetricsParser(mwInputParser):
                     metric_used = next(iter(scores[best_metric_key]))
                 return best_metric_key, best_metric_value, scores[best_metric_key][metric_used]['allMetricValues'][-1]
             else:
-                averages = {}
-                last_values = {}
-                score_ = {}
+                last_values_walker_1 = []
+                last_values_walker_2 = []
+                all_metric_new_1 = []
+                all_metric_new_2 = []
+                scores_walkers_metric_1 = []
+                scores_walkers_metric_2 = []
 
+                last_values = {}
                 for walker, result in scores.items():
-                    averages[walker] = {}
                     last_values[walker] = {}
                     for metric, data in result.items():
-                        all_metric_values = data['allMetricValues']
-                        last_values[walker] = data['lastValue']
-                        average = np.average(all_metric_values)
-                        averages[walker][metric] = average
-                        if self.initialParameters[f'Transition_{walker}'] == 'negative':
-                            constant = -1
-                        else:
-                            constant = 1
+                        last_values[walker][metric] = data['lastValue']
 
-                        score_[walker] = constant * (last_values[walker] - average) * (100 / average)
-                return max(score_, key=score_.get), sum(score_.values()), last_values
+                for walker, results in scores.items():
+                    for idx, key in enumerate(scores[walker].keys()):
+                        if idx == 0:
+                            last_values_walker_1.append(scores[walker][key]['lastValue'])
+                            all_metric_new_1.append(scores[walker][key]['allMetricValues'])
+                        if idx == 1:
+                            last_values_walker_2.append(scores[walker][key]['lastValue'])
+                            all_metric_new_2.append(scores[walker][key]['allMetricValues'])
+
+                average_last_values_metric1_and_2_walker1 = (np.average(all_metric_new_1))
+                average_last_values_metric1_and_2_walker2 = (np.average(all_metric_new_2))
+
+                # print("INTO original 1", last_values_walker_1)
+                # print("INTO original 2", last_values_walker_2)
+                # print("INTO all metrics 1", allMetric_1)
+                # print("INTO all metrics 2", allMetric_2)
+
+                for i in last_values_walker_1:  # wuesto ha last RMSD e last DISTANCE
+                    # score_1 = (i - metric_1_avg) * (100 / metric_1_avg)
+                    score_1 = (i - average_last_values_metric1_and_2_walker1) * (
+                            100 / average_last_values_metric1_and_2_walker1)
+                    if self.initialParameters['Transition_1'] == 'negative':
+                        score_1 = score_1 * -1
+                    # print("SCORE 1, ", score_1, " AVERAGE", average_last_values_metric1_and_2_walker1)
+                    scores_walkers_metric_1.append(score_1)
+                for i in last_values_walker_2:  # wuesto ha last RMSD e last DISTANCE
+                    score_2 = (i - average_last_values_metric1_and_2_walker2) * (
+                            100 / average_last_values_metric1_and_2_walker2)
+                    if self.initialParameters['Transition_2'] == 'negative':
+                        score_2 = score_2 * -1
+                    # print("SCORE 2, ", score_2, " AVERAGE", average_last_values_metric1_and_2_walker2)
+                    scores_walkers_metric_2.append(score_2)
+
+                # print("AVERAGE M1", average_last_values_metric1_and_2_walker1)
+                # print("AVERAGE M2", average_last_values_metric1_and_2_walker2)
+
+                scores_list = []
+                for (score1, score2) in zip(scores_walkers_metric_1, scores_walkers_metric_2):
+                    scores_list.append(score1 + score2)
+                max_value = max([i for i in scores_list if i is not None])
+                max_index = scores_list.index(max_value) + 1
+                # print(max_index, max_value, (last_values_walker_1, last_values_walker_2))
+                return max_index, max_value, last_values[max_index]
         except FileExistsError:
             Logger.LogToFile('a', self.trajCount,
                              "Not all MDs produced the same amount of frames. Please check your MD results and restart.")
