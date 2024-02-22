@@ -114,14 +114,12 @@ class MetricsParser(mwInputParser):
                         average = np.average(all_metric_values)
                         averages[walker][metric] = average
                         if self.initialParameters[f'Transition_{walker}'] == 'negative':
-                            coeff = -1
+                            constant = -1
                         else:
-                            coeff = 1
-                        score_[walker] = [
-                            sum(coeff * (i - averages[walker][metric]) * (100 / averages[walker][metric]) for i in
-                                all_metric_values)]
-                Keymax = max(zip(score_.values(), score_.keys()))[1]
-                return Keymax, score_[Keymax], last_values
+                            constant = 1
+
+                        score_[walker] = constant * (last_values[walker] - average) * (100 / average)
+                return max(score_, key=score_.get), sum(score_.values()), last_values
         except FileExistsError:
             Logger.LogToFile('a', self.trajCount,
                              "Not all MDs produced the same amount of frames. Please check your MD results and restart.")
