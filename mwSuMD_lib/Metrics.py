@@ -53,8 +53,6 @@ class MetricsParser(mwInputParser):
                         self.calculateMetric(metric_2, selection_list[:2], walker)
 
                     if metric_1 and metric_2 and number_cv == 2:
-                        if metric_1 == metric_2:
-                            metric_2 += "_2"
                         self.calculateMetric(metric_1, selection_list[:2], walker)
                         self.calculateMetric(metric_2, selection_list[:2], walker)
 
@@ -66,7 +64,8 @@ class MetricsParser(mwInputParser):
                                                                                'allMetricValues'],
                                                                            np.mean(self.scores[walker][report_metric][
                                                                                        'allMetricValues']),
-                                                                           self.scores[walker][report_metric]['lastValue'],
+                                                                           self.scores[walker][report_metric][
+                                                                               'lastValue'],
                                                                            self.scores[walker][report_metric][
                                                                                'scoreMetric'])
         except Exception:
@@ -103,37 +102,26 @@ class MetricsParser(mwInputParser):
                 return best_metric_key, best_metric_value, scores[best_metric_key][metric_used]['allMetricValues'][-1]
             else:
                 averages = {}
-                metric_scores = []
                 last_values = {}
+                score_ = {}
 
                 for walker, result in scores.items():
                     averages[walker] = {}
                     last_values[walker] = {}
                     for metric, data in result.items():
                         all_metric_values = data['allMetricValues']
+                        last_values[walker] = data['lastValue']
                         average = np.average(all_metric_values)
                         averages[walker][metric] = average
-                        if self.initialParameters['Transition_1'] == 'negative':
-                            last_values[walker][metric] = min(all_metric_values)
+                        if self.initialParameters[f'Transition_{walker}'] == 'negative':
+                            coeff = -1
                         else:
-                            last_values[walker][metric] = max(all_metric_values)
-
-                    metric_keys = list(averages[walker].keys())
-                    numerator = averages[walker][metric_keys[0]]
-                    denominator = averages[walker][metric_keys[1]]
-                    try:
-                        score = (numerator / denominator) - 1
-                    except ZeroDivisionError:
-                        score = 0
-
-                    if self.initialParameters['Transition_1'] == 'negative':
-                        score = score * -1
-                        metric_scores.append(score)
-                    else:
-                        metric_scores.append(score)
-                max_index = metric_scores.index(max(metric_scores))
-                max_score = max(metric_scores)
-                return max_index+1, max_score, last_values[max_index+1]
+                            coeff = 1
+                        score_[walker] = [
+                            sum(coeff * (i - averages[walker][metric]) * (100 / averages[walker][metric]) for i in
+                                all_metric_values)]
+                Keymax = max(zip(score_.values(), score_.keys()))[1]
+                return Keymax, score_[Keymax], last_values
         except FileExistsError:
             Logger.LogToFile('a', self.trajCount,
                              "Not all MDs produced the same amount of frames. Please check your MD results and restart.")
