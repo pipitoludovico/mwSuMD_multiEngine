@@ -71,18 +71,19 @@ class MDoperator:
         with open('walkerSummary.log', 'a') as walkerSummary:
             if self.par['NumberCV'] == 1:
                 if self.par['Relax'] and check:
-                    info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(walker_score) + " Metrics: " + str(
+                    info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(
+                        round(walker_score, 3)) + " Metrics: " + str(
                         best_metric_result) + "\n"
                 if not self.par['Relax'] and check:
                     info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Best Metric: " + str(
-                        walker_score) + " Last Metric: " + str(best_metric_result) + "\n"
+                        round(walker_score, 3)) + " Last Metric: " + str(best_metric_result) + "\n"
             if self.par['NumberCV'] == 2:
                 if self.par['Relax'] and check:
-                    info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(walker_score) + " Metrics: " + str(
-                        best_metric_result) + "\n"
+                    info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(
+                        round(walker_score, 3)) + " Metrics: " + str(best_metric_result) + "\n"
                 if not self.par['Relax'] and check:
                     info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Score Result: " + str(
-                        walker_score) + " Last Metrics from best: " + str(best_metric_result) + "\n"
+                        round(walker_score, 3)) + " Last Metrics from best: " + str(best_metric_result) + "\n"
             walkerSummary.write(info_to_write)
 
         os.system('rm -r tmp')
