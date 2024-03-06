@@ -29,7 +29,6 @@ class suMD1(mwInputParser):
     def run_openMwSuMD(self):
         x = 1
         condition = None
-
         if self.parameters['NumberCV'] == 1:
             self.output_to_check = self.runProtocol()
             try:
@@ -39,14 +38,12 @@ class suMD1(mwInputParser):
                     x = 2
                 if self.parameters[f'Transition_{x}'] == 'positive':
                     condition = self.output_to_check > self.parameters[f'Cutoff_{x}']
-                    while not condition and self.parameters['NumberCV'] == 1:
-                        self.compareAndUpdateSettings()
-                        self.output_to_check = self.runProtocol()
-                if self.parameters[f'Transition_{x}'] == 'negative':
+                else:
                     condition = self.output_to_check < self.parameters[f'Cutoff_{x}']
-                    while not condition and self.parameters['NumberCV'] == 1:
-                        self.compareAndUpdateSettings()
-                        self.output_to_check = self.runProtocol()
+
+                while not condition and self.parameters['NumberCV'] == 1:
+                    self.compareAndUpdateSettings()
+                    self.output_to_check = self.runProtocol()
             except:
                 self.run_openMwSuMD()
 
@@ -54,38 +51,25 @@ class suMD1(mwInputParser):
             self.metric_1, self.metric_2 = self.runProtocol()
             try:
                 if self.parameters['Transition_1'] == 'positive' and self.parameters['Transition_2'] == 'positive':
-                    condition = (self.metric_1 > self.parameters['Cutoff_1']) and (
-                                self.metric_2 > self.parameters['Cutoff_2'])
-                    while not condition and self.parameters['NumberCV'] == 2:
-                        self.compareAndUpdateSettings()
-                        self.metric_1, self.metric_2 = self.runProtocol()
-
+                    condition = self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 > self.parameters[
+                        'Cutoff_2']
                 if self.parameters['Transition_1'] == 'positive' and self.parameters['Transition_2'] == 'negative':
-                    condition = (self.metric_1 > self.parameters['Cutoff_1']) and (
-                                self.metric_2 < self.parameters['Cutoff_2'])
-                    while not condition and self.parameters['NumberCV'] == 2:
-                        self.compareAndUpdateSettings()
-                        self.metric_1, self.metric_2 = self.runProtocol()
-
-                if self.parameters['Transition_1'] == 'negative' and self.parameters['Transition_2'] == 'negative':
-                    condition = (self.metric_1 < self.parameters['Cutoff_1']) and (
-                                self.metric_2 < self.parameters['Cutoff_2'])
-                    while not condition and self.parameters['NumberCV'] == 2:
-                        self.compareAndUpdateSettings()
-                        self.metric_1, self.metric_2 = self.runProtocol()
-
+                    condition = self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 < self.parameters[
+                        'Cutoff_2']
                 if self.parameters['Transition_1'] == 'negative' and self.parameters['Transition_2'] == 'positive':
-                    condition = (self.metric_1 < self.parameters['Cutoff_1']) and (
-                                self.metric_2 > self.parameters['Cutoff_2'])
-                    while not condition and self.parameters['NumberCV'] == 2:
-                        self.compareAndUpdateSettings()
-                        self.metric_1, self.metric_2 = self.runProtocol()
+                    condition = self.metric_1 < self.parameters['Cutoff_1'] and self.metric_2 > self.parameters[
+                        'Cutoff_2']
+                if self.parameters['Transition_1'] == 'negative' and self.parameters['Transition_2'] == 'negative':
+                    condition = self.metric_1 < self.parameters['Cutoff_1'] and self.metric_2 < self.parameters[
+                        'Cutoff_2']
+                while not condition and self.parameters['NumberCV'] == 2:
+                    self.compareAndUpdateSettings()
+                    self.metric_1, self.metric_2 = self.runProtocol()
             except:
                 self.run_openMwSuMD()
         if not condition:
             self.run_openMwSuMD()
-        Logger.LogToFile('w', self.cycle,
-                         "#" * 200 + "\nTHRESHOLD METRICS REACHED: FINAL RELAXATION PROTOCOL:\n" + "#" * 200)
+        Logger.LogToFile('w', self.cycle, "#" * 200 + "\nTHRESHOLD METRICS REACHED: FINAL RELAXATION PROTOCOL:\n" + "#" * 200)
         checker = Checker()
         checker.relaxSystem()
 
