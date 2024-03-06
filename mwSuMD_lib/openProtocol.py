@@ -1,3 +1,4 @@
+import os.path
 import time
 from os import listdir
 from .openMDoperations import MDoperator
@@ -22,6 +23,8 @@ class ProtocolRunner(mwInputParser):
     def runStandardProtocol(self):
         Logger.LogToFile("w", self.trajCount, "*" * 200 + "\nRunning mwSuMD protocol\n" + "#" * 200)
         # create input files per walker
+        if os.path.exists("tmp"):
+            os.system("rm -r tmp")
         begin = time.perf_counter()
         # running the simulations
         Runner().runAndWrap()

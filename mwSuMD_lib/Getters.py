@@ -52,7 +52,7 @@ class Getters(mwInputParser):
             distMetric = (mean_lin * distances[-1]) ** 0.5
             return distMetric, distances, distances[-1]
 
-        if str(metric).startswith('CONTACTS'):
+        if str(metric).upper().startswith('CONTACTS'):
             try:
                 u = Mda.Universe(psf, xtc)
                 if len(u.select_atoms(sel_1)) == 0 and len(u.select_atoms(sel_2)) == 0:

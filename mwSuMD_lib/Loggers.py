@@ -85,3 +85,14 @@ class Logger:
         if mode == "ad":
             with open('LogFile.txt', 'a') as settingsFile:
                 settingsFile.write(message + "\n")
+
+    @staticmethod
+    def countTraj_logTraj(initialParameters, selection_list):
+        """ At what cycle number mwSuMD was stopped? """
+        trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
+        if trajCount == 0:
+            with open('walkerSummary.log', 'w') as logF:
+                logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")
+        else:
+            with open('walkerSummary.log', 'a') as logF:
+                logF.write(str(trajCount) + " |Checkpoint| Metric 1: " + (str(initialParameters["Metric_1"])) + " Metric 2: " + (str(initialParameters["Metric_2"]) + f" |Selections: {selection_list} |\n"))

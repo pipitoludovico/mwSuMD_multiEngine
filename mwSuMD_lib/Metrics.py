@@ -60,10 +60,9 @@ class MetricsParser(mwInputParser):
 
                     os.chdir(self.folder)
                     for idx, report_metric in enumerate([metric_1, metric_2]):
-                        if report_metric:
+                        if report_metric in self.scores[walker]:
                             Logger(self.initialParameters['Root']).logData(idx, walker, report_metric,
-                                                                           self.scores[walker][report_metric][
-                                                                               'allMetricValues'],
+                                                                           self.scores[walker][report_metric]['allMetricValues'],
                                                                            np.mean(self.scores[walker][report_metric][
                                                                                        'allMetricValues']),
                                                                            self.scores[walker][report_metric][

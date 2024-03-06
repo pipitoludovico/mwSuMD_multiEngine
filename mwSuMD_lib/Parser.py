@@ -240,7 +240,8 @@ class mwInputParser:
                                 "One of your selection pointed to 0 atoms: please check your selection with your structure file")
         # cleaning Universe as the check is completed
         del u
-        if self.initialParameters['NumberCV'] == 2 and (not self.initialParameters.get('Metric_1') or not self.initialParameters.get('Metric_2')):
+        if self.initialParameters['NumberCV'] == 2 and (
+                not self.initialParameters.get('Metric_1') or not self.initialParameters.get('Metric_2')):
             raise ValueError('Make sure to select both Metric 1 and 2 if NumberCV = 2!')
 
         if not self.initialParameters.get('Metric_1') and not self.initialParameters.get('Metric_2'):
@@ -260,19 +261,6 @@ class mwInputParser:
         self.initialParameters.update(
             {extension: file for file in os.listdir(directory) for extension in self.outExtensions if
              file.endswith(extension) and 'minimzed' not in file})
-
-    def countTraj_logTraj(self, metric):
-        """ At what cycle number mwSuMD was stopped? """
-        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
-        if self.trajCount == 0 and (metric == 0 or metric == 10 ** 6):
-            with open('walkerSummary.log', 'w') as logF:
-                logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")
-        elif self.trajCount != 0 and (metric == 0 or metric == 10 ** 6):
-            with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(self.trajCount) + " |Checkpoint| Metric 1: " + (str(self.initialParameters["Metric_1"])) + " Metric 2: " + (str(self.initialParameters["Metric_2"]) + f" |Selections: {self.selection_list} |\n"))
-        else:
-            with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(self.trajCount) + " " + str(metric) + "\n")
 
     def getSettings(self):
         self.checkEngine(), self.getParameters(), self.getForcefields()
