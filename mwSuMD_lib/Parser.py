@@ -251,6 +251,9 @@ class mwInputParser:
                 not self.initialParameters.get('Metric_1') or not self.initialParameters.get('Metric_2')):
             raise ValueError(
                 "Please make sure if you use CV2 to specify all the CVs choosing one metric to supervise (Distance, Contacts, RMSD, HB)")
+        if not self.initialParameters.get('NumberCV'):
+            print("Please set the NumberCV in the input file")
+            exit()
 
     def getRestartOutput(self):
         os.makedirs('restarts', exist_ok=True)

@@ -5,6 +5,7 @@ from .MDoperations import MDoperator
 from .MDsettings import MDsetter
 from .Metrics import MetricsParser
 from .Parser import mwInputParser
+from .openRunners import Runner
 from .GPUoperations import ProcessManager
 from .TrajectoryOperator import TrajectoryOperator
 from .Loggers import Logger
@@ -14,8 +15,9 @@ filterwarnings(action='ignore')
 
 
 class Checker(mwInputParser):
-    def __init__(self):
+    def __init__(self, openMM):
         super(mwInputParser, self).__init__()
+        self.openMM = openMM
         self.best_metric_result = None
         self.best_average_metric_2 = None
         self.best_average_metric_1 = None
@@ -30,17 +32,20 @@ class Checker(mwInputParser):
         Logger.LogToFile("w", self.trajCount,
                          "#" * 200 + '\nChecking if trajectory is stuck with values: ' + str(vals1) +
                          ". Total fails accumulated: " + str(accumulatedFails) + "\n" + "#" * 200)
-        mdOperator = MDoperator(self.initialParameters, self.folder)
+        mdOperator = MDoperator(self.initialParameters, self.folder, self.openMM)
         if mdOperator.checkIfStuck([vals1, vals2], accumulatedFails) is True:
             Logger.LogToFile("ad", self.trajCount, "\nRUNNING RELAXATION PROTOCOL" + "#" * 200)
-            self.relaxSystem()
+            if not self.openMM:
+                self.relaxSystemMulti()
+            else:
+                self.relaxSystem()
             accumulatedFails += 1
         else:
             accumulatedFails += 0
             Logger.LogToFile("ad", self.trajCount, "Number of fails accumulated: " + str(accumulatedFails) + "\n")
         return accumulatedFails
 
-    def relaxSystem(self):
+    def relaxSystemMulti(self):
         Logger.LogToFile('ad', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         # The relaxation protocol starts here
         self.initialParameters['Relax'] = True
@@ -51,8 +56,8 @@ class Checker(mwInputParser):
             Logger.LogToFile('ad', self.trajCount, f"EXCLUDED GPU: {self.initialParameters['EXCLUDED_GPUS']}")
             for excluded in self.initialParameters['EXCLUDED_GPUS']:
                 GPUs.remove(excluded)
-        strGPU = map(str, GPUs)
-        jointGPUs = ','.join(strGPU)
+        # strGPU = map(str, GPUs)
+        # jointGPUs = ','.join(strGPU)
         from random import choice
         jointGPUs = choice(GPUs)
         # we create a special input file that has a longer runtime (5ns default or user-defined)
@@ -78,7 +83,22 @@ class Checker(mwInputParser):
         # we then extract the best metric/score and store it as a reference
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
-        MDoperator(self.initialParameters, self.folder).saveStep(1, self.best_walker_score, self.best_metric_result)
+        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(1, self.best_walker_score, self.best_metric_result)
+
+        Logger.LogToFile('ad', self.trajCount, "\nRelaxation Protocol Ended\n" + "#" * 200)
+        self.trajCount += 1
+        # setting our check to False and end the protocol, beginning a new cycle.
+        self.initialParameters['Relax'] = False
+
+    def relaxSystem(self):
+        Logger.LogToFile('a', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
+        self.initialParameters['Relax'] = True
+        Runner().runAndWrap()
+        self.scores = MetricsParser().getChosenMetrics()
+        # we then extract the best metric/score and store it as a reference
+        self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
+        self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
+        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score, self.best_metric_result)
 
         Logger.LogToFile('ad', self.trajCount, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.trajCount += 1

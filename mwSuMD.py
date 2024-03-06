@@ -19,17 +19,22 @@ Loggers.Logger.LogToFile('ad', '',
 
 
 def main():
-    if not openMM:
-        from mwSuMD_lib import SuMD
-        multiSumd = SuMD.suMD1()
-        multiSumd.run_mwSuMD()
-        exit()
-    else:
-        print('Running with openMM')
-        from mwSuMD_lib import openSuMD
-        openSumd = openSuMD.suMD1()
-        openSumd.run_openMwSuMD()
-        exit()
+    from mwSuMD_lib import SuMD
+    multiSumd = SuMD.suMD1(openMM)
+    multiSumd.run_mwSuMD()
+    exit()
+    # if not openMM:
+    #     from mwSuMD_lib import SuMD
+    #
+    #     multiSumd = SuMD.suMD1()
+    #     multiSumd.run_mwSuMD()
+    #     exit()
+    # else:
+    #     print('Running with openMM')
+    #     from mwSuMD_lib import openSuMD
+    #     openSumd = openSuMD.suMD1()
+    #     openSumd.run_openMwSuMD()
+    #     exit()
 
 
 if __name__ == '__main__':

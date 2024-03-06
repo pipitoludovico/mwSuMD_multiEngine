@@ -2,10 +2,12 @@ import os
 import re
 import subprocess
 import numpy as np
+
 from random import choice
 from .MDsettings import MDsetter
 from .Metrics import MetricsParser
 from .GPUoperations import ProcessManager
+from .openRunners import Runner
 from .TrajectoryOperator import TrajectoryOperator
 from .Loggers import Logger
 from warnings import filterwarnings
@@ -14,12 +16,12 @@ filterwarnings(action='ignore')
 
 
 class MDoperator:
-    def __init__(self, par, root):
+    def __init__(self, par, root, openMM):
+        self.openMM = openMM
         self.par = par
         self.folder = root
-        self.extensions = ('.coor', '.xsc', '.vel', '.gro', '.cpt', '.tpr')
-        self.cycle = len(
-            [trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
+        self.extensions = ('.coor', '.xsc', '.vel', '.gro', '.cpt', '.tpr', '.chk', '.xml')
+        self.cycle = len([trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
         self.best_metric_result = None
         self.best_average_metric_2 = None
         self.best_average_metric_1 = None
@@ -36,16 +38,21 @@ class MDoperator:
         check = [binary for binary in os.listdir("./") if binary.endswith(self.extensions)]
         if check:
             self.cycle += 1
-            # moving the best frame to the trajectory folder
             os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
-            if self.par['MDEngine'] != 'GROMACS':
-                os.system(f'cp *.coor {self.folder}/restarts/previous.coor')
-                os.system(f'cp *.xsc {self.folder}/restarts/previous.xsc')
-                os.system(f'cp *.vel {self.folder}/restarts/previous.vel')
-            if self.par['MDEngine'] == 'GROMACS':
-                os.system(f'cp *.gro {self.folder}/restarts/previous.gro')
-                os.system(f'cp "$(ls -t *.cpt | head -1)" {self.folder}/restarts/previous.cpt')
-                os.system(f'cp *.tpr {self.folder}/restarts/previous.tpr')
+            if self.openMM:
+                os.system(f'cp *.chk {self.folder}/restarts/previous.chk')
+                os.system(f'cp *.xml {self.folder}/restarts/previous.xml')
+                Logger.LogToFile('a', self.cycle, "FINISHED SAVING FRAMES")
+            # os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
+            else:
+                if self.par['MDEngine'] != 'GROMACS':
+                    os.system(f'cp *.coor {self.folder}/restarts/previous.coor')
+                    os.system(f'cp *.xsc {self.folder}/restarts/previous.xsc')
+                    os.system(f'cp *.vel {self.folder}/restarts/previous.vel')
+                if self.par['MDEngine'] == 'GROMACS':
+                    os.system(f'cp *.gro {self.folder}/restarts/previous.gro')
+                    os.system(f'cp "$(ls -t *.cpt | head -1)" {self.folder}/restarts/previous.cpt')
+                    os.system(f'cp *.tpr {self.folder}/restarts/previous.tpr')
             if self.par['PLUMED']:
                 with open(self.par['PLUMED'], 'r') as plumedINP:
                     for line in plumedINP.readlines():
@@ -110,7 +117,10 @@ class MDoperator:
                 logFile.write(
                     '\nSimulation seemed stuck. It will run the last relaxation protocol and it will be terminated\n')
                 logFile.close()
-            self.relaxSystem()
+            if not self.openMM:
+                self.relaxSystemMulti()
+            else:
+                self.relaxSystem()
             exit()
         else:
             failCount = 0
@@ -128,7 +138,7 @@ class MDoperator:
                 # if it did not, we continue as usual
                 return False
 
-    def relaxSystem(self):
+    def relaxSystemMulti(self):
         Logger.LogToFile('ad', self.cycle, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         self.par['Relax'] = True
         manager = ProcessManager()
@@ -138,7 +148,7 @@ class MDoperator:
             Logger.LogToFile('ad', self.cycle, f"EXCLUDED GPU: {self.par['EXCLUDED_GPUS']}")
             for excluded in self.par['EXCLUDED_GPUS']:
                 GPUs.remove(excluded)
-        strGPU = map(str, GPUs)
+        # strGPU = map(str, GPUs)     # activate these once the multiGPU issues is solved
         # jointGPUs = ','.join(strGPU)
         jointGPUs = str(choice(GPUs))
         # we create a special input file that has a longer runtime (5ns default or user-defined)
@@ -165,7 +175,22 @@ class MDoperator:
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
 
-        MDoperator(self.par, self.folder).saveStep(1, self.best_walker_score, self.best_metric_result)
+        MDoperator(self.par, self.folder, self.openMM).saveStep(1, self.best_walker_score, self.best_metric_result)
+
+        Logger.LogToFile('ad', self.cycle, "\nRelaxation Protocol Ended\n" + "#" * 200)
+        self.cycle += 1
+        # setting our check to False and end the protocol, beginning a new cycle.
+        self.par['Relax'] = False
+
+    def relaxSystem(self):
+        Logger.LogToFile('a', self.cycle, 'Relaxation Protocol begins now:\n' + ('#' * 200))
+        self.par['Relax'] = True
+        Runner().runAndWrap()
+        self.scores = MetricsParser().getChosenMetrics()
+        # we then extract the best metric/score and store it as a reference
+        self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
+        self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
+        MDoperator(self.par, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score, self.best_metric_result)
 
         Logger.LogToFile('ad', self.cycle, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.cycle += 1

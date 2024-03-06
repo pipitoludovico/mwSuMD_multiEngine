@@ -33,8 +33,11 @@ class Runner(mwInputParser):
                 raise Exception("No trajectory found. Check your tmp folder.")
 
         try:
-            for walker_wrap in range(1, self.initialParameters['Walkers'] + 1):
-                trajOperator.wrap(walker_wrap)
+            processes = []
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                for walker_wrap in range(1, self.initialParameters['Walkers'] + 1):
+                    future = executor.submit(trajOperator.wrap, walker_wrap)
+                    processes.append(future)
         except Exception as e:
             print("Wrapping failed: ", e)
             exit()

@@ -13,8 +13,9 @@ filterwarnings(action='ignore')
 
 
 class ProtocolRunner(mwInputParser):
-    def __init__(self):
+    def __init__(self, openMM):
         super(mwInputParser, self).__init__()
+        self.openMM = openMM
         self.best_metric_result = None
         self.best_average_metric_2 = None
         self.best_average_metric_1 = None
@@ -26,20 +27,22 @@ class ProtocolRunner(mwInputParser):
 
     def runStandardProtocol(self):
         Logger.LogToFile("w", self.trajCount, "*" * 200 + "\nRunning mwSuMD protocol\n" + "#" * 200)
-
+        # create input files per walker after purging the existing one
         begin = time.perf_counter()
-        # purging previous tmp folder:
         if os.path.exists('./tmp'):
             os.system('rm -r ./tmp')
         MDsetter(self.initialParameters).createInputFile()
-        Runner(self.initialParameters).runMD()
+        if not self.openMM:
+            Runner(self.initialParameters, self.openMM).runMD()
+        else:
+            Runner(self.initialParameters, self.openMM).runAndWrap()
+
         # compute metrics
         self.scores = MetricsParser().getChosenMetrics()
-
         # get metrics
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
-        MDoperator(self.initialParameters, self.folder).saveStep(self.bestWalker, self.best_walker_score, self.best_metric_result)
+        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score, self.best_metric_result)
 
         end = time.perf_counter()
         final = end - begin
