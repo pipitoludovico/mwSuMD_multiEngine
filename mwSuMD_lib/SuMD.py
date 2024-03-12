@@ -135,10 +135,6 @@ class suMD1(mwInputParser):
         self.selection_list.clear()
         self.parameters, self.selection_list, self.parameterFolderPath = self.pars.getSettings()
         tempParametersSnapshot = self.parameters.copy()
-        print(parametersSnapshot)
-        print("\n\n")
-        print(tempParametersSnapshot)
-        print("\n\n")
         if not self.openMM:
             if self.cycle != 0:
                 try:
@@ -147,13 +143,8 @@ class suMD1(mwInputParser):
                 except print("\n"):  # using GROMACS?
                     del parametersSnapshot['cpt'], parametersSnapshot['gro'], parametersSnapshot['tpr']
                     del tempParametersSnapshot['cpt'], tempParametersSnapshot['gro'], tempParametersSnapshot['tpr']
-        # else:
-        #     if self.cycle != 0:
-        #         del parametersSnapshot['xml'], parametersSnapshot['chk']
-        #         del tempParametersSnapshot['xml'], tempParametersSnapshot['chk']
 
         if parametersSnapshot != tempParametersSnapshot or selectionShapshot != self.selection_list:
-            print("CHANGED?")
             temp = set(self.selection_list) - set(selectionShapshot)
             selectionShapshot.clear()
             changes = []
