@@ -7,7 +7,7 @@ from random import choice
 from .MDsettings import MDsetter
 from .Metrics import MetricsParser
 from .GPUoperations import ProcessManager
-from .openRunners import Runner
+from .Runners import Runner
 from .TrajectoryOperator import TrajectoryOperator
 from .Loggers import Logger
 from warnings import filterwarnings
@@ -185,7 +185,7 @@ class MDoperator:
     def relaxSystem(self):
         Logger.LogToFile('a', self.cycle, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         self.par['Relax'] = True
-        Runner().runAndWrap()
+        Runner(self.par, self.openMM).runAndWrap()
         self.scores = MetricsParser().getChosenMetrics()
         # we then extract the best metric/score and store it as a reference
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None

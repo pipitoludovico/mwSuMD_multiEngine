@@ -30,7 +30,7 @@ class mwInputParser:
         self.customInputFileExtension = ('namd', 'inp', 'mdp')
         self.outExtensions = ('cpt', 'cpi', 'coor', 'vel', 'xsc')
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
-        self.initialParametersameter_extensions = ('.param', '.prm', '.par')
+        self.initialParametersameter_extensions = ('.param', '.prm', '.par', '.top', '.rtf')
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.allowedMetrics = ("DISTANCE", "RMSD", "CONTACTS", "HB", "SOLVATION")
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
@@ -47,7 +47,7 @@ class mwInputParser:
         self.getSystem()
         self.initialParameters['MDEngine'] = 'GROMACS' if any(
             file.endswith('.gro') for file in os.listdir('./system')) else 'NAMD' if any(
-            file.endswith('.namd') for file in os.listdir('./system')) else 'ACEMD/OPENMM'
+            file.endswith('.namd') for file in os.listdir('./system')) else 'ACEMD' if any(file.endswith('.inp') for file in os.listdir("./system")) else "OPENMM"
         if self.initialParameters.get('MDEngine') == 'GROMACS':
             if not any(file.endswith('tpr') for file in os.listdir('./system')):
                 try:

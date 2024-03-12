@@ -27,6 +27,26 @@
 !proteins.  Journal of Physical Chemistry B, 1998, 102, 3586-3616.
 
 ATOMS
+MASS  -1  OG301      15.99900 ! for BPA (GIPR/GLP1R dual agonist)) 
+MASS  -1  HT         1.00800 
+MASS  -1  OT         15.99900
+MASS  -1  NHL        14.00700
+MASS  -1  CTO1       12.01100
+MASS  -1  CEL1       12.01100
+MASS  -1  CEL2       12.01100
+MASS  -1  CEL3       12.01100
+MASS  -1  OX         15.99940
+MASS  -1  LIT        6.94100 ! Lithium ion 
+MASS  -1  SOD        22.98977 NA ! Sodium Ion     
+MASS  -1  MG        24.30500 MG ! Magnesium Ion
+MASS  -1  POT       39.09830 K ! Potassium Ion
+MASS  -1  CAL       40.08000 CA ! Calcium Ion
+MASS  -1  RUB       85.46780 RB ! Rubidium Ion
+MASS  -1  CES      132.90545 CS ! Cesium Ion
+MASS  -1  BAR      137.32700 BA ! Barium Ion
+MASS  -1  ZN        65.37000 ZN ! zinc (II) cation
+MASS  -1  CAD      112.41100 CD ! cadmium (II) cation
+MASS  -1  CLA       35.45000 CL ! Chloride Ion
 MASS  -1  H          1.00800 ! polar H
 MASS  -1  HC         1.00800 ! N-ter H
 MASS  -1  HA         1.00800 ! nonpolar H
@@ -80,11 +100,9 @@ MASS  -1  OS        15.99940 ! ester oxygen
 MASS  -1  S         32.06000 ! sulphur
 MASS  -1  SM        32.06000 ! sulfur C-S-S-C type
 MASS  -1  SS        32.06000 ! thiolate sulfur
-
 MASS  -1  HT         1.00800 ! TIPS3P WATER HYDROGEN
 MASS  -1  HX         1.00800 ! hydroxide hydrogen
 MASS  -1  OT        15.99940 ! TIPS3P WATER OXYGEN
-
 MASS  -1  HRA3       1.00800 ! alphatic proton, CH3
 MASS  -1  HRP2       1.00800 ! polar H, +ve charge
 MASS  -1  HRM1       1.00800 ! polar H, dimethylamine
@@ -109,8 +127,15 @@ HT    HT      0.0       1.5139  ! from TIPS3P geometry (for SHAKE w/PARAM)
 HT    OT    450.0       0.9572  ! from TIPS3P geometry
 OX    HX    545.0       0.9700  ! hydroxide ion
 
-! From BPA
+!
+!Ferom SEM
+CT2  NG2S1   320.00     1.4300 ! PROT NMA Gas & Liquid Phase IR Spectra (LK)
+
+! From BPA or BPB
 CT1 CA   230.00     1.4900 ! BPA.pd , from CG2R61 CG311, PENALTY= 8
+CA  OG301   230.00     1.3820 ! COMPDS peml
+OG301 CT3  360.00     1.4150 ! diethylether  
+
 
 !From CHA
 C  NH1   370.00     1.3450 ! PROT Alanine Dipeptide ab initio calc's (LK) --- E-K linkage ----
@@ -510,11 +535,23 @@ ANGLES
 !
 HT   OT   HT     55.0      104.52   ! FROM TIPS3P GEOMETRY
 
-!From BPA
+!From SEM
+CG2O1  CG321  OG301    45.00    109.00 ! WF1.pd , from CG2O3 CG311 OG301, PENALTY= 17.5
+CT2  NG2S1   CG2O1   50.00    120.00 ! PROT NMA Vib Modes (LK)
+CT2  NG2S1   HGP1    35.00    117.00 ! PROT NMA Vibrational Modes (LK)
+NG2S1  CT2  HA2      51.50    109.50 ! PROT from NG2S1  CG331  HA, for lactams, adm jr.
+CT2   CT2   NG2S1    70.00    113.50 ! slack parameter picked up by 3CPD ==> re-optimize?  
+
+
+!From BPA or BPB
 CT2   CT1   CA     51.80    107.50 ! BPA.pd , from CG2R61 CG311 CG321, PENALTY= 8
 CT1   CA    CA     45.80    120.00 ! BPA.pd , from CG2R61 CG2R61 CG311, PENALTY= 1.2
 CA   CT1    CA     51.80    107.50 ! BPA.pd , from CG2R61 CG321 CG2R61, PENALTY= 12
 CT3  CT1  CA       51.80    107.50 ! BPA.pd , from CG2R61 CG311 CG331, PENALTY= 8
+CA  OG301  CT3     65.00    108.00 ! MEOB, Methoxybenzene
+CA  CA  OG301     110.00    120.00 ! BIPHENYL ANALOGS
+OG301 CT3  HA3    45.90    108.89 ! MEOB, Methoxybenzene
+
 
 !From CHA
 CT2  C  NH1    80.00    116.50 ! PROT NMA Vib Modes (LK)
@@ -1648,12 +1685,34 @@ DIHEDRALS
 !
 !atom types             Kchi    n   delta
 !
-!From BPA
+!From SEM
+NG2S1  CG2O1  CG321  OG301      0.4000  1     0.00 ! WF1.pd , from NG2S1 CG2O1 CG324 NG3P3, PENALTY= 40.9
+OG2D1  CG2O1  CG321  OG301      0.5500  2   180.00 ! WF1.pd , from OG2D2 CG2O3 CG311 OG301, PENALTY= 35
+OG311  CG2O2  CG321  CG321      0.0000  6   180.00 ! WF1.pd , from OG311 CG2O2 CG321 CG311, PENALTY= 0.6
+CG2O1  CG321  CG321  CG321      0.1950  3     0.00 ! WF1.pd , from CG2O1 CG321 CG321 CG311, PENALTY= 0.6
+CG331  CG321  CG321  NG2S1      0.2000  3     0.00 ! WF1.pd , from CG321 CG321 CG321 NG2S1, PENALTY= 0.9
+NG2S1  CG321  CG321  OG301      0.2000  3     0.00 ! WF1.pd , from NG2S1 CG311 CG321 OG311, PENALTY= 19
+CG2O1  CG321  OG301  CG321      0.2000  3     0.00 ! WF1.pd , from CG2O3 CG311 OG301 CG331, PENALTY= 18.4
+CT2  CT2  NG2S1  HGP1           0.0000  1     0.00 ! PROT from HGP1   NG2S1  CG321  CT3, for lactams, adm jr.
+CT2  CT2  NG2S1 CG2O1           1.8000  1     0.00 ! slack parameter picked up by 3CPD ==> re-optimize?
+CT2  NG2S1 CG2O1  CG321         1.6000  1     0.00 ! PROT NMA cis/trans energy difference. (LK)
+CT2  NG2S1  CG2O1 CG321         2.5000  2   180.00 ! PROT Gives appropriate NMA cis/trans barrier. (LK)
+OG2D1  CG2O1  NG2S1  CT2        2.5000  2   180.00 ! PROT Gives appropriate NMA cis/trans barrier. (LK)
+HA2  CT2  NG2S1  HGP1           0.0000  3     0.00 ! PROT, sp2-methyl, no torsion potential
+HA2  CT2  NG2S1  CG2O1          0.0000  3     0.00 ! PROT, sp2-methyl, no torsion potential
+
+
+!
+!From BPA  or BPB
 CT2   CT1  CA  CA     0.2300  2   180.00 ! BPA.pd , from CG2R61 CG2R61 CG311 CG321, PENALTY= 8
 CT1  CA  CA  HP     2.4000  2   180.00 ! BPA.pd , from CG311 CG2R61 CG2R61 HGR61, PENALTY= 1.2
 CT1  CA  CA  CA    3.1000  2   180.00 ! BPA.pd , from CG2R61 CG2R61 CG2R61 CG311, PENALTY= 1.2
 CA  CT1  CA  CA    0.2300  2   180.00 ! BPA.pd , from CG2R61 CG2R61 CG321 CG2R61, PENALTY= 12
 CT3  CT1  CA  CA     0.2300  2   180.00 ! BPA.pd , from CG2R61 CG2R61 CG311 CG331, PENALTY= 8
+CA  CA   CA  OG301  3.1000  2   180.00 ! BIPHENYL ANALOGS
+CA  CA  OG301 CT3    1.7400  2   180.00 ! MEOB, Methoxybenzene
+CA OG301 CT3  HA3    0.0850  3     0.00 ! MEOB, Methoxybenzene
+HP CA CA OG301   2.4000  2   180.00 ! BPB.pd , from CG311 CG2R61 CG2R61 HGR61, PENALTY= 1.2
 
 ! From CHA
 NH1  C  CT2  CT2A      0.0000  1     0.00 ! PROT from NH1  C  CG311  CT2, for lactams, adm jr.
@@ -5256,6 +5315,9 @@ C    NH1  CT2  C    NH1  CT2  C    N   24
      0.688500      1.683900      2.188200      2.046200      1.392400 
      0.620800      0.014200     -0.269700     -0.203800 
 
+
+
+
 NONBONDED nbxmod  5 atom cdiel fshift vatom vdistance vfswitch -
 !cutnb 14.0 ctofnb 12.0 ctonnb 10.0 eps 1.0 e14fac 1.0 wmin 1.5 
                 !adm jr., 2013 correction
@@ -5270,6 +5332,8 @@ NONBONDED nbxmod  5 atom cdiel fshift vatom vdistance vfswitch -
 HT       0.0       -0.046     0.2245
 OT       0.0       -0.1521    1.7682
 
+! from BPB
+OG301   0.0       -0.1000     1.6500 ! ether1   
 
 HRA3     0.0       -0.0240     1.3400 ! alkane, yin and mackerell, 4/98
 HRP2     0.0       -0.0460     0.2245 ! small polar Hydrogen, charged systems

@@ -22,7 +22,7 @@ class EngineInputs(mwInputParser):
             Logger.LogToFile('ad', self.trajCount, "\nTemporary changing the timewindow for relaxation protocol to: " + str(self.par['Timewindow']) + " ps.")
 
         restartInput = Template().inputFile
-        if self.par['Restart'] == 'YES' or self.trajCount != 0:
+        if self.trajCount != 0:
             restartInput = [line.replace('system', 'restarts')
                             if ('bin' in line or 'extendedSystem' in line) and 'system' in line else line
                             for line in restartInput]

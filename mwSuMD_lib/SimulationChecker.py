@@ -5,7 +5,7 @@ from .MDoperations import MDoperator
 from .MDsettings import MDsetter
 from .Metrics import MetricsParser
 from .Parser import mwInputParser
-from .openRunners import Runner
+from .Runners import Runner
 from .GPUoperations import ProcessManager
 from .TrajectoryOperator import TrajectoryOperator
 from .Loggers import Logger
@@ -93,7 +93,7 @@ class Checker(mwInputParser):
     def relaxSystem(self):
         Logger.LogToFile('a', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         self.initialParameters['Relax'] = True
-        Runner().runAndWrap()
+        Runner(self.initialParameters, self.openMM).runAndWrap()
         self.scores = MetricsParser().getChosenMetrics()
         # we then extract the best metric/score and store it as a reference
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None

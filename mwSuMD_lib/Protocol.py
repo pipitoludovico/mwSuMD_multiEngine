@@ -31,8 +31,8 @@ class ProtocolRunner(mwInputParser):
         begin = time.perf_counter()
         if os.path.exists('./tmp'):
             os.system('rm -r ./tmp')
-        MDsetter(self.initialParameters).createInputFile()
         if not self.openMM:
+            MDsetter(self.initialParameters).createInputFile()
             Runner(self.initialParameters, self.openMM).runMD()
         else:
             Runner(self.initialParameters, self.openMM).runAndWrap()

@@ -12,7 +12,7 @@ class Template(mwInputParser):
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.root = self.initialParameters['Root']
 
-        if self.initialParameters['MDEngine'] == 'ACEMD/OPENMM':
+        if self.initialParameters['MDEngine'] == 'ACEMD':
             self.inputFile = [
                 'restart\toff\n',
                 'minimize        0\n',
@@ -67,22 +67,13 @@ class Template(mwInputParser):
                               f'set firsttime [get_first_ts {sys_folder}{self.initialParameters.get("xsc")}]\n',
                               'firsttimestep\t$firsttime\n',
                               'set temp\t313.15;\n',
-                              'outputEnergies %s\n' % int(
-                                  self.initialParameters.get("Savefreq") / (
-                                          self.initialParameters.get('Timestep') / 10 ** 3)),
-                              'dcdfreq\t%s;\t\n' % int(
-                                  self.initialParameters.get("Savefreq") / (
-                                          self.initialParameters.get('Timestep') / 10 ** 3)),
+                              'outputEnergies %s\n' % int(self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep') / 10 ** 3)),
+                              'dcdfreq\t%s;\t\n' % int(self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep') / 10 ** 3)),
                               'dcdUnitCell\tyes;\n',
-
-                              'xstFreq\t%s;\t\n' % int(
-                                  self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
-
+                              'xstFreq\t%s;\t\n' % int(self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
                               '# Force-Field Parameters\n',
-                              "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters[
-                                                                    'Forcefield'] == 'CHARMM' else 'amber\ton\n',
-                              '%s;\n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}' if
-                              self.initialParameters["Forcefield"] == "AMBER" else "\n",
+                              "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n',
+                              '%s;\n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}' if self.initialParameters["Forcefield"] == "AMBER" else "\n",
                               'exclude                 scaled1-4\n',
                               '1-4scaling              1.0\n',
                               'switching               on\n',

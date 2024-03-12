@@ -3,7 +3,6 @@ import concurrent.futures
 
 from .MDoperations import *
 from .TrajectoryOperator import *
-from .Loggers import Logger
 from mwSuMD_lib.openMMsetter import *
 
 
@@ -118,7 +117,7 @@ class Runner(mwInputParser):
             elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:
                 command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm production {plumed} > gromacs.log'
 
-        if self.par['MDEngine'] == 'ACEMD/OPENMM':
+        if self.par['MDEngine'] == 'ACEMD':
             if customFile is not None and self.initialParameters['COMMAND'] is not None:
                 command = f'{self.initialParameters["COMMAND"]} --device {GPU} production.inp > acemd.log'
             if customFile is not None and self.initialParameters['COMMAND'] is None:

@@ -48,13 +48,17 @@ class suMD1(mwInputParser):
                 self.condition = self.output_to_check < self.parameters[f'Cutoff_{x}']
         if self.parameters['NumberCV'] == 2:
             if self.parameters['Transition_1'] == 'positive' and self.parameters['Transition_2'] == 'positive':
-                self.condition = self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 > self.parameters['Cutoff_2']
+                self.condition = self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 > self.parameters[
+                    'Cutoff_2']
             if self.parameters['Transition_1'] == 'positive' and self.parameters['Transition_2'] == 'negative':
-                self.condition = self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 < self.parameters['Cutoff_2']
+                self.condition = self.metric_1 > self.parameters['Cutoff_1'] and self.metric_2 < self.parameters[
+                    'Cutoff_2']
             if self.parameters['Transition_1'] == 'negative' and self.parameters['Transition_2'] == 'positive':
-                self.condition = self.metric_1 < self.parameters['Cutoff_1'] and self.metric_2 > self.parameters['Cutoff_2']
+                self.condition = self.metric_1 < self.parameters['Cutoff_1'] and self.metric_2 > self.parameters[
+                    'Cutoff_2']
             if self.parameters['Transition_1'] == 'negative' and self.parameters['Transition_2'] == 'negative':
-                self.condition = self.metric_1 < self.parameters['Cutoff_1'] and self.metric_2 < self.parameters['Cutoff_2']
+                self.condition = self.metric_1 < self.parameters['Cutoff_1'] and self.metric_2 < self.parameters[
+                    'Cutoff_2']
 
     def run_mwSuMD(self):
         x = 1
@@ -83,7 +87,8 @@ class suMD1(mwInputParser):
                 self.run_mwSuMD()
         if not self.condition:
             self.run_mwSuMD()
-        Logger.LogToFile('w', self.cycle, "#" * 200 + "\nTHRESHOLD METRICS REACHED: FINAL RELAXATION PROTOCOL:\n" + "#" * 200)
+        Logger.LogToFile('w', self.cycle,
+                         "#" * 200 + "\nTHRESHOLD METRICS REACHED: FINAL RELAXATION PROTOCOL:\n" + "#" * 200)
         if not self.openMM:
             self.checker.relaxSystemMulti()
         else:
@@ -130,16 +135,25 @@ class suMD1(mwInputParser):
         self.selection_list.clear()
         self.parameters, self.selection_list, self.parameterFolderPath = self.pars.getSettings()
         tempParametersSnapshot = self.parameters.copy()
+        print(parametersSnapshot)
+        print("\n\n")
+        print(tempParametersSnapshot)
+        print("\n\n")
         if not self.openMM:
             if self.cycle != 0:
                 try:
                     del parametersSnapshot['coor'], parametersSnapshot['vel'], parametersSnapshot['xsc']
                     del tempParametersSnapshot['coor'], tempParametersSnapshot['vel'], tempParametersSnapshot['xsc']
-                except print("\n"):
+                except print("\n"):  # using GROMACS?
                     del parametersSnapshot['cpt'], parametersSnapshot['gro'], parametersSnapshot['tpr']
                     del tempParametersSnapshot['cpt'], tempParametersSnapshot['gro'], tempParametersSnapshot['tpr']
+        # else:
+        #     if self.cycle != 0:
+        #         del parametersSnapshot['xml'], parametersSnapshot['chk']
+        #         del tempParametersSnapshot['xml'], tempParametersSnapshot['chk']
 
         if parametersSnapshot != tempParametersSnapshot or selectionShapshot != self.selection_list:
+            print("CHANGED?")
             temp = set(self.selection_list) - set(selectionShapshot)
             selectionShapshot.clear()
             changes = []
