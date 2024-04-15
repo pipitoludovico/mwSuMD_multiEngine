@@ -33,7 +33,7 @@ class MDsetter(mwInputParser):
                     if self.setterParameters['MDEngine'] == 'ACEMD' or self.setterParameters['MDEngine'] == 'NAMD':
                         # adding parameters lines to input files != GROMACS
                         if self.setterParameters['Parameters'] is not None:
-                            for e in self.setterParameters['Parameters']:
+                            for e in sorted(self.setterParameters['Parameters']):
                                 if e.endswith('.par') or e.endswith('.prm'):
                                     mw_file.write(f'parameters		%s\n' % e)
                     # writing the input file

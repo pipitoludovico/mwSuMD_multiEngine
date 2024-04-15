@@ -88,6 +88,7 @@ class MetricsParser(mwInputParser):
         self.scores[walker][metric]['allMetricValues'] = allMetricValues
 
     def getBestWalker(self, scores: dict):
+        print(scores)
         """Returns the walker with the best metric"""
         try:
             if self.initialParameters['NumberCV'] == 1:

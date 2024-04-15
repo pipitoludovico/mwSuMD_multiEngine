@@ -30,7 +30,7 @@ class mwInputParser:
         self.customInputFileExtension = ('namd', 'inp', 'mdp')
         self.outExtensions = ('cpt', 'cpi', 'coor', 'vel', 'xsc')
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
-        self.initialParametersameter_extensions = ('.param', '.prm', '.par', '.top', '.rtf')
+        self.initialParametersameter_extensions = ('.param', '.prm', '.par', '.top', '.rtf', '.str')
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.allowedMetrics = ("DISTANCE", "RMSD", "CONTACTS", "HB", "SOLVATION")
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
@@ -116,6 +116,7 @@ class mwInputParser:
         self.initialParameters['Wrap'] = 'protein and name CA'
         self.initialParameters['Fails'] = 5
         self.initialParameters['Tolerance'] = 0.3
+        self.initialParameters['NOGPU'] = None
 
         for customFile in os.listdir(f"{self.initialParameters['Root']}/system"):
             if customFile.startswith('production') and customFile.endswith(self.customInputFileExtension):

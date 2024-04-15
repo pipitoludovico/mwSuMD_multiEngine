@@ -26,7 +26,10 @@ class openMMsetter:
         ts = float(self.initialParameters.get('Timestep') / 1000)
         integrator = LangevinIntegrator(310 * kelvin, 1 / picosecond, ts * picoseconds)
         platform = Platform.getPlatformByName('CUDA')
-        properties = {'DeviceIndex': str(gpu), 'Precision': 'mixed'}
+        if not self.initialParameters['NOGPU']:
+            properties = {'DeviceIndex': str(gpu), 'Precision': 'mixed'}
+        else:
+            properties = {'Precision': 'mixed'}
 
         if self.initialParameters.get('Relax') is True:
             self.initialParameters['Timewindow'] = int(self.initialParameters['RelaxTime'] * 1000)
@@ -98,9 +101,16 @@ class openMMsetter:
             app.StateDataReporter(f"{self.initialParameters['Root']}/{folder_path}/openMM_{walker_folder}.log",
                                   saveFreq, step=True, totalSteps=total_steps, remainingTime=True, potentialEnergy=True,
                                   temperature=True))
-        sim.reporters.append(app.DCDReporter(
-            f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.dcd",
-            saveFreq, enforcePeriodicBox=True))
+        try:
+            sim.reporters.append(app.XTCReporter(
+                f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.xtc",
+                saveFreq, enforcePeriodicBox=True))
+        except Exception as e:
+            print(repr(e))
+            print('Using DCD reported instead of the new XTC reporter')
+            sim.reporters.append(app.DCDReporter(
+                f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.dcd",
+                saveFreq, enforcePeriodicBox=True))
         sim.reporters.append(app.CheckpointReporter(
             f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.chk",
             saveFreq))

@@ -50,7 +50,10 @@ class Checker(mwInputParser):
         # The relaxation protocol starts here
         self.initialParameters['Relax'] = True
         manager = ProcessManager()
-        GPUs = manager.getGPUids()
+        if not self.initialParameters['NOGPU']:
+            GPUs = manager.getGPUids()
+        else:
+            GPUs = self.initialParameters.get('NOGPU')
         # let's exclude the GPU id if we want to keep a GPU for other jobs
         if self.initialParameters['EXCLUDED_GPUS']:
             Logger.LogToFile('ad', self.trajCount, f"EXCLUDED GPU: {self.initialParameters['EXCLUDED_GPUS']}")

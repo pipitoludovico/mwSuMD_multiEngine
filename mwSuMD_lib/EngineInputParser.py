@@ -20,12 +20,6 @@ class EngineInputs(mwInputParser):
         if self.initialParameters['Relax'] is True:
             self.par['Timewindow'] = self.par['RelaxTime'] * 1000
             Logger.LogToFile('ad', self.trajCount, "\nTemporary changing the timewindow for relaxation protocol to: " + str(self.par['Timewindow']) + " ps.")
-
         restartInput = Template().inputFile
-        if self.trajCount != 0:
-            restartInput = [line.replace('system', 'restarts')
-                            if ('bin' in line or 'extendedSystem' in line) and 'system' in line else line
-                            for line in restartInput]
-
         self.par['Timewindow'] = self.timewindow
         return restartInput

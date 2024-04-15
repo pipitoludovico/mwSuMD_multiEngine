@@ -5,7 +5,6 @@ from .MDoperations import *
 from .TrajectoryOperator import *
 from mwSuMD_lib.openMMsetter import *
 
-
 from signal import signal, SIGPIPE, SIG_DFL
 from warnings import filterwarnings
 
@@ -52,7 +51,10 @@ class Runner(mwInputParser):
     def runSimulation(self):
         # let's divide the available GPU in batches by the number of walkers
         manager = ProcessManager()
-        GPUs = manager.getGPUids()
+        if not self.initialParameters['NOGPU']:
+            GPUs = manager.getGPUids()
+        else:
+            GPUs = self.initialParameters.get('NOGPU')
         # let's exclude the GPU id if we want to keep a GPU for other jobs
         if self.initialParameters['EXCLUDED_GPUS'] is not None:
             Logger.LogToFile("ad", self.trajCount, "\nEXCLUDED GPU:" + str(self.initialParameters['EXCLUDED_GPUS']))
@@ -66,7 +68,6 @@ class Runner(mwInputParser):
         for GPUbatch in GPUbatches:
             for GPU in GPUbatch:
                 os.chdir('tmp/walker_' + str(self.walk_count))
-                Logger.LogToFile("ad", self.trajCount, "Running in " + os.getcwd())
                 command = self.lauchEngine(self.trajCount, self.walk_count, GPU,
                                            self.customProductionFile)
                 processes.append(subprocess.Popen(command, shell=True))
@@ -109,30 +110,60 @@ class Runner(mwInputParser):
             plumedCopy = ''
 
         if self.par['MDEngine'] == 'GROMACS':
+            if not self.initialParameters['NOGPU']:
+                gpuCall = f'-gpu_id {GPU}'
+            else:
+                gpuCall = ''
             MDoperator(self.initialParameters, self.folder, self.openMM).prepareTPR(walk_count, trajCount, customFile)
+
+            # standard call: no custom file, no custom command
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is None:
-                command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} -gpu_id {GPU} {taks_master} -pinoffset {(offset * GPU)} -nstlist {self.initialParameters["Timewindow"]} > gromacs.log'
-            elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is None:
-                command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} > gromacs.log'
-            elif self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:
-                command = f'{self.initialParameters["COMMAND"]} -gpu_id {GPU} -deffnm production {plumed} > gromacs.log'
+                command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} {gpuCall} {taks_master} -pinoffset {(offset * GPU)} -nstlist {self.initialParameters["Timewindow"]} > gromacs.log'
+            # no custom file / custom command
+            if self.initialParameters['COMMAND'] is not None and self.customProductionFile is None:
+                command = f'{self.initialParameters["COMMAND"]} {gpuCall} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} > gromacs.log'
+            # custom file / no custom command
+            if self.initialParameters['COMMAND'] is None and self.customProductionFile is not None:
+                command = f'gmx mdrun  -v {plumed} {gpuCall} -deffnm production {plumed} > gromacs.log'
+            # custom file / custom command
+            if self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:
+                command = f'{self.initialParameters["COMMAND"]} {gpuCall} -deffnm production {plumed} > gromacs.log'
 
         if self.par['MDEngine'] == 'ACEMD':
-            if customFile is not None and self.initialParameters['COMMAND'] is not None:
-                command = f'{self.initialParameters["COMMAND"]} --device {GPU} production.inp > acemd.log'
-            if customFile is not None and self.initialParameters['COMMAND'] is None:
-                command = f'acemd --device {GPU} production.inp > acemd.log'
+            if not self.initialParameters['NOGPU']:
+                gpuCall = f'--device {GPU}'
+            else:
+                gpuCall = ''
+            # standard call: no custom file, no custom command
             if customFile is None and self.initialParameters['COMMAND'] is None:
-                command = f'acemd --device {GPU} input_{walk_count}_{trajCount}.inp > acemd.log'
+                command = f'acemd {gpuCall} input_{walk_count}_{trajCount}.inp > acemd.log'
+            # no custom file / custom command
+            if customFile is None and self.initialParameters['COMMAND'] is not None:
+                command = f'{self.initialParameters["COMMAND"]} {gpuCall} input_{walk_count}_{trajCount}.inp > acemd.log'
+            # custom file / no custom command
+            if customFile is not None and self.initialParameters['COMMAND'] is None:
+                command = f'acemd {gpuCall} production.inp > acemd.log'
+            # custom file / custom command
+            if customFile is not None and self.initialParameters['COMMAND'] is not None:
+                command = f'{self.initialParameters["COMMAND"]} {gpuCall} production.inp > acemd.log'
 
         if self.par['MDEngine'] == 'NAMD':
-            command = f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log' \
-                if customFile is not None and self.initialParameters['COMMAND'] is not None \
-                else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log' \
-                if customFile is not None \
-                else f'{self.initialParameters["COMMAND"]} +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log' \
-                if self.initialParameters['COMMAND'] is not None \
-                else f'namd3 +p8 +devices {GPU} input_{walk_count}_{trajCount}.namd > namd.log'
+            if not self.initialParameters['NOGPU']:
+                gpuCall = f'+devices {GPU}'
+            else:
+                gpuCall = ''
+            # standard call: no custom file, no custom command
+            if customFile is None and self.initialParameters['COMMAND'] is None:
+                command = f'namd3 +p8 {gpuCall} input_{walk_count}_{trajCount}.namd > namd.log'
+            # no custom file / custom command
+            if customFile is None and self.initialParameters['COMMAND'] is not None:
+                command = f'{self.initialParameters["COMMAND"]} {gpuCall} input_{walk_count}_{trajCount}.namd > namd.log'
+            # custom file / no custom command
+            if customFile is not None and self.initialParameters['COMMAND'] is None:
+                command = f'namd3 +p8 {gpuCall} {gpuCall} production.namd > namd.log'
+            # custom file / custom command
+            if customFile is not None and self.initialParameters['COMMAND'] is not None:
+                command = f'{self.initialParameters["COMMAND"]} {gpuCall} production.namd > namd.log'
         return plumedCopy + " " + command
 
     # OpenMM section
@@ -168,7 +199,10 @@ class Runner(mwInputParser):
     def runSimulationOpen(self):
         # let's divide the available GPU in batches by the number of walkers
         manager = ProcessManager()
-        GPUs = manager.getGPUids()
+        if not self.initialParameters['NOGPU']:
+            GPUs = manager.getGPUids()
+        else:
+            GPUs = self.initialParameters.get('NOGPU')
         # let's exclude the GPU id if we want to keep a GPU for other jobs
         if self.initialParameters['EXCLUDED_GPUS'] is not None:
             Logger.LogToFile('ad', self.trajCount, f"EXCLUDED GPU: {self.initialParameters['EXCLUDED_GPUS']}")

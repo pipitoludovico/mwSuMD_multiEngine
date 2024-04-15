@@ -21,8 +21,13 @@ class ArgParser:
                              'Be aware of the GPU batch division and let mwSuMD sort the GPUs.')
         ap.add_argument("-k", '--kill', required=False, action='store_true', default=False,
                         help="Stop mwSuMD from the current working directory")
-        ap.add_argument("-j", '--join', nargs='*', required=False, help="Merge the trajectories from one step to another: e.g. -j 1 10, -j 10 , or -j all to merge every step.")
-        ap.add_argument("-openmm", '--openmm', required=False, action='store_true', help="add -openmm to run mwSuMD with OpenMM")
+        ap.add_argument("-j", '--join', nargs='*', required=False,
+                        help="Merge the trajectories from one step to another: e.g. -j 1 10, -j 10 , or -j all to merge every step.")
+        ap.add_argument("-nogpu", '--nogpu', type=int, required=False,
+                        help="Add -nogpu and a number (e.g.: -nogpu 4) to not use the gpu and set the batch simulation size")
+
+        ap.add_argument("-openmm", '--openmm', required=False, action='store_true',
+                        help="add -openmm to run mwSuMD with OpenMM")
         args = ap.parse_args()
 
         if args.kill is True:
@@ -55,6 +60,9 @@ class ArgParser:
         mwInputParser.initialParameters['EXCLUDED_GPUS'] = None
         if args.exclude is not None and len(args.exclude) != 0:
             mwInputParser.initialParameters['EXCLUDED_GPUS'] = [int(x) for x in args.exclude]
+
+        if args.nogpu:
+            mwInputParser.initialParameters['NOGPU'] = [fakeGPU for fakeGPU in range(args.nogpu)]
 
         if args.openmm:
             openMM = True

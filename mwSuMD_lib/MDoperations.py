@@ -142,7 +142,10 @@ class MDoperator:
         Logger.LogToFile('ad', self.cycle, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         self.par['Relax'] = True
         manager = ProcessManager()
-        GPUs = manager.getGPUids()
+        if not self.par['NOGPU']:
+            GPUs = manager.getGPUids()
+        else:
+            GPUs = self.par.get('NOGPU')
         # let's exclude the GPU id if we want to keep a GPU for other jobs
         if self.par['EXCLUDED_GPUS']:
             Logger.LogToFile('ad', self.cycle, f"EXCLUDED GPU: {self.par['EXCLUDED_GPUS']}")
