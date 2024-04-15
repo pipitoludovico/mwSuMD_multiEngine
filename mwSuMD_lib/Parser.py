@@ -116,7 +116,6 @@ class mwInputParser:
         self.initialParameters['Wrap'] = 'protein and name CA'
         self.initialParameters['Fails'] = 5
         self.initialParameters['Tolerance'] = 0.3
-        self.initialParameters['NOGPU'] = None
 
         for customFile in os.listdir(f"{self.initialParameters['Root']}/system"):
             if customFile.startswith('production') and customFile.endswith(self.customInputFileExtension):

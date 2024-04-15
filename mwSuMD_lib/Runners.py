@@ -51,7 +51,7 @@ class Runner(mwInputParser):
     def runSimulation(self):
         # let's divide the available GPU in batches by the number of walkers
         manager = ProcessManager()
-        if not self.initialParameters['NOGPU']:
+        if not self.initialParameters.get('NOGPU'):
             GPUs = manager.getGPUids()
         else:
             GPUs = self.initialParameters.get('NOGPU')
@@ -110,7 +110,7 @@ class Runner(mwInputParser):
             plumedCopy = ''
 
         if self.par['MDEngine'] == 'GROMACS':
-            if not self.initialParameters['NOGPU']:
+            if not self.initialParameters.get('NOGPU'):
                 gpuCall = f'-gpu_id {GPU}'
             else:
                 gpuCall = ''
@@ -130,7 +130,7 @@ class Runner(mwInputParser):
                 command = f'{self.initialParameters["COMMAND"]} {gpuCall} -deffnm production {plumed} > gromacs.log'
 
         if self.par['MDEngine'] == 'ACEMD':
-            if not self.initialParameters['NOGPU']:
+            if not self.initialParameters.get('NOGPU'):
                 gpuCall = f'--device {GPU}'
             else:
                 gpuCall = ''
@@ -148,7 +148,7 @@ class Runner(mwInputParser):
                 command = f'{self.initialParameters["COMMAND"]} {gpuCall} production.inp > acemd.log'
 
         if self.par['MDEngine'] == 'NAMD':
-            if not self.initialParameters['NOGPU']:
+            if not self.initialParameters.get('NOGPU'):
                 gpuCall = f'+devices {GPU}'
             else:
                 gpuCall = ''
@@ -199,7 +199,7 @@ class Runner(mwInputParser):
     def runSimulationOpen(self):
         # let's divide the available GPU in batches by the number of walkers
         manager = ProcessManager()
-        if not self.initialParameters['NOGPU']:
+        if not self.initialParameters.get('NOGPU'):
             GPUs = manager.getGPUids()
         else:
             GPUs = self.initialParameters.get('NOGPU')
