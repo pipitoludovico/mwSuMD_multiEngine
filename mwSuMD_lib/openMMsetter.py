@@ -1,9 +1,15 @@
 import os
 
 import numpy as np
-from openmm import XmlSerializer, LangevinIntegrator, Platform
-import openmm.app as app
-from openmm.unit import *
+from sys import argv
+
+if "openmm" in argv:
+    try:
+        from openmm import XmlSerializer, LangevinIntegrator, Platform
+        import openmm.app as app
+        from openmm.unit import *
+    except:
+        pass
 import pkg_resources
 
 

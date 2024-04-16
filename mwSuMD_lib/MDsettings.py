@@ -16,7 +16,7 @@ class MDsetter(mwInputParser):
         self.custom_input = None
 
     def createInputFile(self):
-        ext = ".mpd" if self.setterParameters['MDEngine'] == 'GROMACS' else ('.namd' if self.setterParameters['MDEngine'] == 'NAMD' else '.inp')
+        ext = ".mdp" if self.setterParameters['MDEngine'] == 'GROMACS' else ('.namd' if self.setterParameters['MDEngine'] == 'NAMD' else '.inp')
         if self.initialParameters['Relax'] is True:
             self.setterParameters['Walkers'] = 1
 

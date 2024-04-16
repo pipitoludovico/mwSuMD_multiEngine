@@ -28,7 +28,7 @@ class mwInputParser:
 
     def __init__(self):
         self.customInputFileExtension = ('namd', 'inp', 'mdp')
-        self.outExtensions = ('cpt', 'cpi', 'coor', 'vel', 'xsc')
+        self.outExtensions = ('cpi', 'coor', 'vel', 'xsc')
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
         self.initialParametersameter_extensions = ('.param', '.prm', '.par', '.top', '.rtf', '.str')
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
@@ -85,7 +85,8 @@ class mwInputParser:
                 exit()
             if len(os.listdir(f'{self.folder}/system/reference')) > 0:
                 files = os.listdir(f'{self.folder}/system/reference')
-                reference = next((file for file in files if file.endswith('.pdb')), None)
+                refext = ('.pdb', '.gro')
+                reference = next((file for file in files if file.endswith(refext)), None)
                 if reference:
                     self.initialParameters['REFERENCE'] = reference
                 else:

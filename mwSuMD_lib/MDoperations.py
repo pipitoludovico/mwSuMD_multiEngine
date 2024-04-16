@@ -1,8 +1,9 @@
 import os
 import re
 import subprocess
+from subprocess import DEVNULL
 import numpy as np
-
+from subprocess import DEVNULL
 from random import choice
 from .MDsettings import MDsetter
 from .Metrics import MetricsParser
@@ -102,13 +103,13 @@ class MDoperator:
         if customFile is None:
             command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
                       f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \
-                      f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr -maxwarn 3 &>tpr_log.log'
+                      f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr -maxwarn 3 > tpr_log.log 2>&1'
         else:
             command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
                       f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \
-                      f' -o production.tpr -maxwarn 3 &>tpr_log.log'
+                      f' -o production.tpr -maxwarn 3 >tpr_log.log 2>&1'
 
-        tprPreparation = subprocess.Popen(command, shell=True)
+        tprPreparation = subprocess.Popen(command, shell=True, stdout=DEVNULL)
         tprPreparation.wait()
 
     def checkIfStuck(self, values, accumulatedFails) -> bool:
@@ -166,9 +167,9 @@ class MDoperator:
             elif file.endswith('.mdp'):
                 subprocess.Popen(
                     f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr -extend {int(self.par["RelaxTime"] * 1000)} -o {self.par["Output"]}_{self.cycle}.tpr &>tpr_log.log',
-                    shell=True).wait()
-                command = f'gmx mdrun -deffnm {self.par["Output"]}_{self.cycle}'
-                subprocess.Popen(command, shell=True).wait()
+                    shell=True, stdout=DEVNULL).wait()
+                command = f'gmx mdrun -deffnm {self.par["Output"]}_{self.cycle} > gromacs_run.log 2>&1'
+                subprocess.Popen(command, shell=True, stdout=DEVNULL).wait()
         os.chdir(f'{self.folder}')
         TrajectoryOperator().wrap(1)
         # we then compute its metrics as a reference
@@ -188,7 +189,8 @@ class MDoperator:
     def relaxSystem(self):
         Logger.LogToFile('a', self.cycle, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         self.par['Relax'] = True
-        Runner(self.par, self.openMM).runAndWrap()
+        opMD = MDoperator(self.par, self.folder, self.openMM)
+        Runner(self.par, self.openMM, opMD).runAndWrap()
         self.scores = MetricsParser().getChosenMetrics()
         # we then extract the best metric/score and store it as a reference
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None

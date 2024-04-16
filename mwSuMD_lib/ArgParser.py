@@ -25,7 +25,6 @@ class ArgParser:
                         help="Merge the trajectories from one step to another: e.g. -j 1 10, -j 10 , or -j all to merge every step.")
         ap.add_argument("-nogpu", '--nogpu', type=int, required=False,
                         help="Add -nogpu and a number (e.g.: -nogpu 4) to not use the gpu and set the batch simulation size")
-
         ap.add_argument("-openmm", '--openmm', required=False, action='store_true',
                         help="add -openmm to run mwSuMD with OpenMM")
         args = ap.parse_args()

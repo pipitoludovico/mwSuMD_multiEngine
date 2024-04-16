@@ -36,7 +36,6 @@ class suMD1(mwInputParser):
     def run_First(self):
         if self.parameters['NumberCV'] == 1:
             self.output_to_check = self.runProtocol()
-            # print("IN RUN FIRST ", self.output_to_check) 60.0234
         if self.parameters['NumberCV'] == 2:
             self.metric_1, self.metric_2 = self.runProtocol()
 
@@ -72,8 +71,9 @@ class suMD1(mwInputParser):
                     self.compareAndUpdateSettings()
                     self.output_to_check = self.runProtocol()
                     self.UpdateCondition(x)
-            except Exception:
+            except Exception as e:
                 print("Conditions changed: rerunning mwSuMD")
+                print(repr(e))
                 self.run_mwSuMD()
 
         if self.parameters['NumberCV'] == 2:
@@ -82,8 +82,9 @@ class suMD1(mwInputParser):
                     self.compareAndUpdateSettings()
                     self.metric_1, self.metric_2 = self.runProtocol()
                     self.UpdateCondition()
-            except Exception:
+            except Exception as e:
                 print("Conditions changed: rerunning mwSuMD")
+                print(repr(e))
                 self.run_mwSuMD()
         if not self.condition:
             self.run_mwSuMD()
@@ -140,9 +141,9 @@ class suMD1(mwInputParser):
                 try:
                     del parametersSnapshot['coor'], parametersSnapshot['vel'], parametersSnapshot['xsc']
                     del tempParametersSnapshot['coor'], tempParametersSnapshot['vel'], tempParametersSnapshot['xsc']
-                except print("\n"):  # using GROMACS?
-                    del parametersSnapshot['cpt'], parametersSnapshot['gro'], parametersSnapshot['tpr']
-                    del tempParametersSnapshot['cpt'], tempParametersSnapshot['gro'], tempParametersSnapshot['tpr']
+                except Exception:  # using GROMACS?
+                    del parametersSnapshot['CPT'], parametersSnapshot['GRO'], parametersSnapshot['TPR']
+                    del tempParametersSnapshot['CPT'], tempParametersSnapshot['GRO'], tempParametersSnapshot['TPR']
 
         if parametersSnapshot != tempParametersSnapshot or selectionShapshot != self.selection_list:
             temp = set(self.selection_list) - set(selectionShapshot)

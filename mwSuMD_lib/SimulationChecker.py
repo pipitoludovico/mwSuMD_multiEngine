@@ -1,6 +1,6 @@
 import os
 import subprocess
-
+from subprocess import DEVNULL
 from .MDoperations import MDoperator
 from .MDsettings import MDsetter
 from .Metrics import MetricsParser
@@ -75,9 +75,9 @@ class Checker(mwInputParser):
             elif file.endswith('.mdp'):
                 subprocess.Popen(
                     f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr -extend {int(self.initialParameters["RelaxTime"] * 1000)} -o {self.initialParameters["Output"]}_{self.trajCount}.tpr &>tpr_log.log',
-                    shell=True).wait()
+                    shell=True, stdout=DEVNULL).wait()
                 command = f'gmx mdrun -deffnm {self.initialParameters["Output"]}_{self.trajCount}'
-                subprocess.Popen(command, shell=True).wait()
+                subprocess.Popen(command, shell=True, stdout=DEVNULL).wait()
         os.chdir(f'{self.folder}')
         TrajectoryOperator().wrap(1)
         # we then compute its metrics as a reference
@@ -96,7 +96,8 @@ class Checker(mwInputParser):
     def relaxSystem(self):
         Logger.LogToFile('a', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         self.initialParameters['Relax'] = True
-        Runner(self.initialParameters, self.openMM).runAndWrap()
+        op = MDoperator(self.initialParameters, self.folder, self.openMM)
+        Runner(self.initialParameters, self.openMM, op).runAndWrap()
         self.scores = MetricsParser().getChosenMetrics()
         # we then extract the best metric/score and store it as a reference
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None

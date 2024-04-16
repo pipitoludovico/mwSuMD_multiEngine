@@ -48,10 +48,10 @@ class Template(mwInputParser):
             self.inputFile = ['structure               ../../system/%s\n' % self.initialParameters.get('PSF'),
                               'coordinates             ../../system/%s\n' % self.initialParameters.get('PDB'),
                               'outputname              %s\n' % self.initialParameters.get('Output'),
-                              f'binCoordinates\t%s%s\n' % (sys_folder, self.initialParameters.get("coor")),
-                              f'binVelocities\t%s%s\n' % (sys_folder, self.initialParameters.get("vel")),
-                              f'extendedSystem\t%s%s\n' % (sys_folder, self.initialParameters.get("xsc")),
-                              f'set xscfile [open {sys_folder}{self.initialParameters.get("xsc")}]\n'
+                              'binCoordinates\t%s/%s\n' % (sys_folder, self.initialParameters.get("coor")),
+                              f'binVelocities\t%s/%s\n' % (sys_folder, self.initialParameters.get("vel")),
+                              f'extendedSystem\t%s/%s\n' % (sys_folder, self.initialParameters.get("xsc")),
+                              f'set xscfile [open %s/%s]\n' % (sys_folder, self.initialParameters.get("xsc")),
                               "plumed on\n" if self.initialParameters.get("PLUMED") is not None else "\n",
                               "plumedfile\t%s\n" % self.initialParameters.get("PLUMED") if self.initialParameters.get(
                                   'PLUMED') is not None else "\n",
@@ -64,7 +64,7 @@ class Template(mwInputParser):
                               '  close $fd\n',
                               '  return $ts\n',
                               '}\n',
-                              f'set firsttime [get_first_ts {sys_folder}{self.initialParameters.get("xsc")}]\n',
+                              f'set firsttime [get_first_ts %s{self.initialParameters.get("xsc")}]\n' % sys_folder,
                               'firsttimestep\t$firsttime\n',
                               'set temp\t310;\n',
                               'outputEnergies %s\n' % int(self.initialParameters.get("Savefreq") / (

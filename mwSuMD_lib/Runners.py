@@ -1,7 +1,9 @@
 import time
 import concurrent.futures
-
-from .MDoperations import *
+import subprocess
+from subprocess import DEVNULL
+import re
+from .GPUoperations import ProcessManager
 from .TrajectoryOperator import *
 from mwSuMD_lib.openMMsetter import *
 
@@ -14,9 +16,10 @@ signal(SIGPIPE, SIG_DFL)
 
 class Runner(mwInputParser):
 
-    def __init__(self, par, openMM):
+    def __init__(self, par, openMM, md_operator):
         self.par = par
         self.openMM = openMM
+        self.md_operator = md_operator
         super(mwInputParser, self).__init__()
         self.walk_count = 1
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
@@ -70,7 +73,7 @@ class Runner(mwInputParser):
                 os.chdir('tmp/walker_' + str(self.walk_count))
                 command = self.lauchEngine(self.trajCount, self.walk_count, GPU,
                                            self.customProductionFile)
-                processes.append(subprocess.Popen(command, shell=True))
+                processes.append(subprocess.Popen(command, shell=True, stdout=DEVNULL))
                 self.walk_count += 1
                 os.chdir(self.folder)
         for process in processes:
@@ -114,7 +117,7 @@ class Runner(mwInputParser):
                 gpuCall = f'-gpu_id {GPU}'
             else:
                 gpuCall = ''
-            MDoperator(self.initialParameters, self.folder, self.openMM).prepareTPR(walk_count, trajCount, customFile)
+            self.md_operator.prepareTPR(walk_count, trajCount, customFile)
 
             # standard call: no custom file, no custom command
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is None:

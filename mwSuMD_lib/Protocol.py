@@ -31,11 +31,12 @@ class ProtocolRunner(mwInputParser):
         begin = time.perf_counter()
         if os.path.exists('./tmp'):
             os.system('rm -r ./tmp')
+        op = MDoperator(self.initialParameters, self.folder, self.openMM)
         if not self.openMM:
             MDsetter(self.initialParameters).createInputFile()
-            Runner(self.initialParameters, self.openMM).runMD()
+            Runner(self.initialParameters, self.openMM, op).runMD()
         else:
-            Runner(self.initialParameters, self.openMM).runAndWrap()
+            Runner(self.initialParameters, self.openMM, op).runAndWrap()
 
         # compute metrics
         self.scores = MetricsParser().getChosenMetrics()

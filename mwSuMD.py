@@ -20,6 +20,7 @@ Loggers.Logger.LogToFile('ad', '',
 
 def main():
     from mwSuMD_lib import SuMD
+    print("running mwSuMD")
     multiSumd = SuMD.suMD1(openMM)
     multiSumd.run_mwSuMD()
     exit()
