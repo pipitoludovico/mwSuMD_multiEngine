@@ -66,7 +66,6 @@ class Runner(mwInputParser):
         GPUbatches, lenIDs = manager.createBatches(walkers=self.par['Walkers'], total_gpu_ids=GPUs)
         Logger.LogToFile('ad', self.trajCount, '#' * 200)
         processes = []
-        Logger.LogToFile("a", self.trajCount, "Running serial mode")
         start_time_serial = time.perf_counter()
         for GPUbatch in GPUbatches:
             for GPU in GPUbatch:
@@ -118,7 +117,6 @@ class Runner(mwInputParser):
             else:
                 gpuCall = ''
             self.md_operator.prepareTPR(walk_count, trajCount, customFile)
-
             # standard call: no custom file, no custom command
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is None:
                 command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} {gpuCall} {taks_master} -pinoffset {(offset * GPU)} -nstlist {self.initialParameters["Timewindow"]} > gromacs.log'

@@ -105,7 +105,7 @@ class MDoperator:
                       f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \
                       f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr -maxwarn 3 > tpr_log.log 2>&1'
         else:
-            command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
+            command = f'gmx grompp -f production.mdp' \
                       f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \
                       f' -o production.tpr -maxwarn 3 >tpr_log.log 2>&1'
 
