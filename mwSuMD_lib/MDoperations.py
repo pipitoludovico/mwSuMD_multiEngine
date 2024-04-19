@@ -1,7 +1,6 @@
 import os
 import re
 import subprocess
-from subprocess import DEVNULL
 import numpy as np
 from subprocess import DEVNULL
 from random import choice
