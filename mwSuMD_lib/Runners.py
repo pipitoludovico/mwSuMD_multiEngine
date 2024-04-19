@@ -119,16 +119,16 @@ class Runner(mwInputParser):
             self.md_operator.prepareTPR(walk_count, trajCount, customFile)
             # standard call: no custom file, no custom command
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is None:
-                command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} {gpuCall} {taks_master} -pinoffset {(offset * GPU)} -nstlist {self.initialParameters["Timewindow"]} > gromacs.log'
+                command = f'gmx mdrun  -v {plumed} -deffnm {self.initialParameters["Output"]}_{trajCount}_{walk_count} {gpuCall} {taks_master} -pinoffset {(offset * GPU)} -nstlist {self.initialParameters["Timewindow"]} > gromacs.log 2>&1'
             # no custom file / custom command
             if self.initialParameters['COMMAND'] is not None and self.customProductionFile is None:
-                command = f'{self.initialParameters["COMMAND"]} {gpuCall} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} > gromacs.log'
+                command = f'{self.initialParameters["COMMAND"]} {gpuCall} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} > gromacs.log 2>&1'
             # custom file / no custom command
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is not None:
-                command = f'gmx mdrun  -v {plumed} {gpuCall} -deffnm production {plumed} > gromacs.log'
+                command = f'gmx mdrun  -v {plumed} {gpuCall} -deffnm production {plumed} > gromacs.log 2>&1'
             # custom file / custom command
             if self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:
-                command = f'{self.initialParameters["COMMAND"]} {gpuCall} -deffnm production {plumed} > gromacs.log'
+                command = f'{self.initialParameters["COMMAND"]} {gpuCall} -deffnm production {plumed} > gromacs.log 2>&1'
 
         if self.par['MDEngine'] == 'ACEMD':
             if not self.initialParameters.get('NOGPU'):
