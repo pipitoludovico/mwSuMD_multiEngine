@@ -46,6 +46,7 @@ class Checker(mwInputParser):
         return accumulatedFails
 
     def relaxSystemMulti(self):
+        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         Logger.LogToFile('ad', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         # The relaxation protocol starts here
         self.initialParameters['Relax'] = True
@@ -74,9 +75,9 @@ class Checker(mwInputParser):
                 subprocess.Popen(f'namd3 +p8 +devices {jointGPUs} {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.mdp'):
                 subprocess.Popen(
-                    f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr -extend {int(self.initialParameters["RelaxTime"] * 1000)} -o {self.initialParameters["Output"]}_{self.trajCount}.tpr &>tpr_log.log',
+                    f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr -extend {int(self.initialParameters["RelaxTime"] * 1000)} -o {self.initialParameters["Output"]}_{self.trajCount}.tpr > tpr_log.log 2>&1',
                     shell=True, stdout=DEVNULL).wait()
-                command = f'gmx mdrun -deffnm {self.initialParameters["Output"]}_{self.trajCount}'
+                command = f'gmx mdrun -deffnm {self.initialParameters["Output"]}_{self.trajCount} > relax.log 2>&1'
                 subprocess.Popen(command, shell=True, stdout=DEVNULL).wait()
         os.chdir(f'{self.folder}')
         TrajectoryOperator().wrap(1)
