@@ -120,9 +120,6 @@ class mwInputParser:
 
         for customFile in os.listdir(f"{self.initialParameters['Root']}/system"):
             if customFile.startswith('production') and customFile.endswith(self.customInputFileExtension):
-                print("Custom Input File found: ", customFile)
-                print(
-                    "Warning: Make sure your custom input file is pointing at the binaries in the new restart folder!")
                 self.initialParameters['CUSTOMFILE'] = f"{self.folder}/system/{customFile}"
                 if self.trajCount == 0 and self.initialParameters['Restart'] == 'NO':
                     for extension in self.outExtensions:
