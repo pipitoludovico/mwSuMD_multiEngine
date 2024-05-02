@@ -125,7 +125,7 @@ class Runner(mwInputParser):
                 command = f'{self.initialParameters["COMMAND"]} {gpuCall} -deffnm {self.par["Output"]}_{trajCount}_{walk_count} {plumed} > gromacs.log 2>&1'
             # custom file / no custom command
             if self.initialParameters['COMMAND'] is None and self.customProductionFile is not None:
-                command = f'gmx mdrun  -v {plumed} {gpuCall} -deffnm production {plumed} > gromacs.log 2>&1'
+                command = f'gmx mdrun  -v {plumed} {gpuCall} {taks_master} -pinoffset {(offset * GPU)} -nstlist {self.initialParameters["Timewindow"]} -deffnm production {plumed} > gromacs.log 2>&1'
             # custom file / custom command
             if self.initialParameters['COMMAND'] is not None and self.customProductionFile is not None:
                 command = f'{self.initialParameters["COMMAND"]} {gpuCall} -deffnm production {plumed} > gromacs.log 2>&1'
