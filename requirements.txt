@@ -4,5 +4,5 @@ htmd
 numpy==1.24.3
 openmm==0.2
 pandas==2.0.3
-setuptools==65.5.1
+setuptools==70.0.0
 openmmplumed
