@@ -28,7 +28,8 @@ class openMMsetter:
         number_of_steps = (int(self.initialParameters['Timewindow'] / (self.initialParameters['Timestep'] / 1000)))
         saveFreq = (int(self.initialParameters['Savefreq'] / (self.initialParameters['Timestep'] / 1000)))
         ts = float(self.initialParameters.get('Timestep') / 1000)
-        integrator = LangevinIntegrator(310 * kelvin, 1 / picosecond, ts * picoseconds)
+        temperature = self.initialParameters.get('Temperature')
+        integrator = LangevinIntegrator(temperature * kelvin, 1 / picosecond, ts * picoseconds)
         platform = Platform.getPlatformByName('CUDA')
         if not self.initialParameters['NOGPU']:
             properties = {'DeviceIndex': str(gpu), 'Precision': 'mixed'}

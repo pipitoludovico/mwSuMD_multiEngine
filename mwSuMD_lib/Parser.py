@@ -131,9 +131,14 @@ class mwInputParser:
             self.initialParameters['RelaxTime'] = 5
             self.initialParameters['Relax'] = False
             self.initialParameters['CheckEvery'] = None
+            self.initialParameters['Temperature'] = 310
+
             for line in infile:
                 if line.startswith('#'):
                     continue
+                if line.startswith('Temperature'):
+                    self.initialParameters['Temperature'] = float(line.split('=')[1].strip())
+
                 if line.startswith('RelaxTime'):
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['RelaxTime'] = float(line.split('=')[1].strip())

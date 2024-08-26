@@ -6,6 +6,8 @@ Wrap = protein and name CA
 ########################################################################
 # Output name of the files
 Output = GLP1_binding_step_2
+# Temperature
+Temperature = 310
 # number of fails allowed [Default = 5]
 Fails = 2
 # # Tolerance to determine if a simulation is stuck [Default = 30]

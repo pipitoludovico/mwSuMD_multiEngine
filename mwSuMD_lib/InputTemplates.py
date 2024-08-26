@@ -25,13 +25,13 @@ class Template(mwInputParser):
                 "plumedFile\t%s\n" % (self.initialParameters.get('PLUMED')) if self.initialParameters.get(
                     'PLUMED') is not None else "\n",
                 'coordinates             ../../system/%s\n' % self.initialParameters.get('PDB'),
-                'temperature     310\n',
+                'temperature     %s\n' % self.initialParameters.get('Temperature'),
                 'PME             on\n',
                 'cutoff          9.0\n',
                 'switchDistance  7.5\n',
                 'thermostat      on\n',
                 'thermostatDamping       0.1\n',
-                'thermostatTemperature   310\n',
+                'thermostatTemperature   %s\n' % self.initialParameters.get('Temperature'),
                 'barostat                off\n',
                 'trajectoryFile          %s_%s.xtc\n' % (self.initialParameters.get('Output'), str(self.trajCount)),
                 'trajectoryPeriod               %s\n' % int(
@@ -66,7 +66,7 @@ class Template(mwInputParser):
                               '}\n',
                               f'set firsttime [get_first_ts %s{self.initialParameters.get("xsc")}]\n' % sys_folder,
                               'firsttimestep\t$firsttime\n',
-                              'set temp\t310;\n',
+                              'set temp\t%s;' % self.initialParameters.get('Temperature'),
                               'outputEnergies %s\n' % int(self.initialParameters.get("Savefreq") / (
                                           self.initialParameters.get('Timestep') / 10 ** 3)),
                               'dcdfreq\t%s;\t\n' % int(self.initialParameters.get("Savefreq") / (
@@ -163,7 +163,7 @@ class Template(mwInputParser):
                               'tcoupl                  = V-rescale             ; modified Berendsen thermostat\n',
                               'tc-grps                 = Protein Non-Protein   ; two coupling groups - more accurate\n',
                               'tau_t                   = 0.1     0.1           ; time constant, in ps\n',
-                              'ref_t\t= 310     310 ; reference temperature, one for each group, in K\n',
+                              'ref_t\t= %s     %s ; reference temperature, one for each group, in K%s\n' % self.initialParameters.get('Temperature'), self.initialParameters.get('Temperature'),
                               '; Pressure coupling is on\n',
                               'pcoupl                  = Parrinello-Rahman     ; Pressure coupling on in NPT\n',
                               'pcoupltype              = isotropic             ; uniform scaling of box vectors\n',
