@@ -62,6 +62,8 @@ class ArgParser:
 
         if args.nogpu:
             mwInputParser.initialParameters['NOGPU'] = [fakeGPU for fakeGPU in range(args.nogpu)]
+        else:
+            mwInputParser.initialParameters['NOGPU'] = None
 
         if args.openmm:
             openMM = True

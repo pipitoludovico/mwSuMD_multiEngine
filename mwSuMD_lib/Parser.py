@@ -238,8 +238,7 @@ class mwInputParser:
                                 "One of your selection pointed to 0 atoms: please check your selection with your structure file")
         # cleaning Universe as the check is completed
         del u
-        if self.initialParameters['NumberCV'] == 2 and (
-                not self.initialParameters.get('Metric_1') or not self.initialParameters.get('Metric_2')):
+        if self.initialParameters['NumberCV'] == 2 and (not self.initialParameters.get('Metric_1') or not self.initialParameters.get('Metric_2')):
             raise ValueError('Make sure to select both Metric 1 and 2 if NumberCV = 2!')
 
         if not self.initialParameters.get('Metric_1') and not self.initialParameters.get('Metric_2'):

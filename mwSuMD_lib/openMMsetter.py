@@ -1,16 +1,14 @@
 import os
 
 import numpy as np
-from sys import argv
-
-if "openmm" in argv:
-    try:
-        from openmm import XmlSerializer, LangevinIntegrator, Platform
-        import openmm.app as app
-        from openmm.unit import *
-    except:
-        pass
 import pkg_resources
+
+from openmm import *
+from openmm.app import *
+import openmm as mm
+from openmm import XmlSerializer, LangevinIntegrator, Platform
+import openmm.app as app
+from openmm.unit import *
 
 
 class openMMsetter:
@@ -39,14 +37,13 @@ class openMMsetter:
 
         if self.initialParameters.get('Relax') is True:
             self.initialParameters['Timewindow'] = int(self.initialParameters['RelaxTime'] * 1000)
-            number_of_steps = int(
-                (self.initialParameters['RelaxTime'] * 1000) / (self.initialParameters['Timestep'] / 1000))
+            number_of_steps = int((self.initialParameters['RelaxTime'] * 1000) / (self.initialParameters['Timestep'] / 1000))
 
         os.makedirs(folder_path, exist_ok=True)
         os.chdir(folder_path)
         p_top, charmm, params = None, None, None
-
         if self.initialParameters['Forcefield'] == 'GROMOS':
+            gro = app.GromacsGroFile(f"{self.initialParameters['Root']}/system/{self.initialParameters['GRO']}")
             p_top = app.GromacsTopFile(f"{self.initialParameters['Root']}/system/{self.initialParameters['TOP']}",
                                        periodicBoxVectors=gro.getPeriodicBoxVectors(),
                                        includeDir='/usr/local/gromacs/share/gromacs/top')
@@ -61,7 +58,10 @@ class openMMsetter:
             x, y, z = boxLength[0], boxLength[1], boxLength[2]
             p_top.setBox(x * nanometers, y * nanometers, z * nanometers)
             defaultParams = sorted(list(self.initialParameters['Parameters']))
-            params = app.CharmmParameterSet(*defaultParams)
+            try:
+                params = app.CharmmParameterSet(*defaultParams)
+            except Exception as e:
+                print(repr(e))
 
         if self.initialParameters['Forcefield'] == 'AMBER':
             p_top = app.AmberPrmtopFile(f"{self.initialParameters['Root']}/system/{self.initialParameters['PRMTOP']}")
@@ -73,6 +73,9 @@ class openMMsetter:
             system = p_top.createSystem(nonbondedMethod=app.PME, nonbondedCutoff=0.9 * nanometer,
                                         switchDistance=0.75 * nanometer, constraints=app.HBonds, rigidWater=True,
                                         hydrogenMass=4 * amu)
+        for f in system.getForces():
+            if isinstance(f, mm.MonteCarloBarostat):
+                f.setFrequency(0)
         sim = app.Simulation(p_top.topology, system, integrator, platform, properties)
 
         def CheckPlumed():
@@ -94,13 +97,18 @@ class openMMsetter:
                     os.system(f"cp ../../restarts/{file} .")
         CheckPlumed()
 
+        p = sim.context.getParameters()
+        for k in p:
+            if k == "k":
+                sim.context.setParameter('k', 0)
+                sim.context.reinitialize(True)
+
         if self.trajCount == 0:  # if we start from 0 we check in system
             xmlPATH = [os.path.abspath(os.path.join(self.initialParameters['Root'], "system", file)) for file in
                        os.listdir(os.path.join(self.initialParameters['Root'], "system")) if file.endswith(".xml")][0]
         else:
             xmlPATH = [os.path.abspath(os.path.join(self.initialParameters['Root'], "system", file)) for file in
                        os.listdir(os.path.join(self.initialParameters['Root'], "system")) if file.endswith(".xml")][0]
-
         sim.loadState(xmlPATH)
         total_steps = int(number_of_steps)
         sim.reporters.append(

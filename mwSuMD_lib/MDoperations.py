@@ -21,7 +21,8 @@ class MDoperator:
         self.par = par
         self.folder = root
         self.extensions = ('.coor', '.xsc', '.vel', '.gro', '.cpt', '.tpr', '.chk', '.xml')
-        self.cycle = len([trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
+        self.cycle = len(
+            [trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
         self.best_metric_result = None
         self.best_average_metric_2 = None
         self.best_average_metric_1 = None
@@ -194,7 +195,8 @@ class MDoperator:
         # we then extract the best metric/score and store it as a reference
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
-        MDoperator(self.par, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score, self.best_metric_result)
+        MDoperator(self.par, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score,
+                                                                self.best_metric_result)
 
         Logger.LogToFile('ad', self.cycle, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.cycle += 1
