@@ -163,7 +163,7 @@ class Template(mwInputParser):
                               'tcoupl                  = V-rescale             ; modified Berendsen thermostat\n',
                               'tc-grps                 = Protein Non-Protein   ; two coupling groups - more accurate\n',
                               'tau_t                   = 0.1     0.1           ; time constant, in ps\n',
-                              'ref_t\t= %s     %s ; reference temperature, one for each group, in K%s\n' % self.initialParameters.get('Temperature'), self.initialParameters.get('Temperature'),
+                              'ref_t\t= %s     ; reference temperature, one for each group, in K%s\n' % (self.initialParameters.get('Temperature'), self.initialParameters.get('Temperature')),
                               '; Pressure coupling is on\n',
                               'pcoupl                  = Parrinello-Rahman     ; Pressure coupling on in NPT\n',
                               'pcoupltype              = isotropic             ; uniform scaling of box vectors\n',

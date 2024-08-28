@@ -33,7 +33,6 @@ class ArgParser:
             import os
             Logger.LogToFile('ad', "", "\nProcess terminated by user.")
             os.system('val=$(<.mypid ) && kill -15 -$val')
-            exit()
 
         if args.join is not None:
             from mwSuMD_lib import Merger

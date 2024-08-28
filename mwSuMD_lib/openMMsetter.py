@@ -63,7 +63,6 @@ class openMMsetter:
                 params = app.CharmmParameterSet(*defaultParams)
             except Exception as e:
                 print(repr(e))
-
         if self.initialParameters['Forcefield'] == 'AMBER':
             p_top = app.AmberPrmtopFile(f"{self.initialParameters['Root']}/system/{self.initialParameters['PRMTOP']}")
         if charmm:
@@ -74,9 +73,15 @@ class openMMsetter:
             system = p_top.createSystem(nonbondedMethod=app.PME, nonbondedCutoff=0.9 * nanometer,
                                         switchDistance=0.75 * nanometer, constraints=app.HBonds, rigidWater=True,
                                         hydrogenMass=4 * amu)
-        for f in system.getForces():
-            if isinstance(f, mm.MonteCarloBarostat):
-                f.setFrequency(0)
+
+        system.addForce(mm.MonteCarloBarostat((1 * bar), (310 * kelvin)))
+        restraint = mm.CustomExternalForce('k*periodicdistance(x, y, z, x0, y0, z0)^2')
+        restraint.addGlobalParameter('k', 0.0 * kilojoules_per_mole / nanometer)
+        restraint.addGlobalParameter('t0', 0.0 * picoseconds)
+        restraint.addPerParticleParameter('x0')
+        restraint.addPerParticleParameter('y0')
+        restraint.addPerParticleParameter('z0')
+        system.addForce(restraint)
         sim = app.Simulation(p_top.topology, system, integrator, platform, properties)
 
         def CheckPlumed():
@@ -98,40 +103,38 @@ class openMMsetter:
                     os.system(f"cp ../../restarts/{file} .")
         CheckPlumed()
 
+        if self.trajCount == 0:  # if we start from 0 we check in system
+            xmlPATH = [os.path.abspath(os.path.join(self.initialParameters['Root'], "system", file)) for file in os.listdir(os.path.join(self.initialParameters['Root'], "system")) if file.endswith(".xml")][0]
+        else:
+            xmlPATH = [os.path.abspath(os.path.join(self.initialParameters['Root'], "restarts", file)) for file in os.listdir(os.path.join(self.initialParameters['Root'], "restarts")) if file.endswith(".xml")][0]
+        try:
+            sim.loadState(xmlPATH)
+        except Exception as e:
+            print(repr(e))
         p = sim.context.getParameters()
+        sim.context.setParameter('k', 0)  # safety measure
+        sim.context.reinitialize(True)
+
+        for f in system.getForces():
+            if isinstance(f, mm.MonteCarloBarostat):
+                f.setFrequency(0)
         for k in p:
             if k == "k":
                 sim.context.setParameter('k', 0)
                 sim.context.reinitialize(True)
 
-        if self.trajCount == 0:  # if we start from 0 we check in system
-            xmlPATH = [os.path.abspath(os.path.join(self.initialParameters['Root'], "system", file)) for file in
-                       os.listdir(os.path.join(self.initialParameters['Root'], "system")) if file.endswith(".xml")][0]
-        else:
-            xmlPATH = [os.path.abspath(os.path.join(self.initialParameters['Root'], "system", file)) for file in
-                       os.listdir(os.path.join(self.initialParameters['Root'], "system")) if file.endswith(".xml")][0]
-        sim.loadState(xmlPATH)
         total_steps = int(number_of_steps)
-        sim.reporters.append(
-            app.StateDataReporter(f"{self.initialParameters['Root']}/{folder_path}/openMM_{walker_folder}.log",
-                                  saveFreq, step=True, totalSteps=total_steps, remainingTime=True, potentialEnergy=True,
-                                  temperature=True))
+        sim.reporters.append(app.StateDataReporter(f"{self.initialParameters['Root']}/{folder_path}/openMM_{walker_folder}.log", saveFreq, step=True, totalSteps=total_steps, remainingTime=True, potentialEnergy=True, temperature=True))
         try:
-            sim.reporters.append(app.XTCReporter(
-                f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.xtc",
-                saveFreq, enforcePeriodicBox=True))
+            sim.reporters.append(app.XTCReporter(f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.xtc", saveFreq, enforcePeriodicBox=True))
         except Exception as e:
             print(repr(e))
             print('Using DCD reported instead of the new XTC reporter')
-            sim.reporters.append(app.DCDReporter(
-                f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.dcd",
-                saveFreq, enforcePeriodicBox=True))
-        sim.reporters.append(app.CheckpointReporter(
-            f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.chk",
-            saveFreq))
+            sim.reporters.append(app.DCDReporter(f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.dcd", saveFreq, enforcePeriodicBox=True))
+        sim.reporters.append(app.CheckpointReporter(f"{self.initialParameters['Root']}/{folder_path}/{self.initialParameters['Output']}_{walker_folder}.chk", saveFreq))
         sim.step(number_of_steps)
 
-        final_state = sim.context.getState(getPositions=True, getVelocities=True, enforcePeriodicBox=True)
+        final_state = sim.context.getState(getPositions=True, getVelocities=True, enforcePeriodicBox=True, getParameters=True)
         with open(f'final_state.xml', 'w') as output:
             output.write(XmlSerializer.serialize(final_state))
         sim.reporters.clear()

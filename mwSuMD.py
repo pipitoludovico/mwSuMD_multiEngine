@@ -9,9 +9,7 @@ from mwSuMD_lib import GPUoperations
 from mwSuMD_lib import ArgParser
 from mwSuMD_lib import Loggers
 
-parser = ArgParser.ArgParser()
-openMM = parser.argumentParser()
-GPUoperations.ProcessManager()
+
 Loggers.Logger.LogToFile('ad', '',
                          "If you want to use your personal setting for simulating, please, place it the system folder, call it \n "
                          "production.inp/namd/mdp (according to your engine) and mwSuMD will use that instead of the default file. \n"
@@ -19,6 +17,9 @@ Loggers.Logger.LogToFile('ad', '',
 
 
 def main():
+    parser = ArgParser.ArgParser()
+    openMM = parser.argumentParser()
+    GPUoperations.ProcessManager()
     from mwSuMD_lib import SuMD
     print("\nRunning mwSuMD")
     multiSumd = SuMD.suMD1(openMM)
