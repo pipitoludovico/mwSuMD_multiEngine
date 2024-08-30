@@ -11,6 +11,10 @@ class Template(mwInputParser):
         super(mwInputParser, self).__init__()
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.root = self.initialParameters['Root']
+        if self.trajCount == 0:
+            self.sys_folder = "../../system"
+        else:
+            self.sys_folder = "../../restarts"
 
         if self.initialParameters['MDEngine'] == 'ACEMD':
             self.inputFile = [
@@ -36,22 +40,18 @@ class Template(mwInputParser):
                 'trajectoryFile          %s_%s.xtc\n' % (self.initialParameters.get('Output'), str(self.trajCount)),
                 'trajectoryPeriod               %s\n' % int(
                     (self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep')) * 10 ** 3)),
-                f'binCoordinates          ../../system/%s\n' % self.initialParameters.get('coor'),
-                f'extendedSystem          ../../system/%s\n' % self.initialParameters.get('xsc'),
-                'binVelocities           ../../system/%s\n' % self.initialParameters.get('vel')]
+                f'binCoordinates          %s/%s\n' % (self.sys_folder, self.initialParameters.get('coor')),
+                f'extendedSystem          %s/%s\n' % (self.sys_folder, self.initialParameters.get('xsc')),
+                'binVelocities           %s/%s\n' % (self.sys_folder, self.initialParameters.get('vel'))]
 
         if self.initialParameters['MDEngine'] == 'NAMD':
-            if self.trajCount == 0:
-                sys_folder = "../../system/"
-            else:
-                sys_folder = "../../restarts/"
             self.inputFile = ['structure               ../../system/%s\n' % self.initialParameters.get('PSF'),
                               'coordinates             ../../system/%s\n' % self.initialParameters.get('PDB'),
                               'outputname              %s\n' % self.initialParameters.get('Output'),
-                              'binCoordinates\t%s/%s\n' % (sys_folder, self.initialParameters.get("coor")),
-                              f'binVelocities\t%s/%s\n' % (sys_folder, self.initialParameters.get("vel")),
-                              f'extendedSystem\t%s/%s\n' % (sys_folder, self.initialParameters.get("xsc")),
-                              f'set xscfile [open %s/%s]\n' % (sys_folder, self.initialParameters.get("xsc")),
+                              'binCoordinates\t%s/%s\n' % (self.sys_folder, self.initialParameters.get("coor")),
+                              f'binVelocities\t%s/%s\n' % (self.sys_folder, self.initialParameters.get("vel")),
+                              f'extendedSystem\t%s/%s\n' % (self.sys_folder, self.initialParameters.get("xsc")),
+                              f'set xscfile [open %s/%s]\n' % (self.sys_folder, self.initialParameters.get("xsc")),
                               "plumed on\n" if self.initialParameters.get("PLUMED") is not None else "\n",
                               "plumedfile\t%s\n" % self.initialParameters.get("PLUMED") if self.initialParameters.get(
                                   'PLUMED') is not None else "\n",
@@ -64,7 +64,7 @@ class Template(mwInputParser):
                               '  close $fd\n',
                               '  return $ts\n',
                               '}\n',
-                              f'set firsttime [get_first_ts %s{self.initialParameters.get("xsc")}]\n' % sys_folder,
+                              f'set firsttime [get_first_ts %s{self.initialParameters.get("xsc")}]\n' % self.sys_folder,
                               'firsttimestep\t$firsttime\n',
                               'set temp\t%s;' % self.initialParameters.get('Temperature'),
                               'outputEnergies %s\n' % int(self.initialParameters.get("Savefreq") / (
