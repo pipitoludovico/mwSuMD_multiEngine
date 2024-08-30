@@ -74,7 +74,6 @@ class openMMsetter:
                                         switchDistance=0.75 * nanometer, constraints=app.HBonds, rigidWater=True,
                                         hydrogenMass=4 * amu)
 
-        system.addForce(mm.MonteCarloBarostat((1 * bar), (310 * kelvin)))
         restraint = mm.CustomExternalForce('k*periodicdistance(x, y, z, x0, y0, z0)^2')
         restraint.addGlobalParameter('k', 0.0 * kilojoules_per_mole / nanometer)
         restraint.addGlobalParameter('t0', 0.0 * picoseconds)
@@ -112,8 +111,6 @@ class openMMsetter:
         except Exception as e:
             print(repr(e))
         p = sim.context.getParameters()
-        sim.context.setParameter('k', 0)  # safety measure
-        sim.context.reinitialize(True)
 
         for f in system.getForces():
             if isinstance(f, mm.MonteCarloBarostat):
