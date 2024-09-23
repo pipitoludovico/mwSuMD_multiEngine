@@ -134,7 +134,7 @@ class Runner(mwInputParser):
             if not self.initialParameters.get('NOGPU'):
                 gpuCall = f'--device {GPU}'
             else:
-                gpuCall = ''
+                gpuCall = '--platfrom CPU'
             # standard call: no custom file, no custom command
             if customFile is None and self.initialParameters['COMMAND'] is None:
                 command = f'acemd {gpuCall} input_{walk_count}_{trajCount}.inp > acemd.log'
