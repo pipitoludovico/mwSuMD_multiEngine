@@ -24,11 +24,12 @@ class openMMsetter:
             self.parameterFolderPath = os.path.abspath('parameters')
 
     def runOPENMM(self, walker_folder, gpu, folder_path):
+
         self.timeWindow = self.initialParameters['Timewindow']
         number_of_steps = (int(self.initialParameters['Timewindow'] / (self.initialParameters['Timestep'] / 1000)))
         saveFreq = (int(self.initialParameters['Savefreq'] / (self.initialParameters['Timestep'] / 1000)))
         ts = float(self.initialParameters.get('Timestep') / 1000)
-        temperature = self.initialParameters.get('Temperature')
+        temperature = self.initialParameters.get('Temperature', 310)
         integrator = LangevinIntegrator(temperature * kelvin, 1 / picosecond, ts * picoseconds)
         platform = Platform.getPlatformByName('CUDA')
         if not self.initialParameters['NOGPU']:
@@ -43,6 +44,7 @@ class openMMsetter:
         os.makedirs(folder_path, exist_ok=True)
         os.chdir(folder_path)
         p_top, charmm, params = None, None, None
+
         if self.initialParameters['Forcefield'] == 'GROMOS':
             gro = app.GromacsGroFile(f"{self.initialParameters['Root']}/system/{self.initialParameters['GRO']}")
             p_top = app.GromacsTopFile(f"{self.initialParameters['Root']}/system/{self.initialParameters['TOP']}",

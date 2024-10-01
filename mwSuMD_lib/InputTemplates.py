@@ -64,9 +64,9 @@ class Template(mwInputParser):
                               '  close $fd\n',
                               '  return $ts\n',
                               '}\n',
-                              f'set firsttime [get_first_ts %s{self.initialParameters.get("xsc")}]\n' % self.sys_folder,
+                              f'set firsttime [get_first_ts %s/{self.initialParameters.get("xsc")}]\n' % self.sys_folder,
                               'firsttimestep\t$firsttime\n',
-                              'set temp\t%s;' % self.initialParameters.get('Temperature'),
+                              'set temp\t%s;\n' % self.initialParameters.get('Temperature'),
                               'outputEnergies %s\n' % int(self.initialParameters.get("Savefreq") / (
                                           self.initialParameters.get('Timestep') / 10 ** 3)),
                               'dcdfreq\t%s;\t\n' % int(self.initialParameters.get("Savefreq") / (
