@@ -127,6 +127,19 @@ HT    HT      0.0       1.5139  ! from TIPS3P geometry (for SHAKE w/PARAM)
 HT    OT    450.0       0.9572  ! from TIPS3P geometry
 OX    HX    545.0       0.9700  ! hydroxide ion
 
+!For BAL and B3Y
+!CTA1  HA2  309.00     1.1110 ! PROT alkane update, adm jr., 3/2/92
+
+
+! For XPC (ACPC)
+CTA1 CTA1  195.00     1.5180 ! THF, nucleotide CSD/NDB survey, 5/30/06,viv
+CTA1 CT2  195.00     1.5180 ! THF, nucleotide CSD/NDB survey, 5/30/06,viv
+CTA1 NH1   345.02     1.4358 ! SUI, by ac_aa
+CTA1 HB1    307.00     1.1000 ! THF, THF neutron diffr., 5/30/06, viv
+!CT2 CT2  195.00     1.5300 ! THF, nucleotide CSD/NDB survey, 5/30/06,viv; increased to 1.53 by kevo
+!CT2 HA2    307.00     1.1000 ! THF, THF neutron diffr., 5/30/06, viv
+CTA1  C     250.000     1.4900 !
+
 !
 !Ferom SEM
 CT2  NG2S1   320.00     1.4300 ! PROT NMA Gas & Liquid Phase IR Spectra (LK)
@@ -534,6 +547,50 @@ ANGLES
 !atom types     Ktheta    Theta0   Kub     S0
 !
 HT   OT   HT     55.0      104.52   ! FROM TIPS3P GEOMETRY
+
+!FOr BAL and B3Y
+NH1 CTA1  HA2      48.00    108.00 ! PROT Alanine Dipeptide ab initio calc's (LK)2
+CT2  CTA1  CT2     58.35    113.50   11.16   2.56100 ! LIPID glycerol
+CA   CT2  CTA1     51.80    107.50 ! PROT PARALLH19 (JES)
+
+
+! For XCP (ACPC)
+
+!C  CTA1 CTA1   52.00    112.30 ! tripepti , from C CTA1 CT2, PENALTY= 0.4
+C  CTA1 CTA1    162.0106   112.3131
+
+
+CTA1 CTA1 CT2   58.00    109.50   11.16   2.56100 ! THF, nucleotide CSD/NDB survey, 05/30/06, viv
+
+!CTA1 CTA1 NH1    70.00    110.80 ! tripepti , from CT2 CTA1 NH1, PENALTY= 0.4
+CTA1 CTA1 NH1  70.8686    112.0728
+
+
+CTA1 CTA1 HB1     35.00    111.40   22.53   2.17900 ! TF2M, viv
+
+!CT2 CTA1 NH1    70.00    110.80 ! from CT2 CTA1 NG2S0, penalty= 2 SUI
+CT2 CTA1 NH1     104.6344 114.3342
+
+CT2 CTA1 HB1     35.00    111.40   22.53   2.17900 ! TF2M, viv
+NH1  CTA1 HB1     48.00    112.00 ! from NG2S0 CTA1 HB1, PENALTY= 2 SUI
+CTA1 CT2 CT2   58.00    109.50   11.16   2.56100 ! THF, nucleotide CSD/NDB survey, 05/30/06, viv
+CTA1 CT2 HA2     35.00    111.40   22.53   2.17900 ! TF2M, viv
+!CT2 CT2 CT2   58.00    109.50   11.16   2.56100 ! THF, nucleotide CSD/NDB survey, 05/30/06, viv
+!CT2 CT2 HA2     35.00    111.40   22.53   2.17900 ! TF2M, viv
+!HA2   CT2 HA2     38.50    106.80    5.40   1.80200 ! THF, 10/17/05 viv
+C  NH1  CTA1   50.00    120.00 ! from C NH1 CG321, penalty= 10 SUI
+CTA1 NH1  H     35.00    117.00 ! from CG321 NH1 H, PENALTY= 10 SUI
+O    C    CTA1    80.000   121.0000 ! ALLOW   ALI PEP POL ARO
+NH1  C    CTA1    80.000   116.5000 ! ALLOW   ALI PEP POL ARO
+
+HB1  CTA1  C      50.000   109.5000 ! ALLOW  PEP
+CTA1  CT2  C      52.000   108.0000 ! DKAM, from CT1  CT2  CC , kevo
+CT2  CTA1  C      52.000   108.0000 ! ALLOW   ALI PEP POL ARO
+
+
+!From O-Benzyl-L-tyrosine
+CA CT2  OH1    75.70    110.10 ! filtered , from CA CT2 OG302, PENALTY= 0.5
+CA OH1  CT2    65.00    108.00 ! ETOB, Ethoxybenzene, cacha
 
 !From SEM
 CG2O1  CG321  OG301    45.00    109.00 ! WF1.pd , from CG2O3 CG311 OG301, PENALTY= 17.5
@@ -1685,6 +1742,95 @@ DIHEDRALS
 !
 !atom types             Kchi    n   delta
 !
+
+!FOr BAL and B3Y
+NH1  CTA1  CT2  CA    0.2000  3     0.00 ! PROT alkane update, adm jr., 3/2/92
+NH1  CTA1  CT2  C     0.2000  3     0.00 ! PROT alkane update, adm jr., 3/2/92
+CT2  CTA1  CT2  HA2   0.1950  1     0.00 ! NA, sugar
+CT2  CTA1  CT2  CA    0.0400  3     0.00 ! from CG331 CG311 CG321 CG2R61, PENALTY= 0.9 B3Y
+CTA1  CT2  C  O       0.0500  6   180.00 ! PROT For side chains of asp,asn,glu,gln, (n=6) from KK(LK)
+
+!CTA1  CT2  C NH1      0.0000  1     0.00 ! from NG2S1 CG2O1 CG321 CG321, PENALTY= 0.6 KHB
+CTA1  CT2  C NH1      2.401 1 180.00
+CTA1  CT2  C NH1      1.553 2 180.00
+CTA1  CT2  C NH1      0.249 6 0.00
+
+HB1  CTA1  CT2 CA     0.0400  3     0.00 ! PROT 2.7 kcal/mole CH3 rot in ethylbenzene, adm jr, 3/7/92
+HB1  CTA1  CT2 C      0.2000  3     0.00 ! PROT alkane update, adm jr., 3/2/92
+CT2  CTA1  CT2  C     0.2000  3     0.00 ! from CG2O1 CG311 CG311 CG321, PENALTY= 4 HT7 HMR B3X B3Y B3K B3E
+
+
+!For CXP (ACPC)
+NH1  C  CTA1 CTA1     0.4000  1     0.00 ! tripepti , from NH1 C CTA1 CT2, PENALTY= 0.4
+NH1  C  CTA1 CTA1     0.6000  2     0.00 ! tripepti , from NH1 C CTA1 CT2, PENALTY= 0.4
+!NH1  C  CTA1 CTA1	0.1660   1  180.00
+!NH1  C  CTA1 CTA1	0.0560   2  180.00
+
+O  C  CTA1 CTA1     0.4000  1   180.00 ! tripepti , from O C CTA1 CT2, PENALTY= 0.4
+O  C  CTA1 CTA1     0.6000  2     0.00 ! tripepti , from O C CTA1 CT2, PENALTY= 0.4
+!O  C  CTA1 CTA1		2.9260   1  180.00
+!O  C  CTA1 CTA1		1.8920   2  0.00
+!O  C  CTA1 CTA1		0.2720   4  0.00
+!O  C  CTA1 CTA1		0.4640   6  0.00
+
+O  C  NH1  CTA1     2.5000  2   180.00 ! from O C NH1 CG321, penalty= 10 SUI
+C  CTA1 CTA1 CT2     0.1400  3     0.00 ! tripepti , from C CTA1 CT2 CT2, PENALTY= 4
+
+!C  CTA1 CTA1 NH1      3.4478  3     0.00 ! tripepti , from NH1 CTA1 CT2 CG2R53, PENALTY= 53.5
+C  CTA1 CTA1 NH1	2.749  3   0.00
+C  CTA1 CTA1 NH1	0.177  2   180.00
+C  CTA1 CTA1 NH1        3.787  1  180.00
+ 
+C  CTA1 CTA1 HB1       0.1400  3     0.00 ! tripepti , from C CTA1 CT2 HA2, PENALTY= 4
+CT2 CTA1 CTA1 CT2     0.4100  3   180.00 ! cpen, cyclopentane, viv 10/4/05
+CT2 CTA1 CTA1 NH1      0.0000  3     0.00 ! tripepti , from CTA1 CTA1 CTA1 NG2R61, PENALTY= 5.4
+CT2 CTA1 CTA1 HB1       0.1900  3     0.00 ! alkane, 4/98, yin and mackerell, thf, viv
+NH1  CTA1 CTA1 HB1       0.1400  3     0.00 ! tripepti , from NH1 CTA1 CT2 HA2, PENALTY= 4
+HB1   CTA1 CTA1 HB1       0.1900  3     0.00 ! alkane, 4/98, yin and mackerell, thf, viv
+CTA1 CTA1 CT2 CT2     0.4100  3   180.00 ! cpen, cyclopentane, viv 10/4/05
+CTA1 CTA1 CT2 HA2       0.1900  3     0.00 ! alkane, 4/98, yin and mackerell, thf, viv
+NH1  CTA1 CT2 CT2     0.1400  3     0.00 ! tripepti , from NG2S0 CTA1 CT2 CT2, PENALTY= 2
+NH1  CTA1 CT2 HA2       0.1400  3     0.00 ! from NG2S0 CTA1 CT2 HA2, penalty= 2 SUI
+HB1   CTA1 CT2 CT2     0.1900  3     0.00 ! alkane, 4/98, yin and mackerell, thf, viv
+HB1   CTA1 CT2 HA2       0.1900  3     0.00 ! alkane, 4/98, yin and mackerell, thf, viv
+
+CTA1 CTA1 NH1  C      1.6342  3     0.00 ! tripepti , from CT2 CTA1 NH1 C, PENALTY= 0.4
+!CTA1 CTA1 NH1  C	0.0570   4  180.00
+!CTA1 CTA1 NH1  C	0.6320   3  0.00
+!CTA1 CTA1 NH1  C	3.6450   1  0.00
+
+CTA1 CTA1 NH1  H       0.6160  1     0.00 ! tripepti , from CT2 CTA1 NH1 H, PENALTY= 0.4
+CT2 CTA1 NH1  C      1.6342  3     0.00 ! SUI, by ac_aa
+CT2 CTA1 NH1  H       0.6160  1     0.00 ! SUI, by ac_aa
+HB1   CTA1 NH1  C      2.0387  3   180.00 ! SUI, by ac_aa
+HB1   CTA1 NH1  H       0.2725  3     0.00 ! SUI, by ac_aa
+CTA1 CT2 CT2 CT2     0.4100  3   180.00 ! cpen, cyclopentane, viv 10/4/05
+CTA1 CT2 CT2 HA2       0.1900  3     0.00 ! alkane, 4/98, yin and mackerell, thf, viv
+CT2 CT2 CT2 HA2       0.1900  3     0.00 ! alkane, 4/98, yin and mackerell, thf, viv
+HA2   CT2 CT2 HA2       0.1900  3     0.00 ! alkane, 4/98, yin and mackerell, thf, viv
+CT1  C    NH1  CTA1      1.6000  1     0.00 !  ALLOW PEP
+CT1  C    NH1  CTA1      2.5000  2   180.00 !  ALLOW PEP
+H    NH1  C    CTA1      2.5000  2   180.00 !  ALLOW PEP
+CT1  C    NH1  CT1      1.6000  1     0.00 !  ALLOW PEP
+CTA1  C    NH1  CT1      2.5000  2   180.00 !  ALLOW PEP
+NH1  C    CTA1  HB1      0.0000  1     0.00 !   ALLOW PEP
+O    C    CTA1  HB1      0.0000  1     0.00 !   ALLOW PEP
+C    CTA1  CT2  CT2      0.3500  1   180.00 
+C    CTA1  CT2  CT2      0.4200  2   180.00 
+C    CTA1  CT2  CT2      1.9100  3   180.00 
+NH1  C    CTA1  CT2      0.0000  1     0.00 !   ALLOW PEP
+O    C    CTA1  CT2      1.4000  1     0.00
+HA2  CT2  CTA1  C        0.2000  3     0.00
+
+
+
+!From O-Benzyl-L-tyrosine
+CA CA CT2  OH1      0.0000  2     0.00 ! filtered , from CA CA CT2 OG302, PENALTY= 0.5
+CA CA OH1  CT2      1.6200  2   180.00 ! ETOB, Ethoxybenzene, cacha
+CA CA OH1  CT2      0.1900  4   180.00 ! ETOB, Ethoxybenzene, cacha
+CA CT2  OH1  CA     0.9100  1   180.00 ! filtered , from CG2O2 CT2 OH1 CA, PENALTY= 28.5
+CA CT2  OH1  CA     0.5000  2     0.00 ! filtered , from CG2O2 CT2 OH1 CA, PENALTY= 28.5
+HA2   CT2  OH1  CA     0.0950  3     0.00 ! ETOB, Ethoxybenzene, cacha
 !From SEM
 NG2S1  CG2O1  CG321  OG301      0.4000  1     0.00 ! WF1.pd , from NG2S1 CG2O1 CG324 NG3P3, PENALTY= 40.9
 OG2D1  CG2O1  CG321  OG301      0.5500  2   180.00 ! WF1.pd , from OG2D2 CG2O3 CG311 OG301, PENALTY= 35
@@ -5331,6 +5477,11 @@ NONBONDED nbxmod  5 atom cdiel fshift vatom vdistance vfswitch -
 !
 HT       0.0       -0.046     0.2245
 OT       0.0       -0.1521    1.7682
+
+! For XCP
+CTA1   0.0       -0.0360     2.0100   0.0 -0.01 1.9 ! extrapolation based on CG311, CG321 and CG3C52, kevo
+CT2    0.0       -0.0600     2.0200   0.0 -0.01 1.9 ! CPEN, cyclopentane, 8/06 viv
+
 
 ! from BPB
 OG301   0.0       -0.1000     1.6500 ! ether1   
