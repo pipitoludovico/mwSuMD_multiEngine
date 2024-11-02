@@ -1,8 +1,8 @@
 import os
 from warnings import filterwarnings
-from .InputTemplates import Template
-from .Parser import mwInputParser
-from .Loggers import Logger
+from mwSuMD_lib.MDsetters.InputTemplates import Template
+from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
+from mwSuMD_lib.Utilities.Loggers import Logger
 
 filterwarnings(action='ignore')
 

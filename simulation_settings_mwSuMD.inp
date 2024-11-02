@@ -2,20 +2,23 @@
 Restart = NO
 ########################################################################
 ### Selection for wrapping (default "protein")
-Wrap = protein and name CA
+### You can use either MDAnalysis or VMD.
+### If you use VMD, you need to have mdconvert/mdtraj installed
+WrapEngine = VMD
+Wrap = protein or segid MEMB
 ########################################################################
 # Output name of the files
-Output = GLP1_binding_step_2
+Output = S25_A13
 # Temperature
 Temperature = 310
 # number of fails allowed [Default = 5]
-Fails = 2
+Fails = 10
 # # Tolerance to determine if a simulation is stuck [Default = 30]
 Tolerance = 20
 # Check every x steps [Default= based on RelaxTime]:
-CheckEvery = 20
+CheckEvery = 1000
 # Relaxation protocol time in case of stuck condition [Default = 5 ns]
-RelaxTime = 1
+RelaxTime = 10
 ########################################################################
 # Supervision on one or two metrics?
 NumberCV = 2
@@ -26,16 +29,16 @@ NumberCV = 2
 # The Cutoff is the value at which the simulation will stop once the metric has reached this number
 
 Metric_1 = Distance
-Sel_1 = segid PROA and resnum 8 or resnum 23
-Sel_2 = resname DMQ
-Cutoff_1 = 2
+Sel_1 = segid PROA and resid 193 and name OG
+Sel_2 = segid S and resid 85 and name C1
+Cutoff_1 = 4
 Transition_1 = negative
 
-Metric_2 =  RMSD
-Sel_3 = protein and name CA
-Sel_4 = noh resname DMQ
-Cutoff_2 = 2
-Transition_2 = negative
+Metric_2 = Distance
+Sel_3 = segid PROA and resid 132 to 142
+Sel_4 = segid PROA and resid 306 to 316
+Cutoff_2 = 20
+Transition_2 = positive
 
 # You can add plumed by creating a folder called "plumed" outside "system" where this input file is located
 # and placing your plumed.inp file in it.
@@ -46,7 +49,7 @@ Transition_2 = negative
 Walkers = 2
 
 # Each simulation length in ps
-Timewindow = 20
+Timewindow = 60
 # expressed in fs
 Timestep = 4
 # expressed in ps

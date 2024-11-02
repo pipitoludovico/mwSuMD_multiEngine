@@ -19,7 +19,7 @@ class mwInputParser:
         package_dir = pkg_resources.resource_filename('mwSuMD_lib', 'parameters')
         parameterFolderPath = os.path.abspath(package_dir)
     else:
-        parameterFolderPath = os.path.abspath('parameters')
+        parameterFolderPath = os.path.abspath('../parameters')
     new_value = 0
     max_value = 0
     metric_1 = 0
@@ -45,9 +45,14 @@ class mwInputParser:
 
     def checkEngine(self):
         self.getSystem()
-        self.initialParameters['MDEngine'] = 'GROMACS' if any(file.endswith('.gro') for file in os.listdir('./system')) else 'NAMD' if any(file.endswith('.namd') for file in os.listdir('./system')) else 'ACEMD' if any(file.endswith('.inp') for file in os.listdir("./system")) else "OPENMM" if any(file.endswith('.chk') for file in os.listdir("./system")) else None
+        self.initialParameters['MDEngine'] = 'GROMACS' if any(
+            file.endswith('.gro') for file in os.listdir('./system')) else 'NAMD' if any(
+            file.endswith('.namd') for file in os.listdir('./system')) else 'ACEMD' if any(
+            file.endswith('.inp') for file in os.listdir("./system")) else "OPENMM" if any(
+            file.endswith('.chk') for file in os.listdir("./system")) else None
         if not self.initialParameters['MDEngine']:
-            raise FileNotFoundError("No MD Engine detected. Make sure you kept your input setting's file in the system folder")
+            raise FileNotFoundError(
+                "No MD Engine detected. Make sure you kept your input setting's file in the system folder")
         if self.initialParameters.get('MDEngine') == 'GROMACS':
             if not any(file.endswith('tpr') for file in os.listdir('./system')):
                 try:
@@ -132,10 +137,12 @@ class mwInputParser:
             self.initialParameters['Relax'] = False
             self.initialParameters['CheckEvery'] = None
             self.initialParameters['Temperature'] = 310
-
+            self.initialParameters['WrapEngine'] = "MDA"
             for line in infile:
                 if line.startswith('#'):
                     continue
+                if line.startswith("WrapEngine"):
+                    self.initialParameters['WrapEngine'] = line.split("=")[1].strip()
                 if line.startswith('Temperature'):
                     self.initialParameters['Temperature'] = float(line.split('=')[1].strip())
 
@@ -243,7 +250,8 @@ class mwInputParser:
                                 "One of your selection pointed to 0 atoms: please check your selection with your structure file")
         # cleaning Universe as the check is completed
         del u
-        if self.initialParameters['NumberCV'] == 2 and (not self.initialParameters.get('Metric_1') or not self.initialParameters.get('Metric_2')):
+        if self.initialParameters['NumberCV'] == 2 and (
+                not self.initialParameters.get('Metric_1') or not self.initialParameters.get('Metric_2')):
             raise ValueError('Make sure to select both Metric 1 and 2 if NumberCV = 2!')
 
         if not self.initialParameters.get('Metric_1') and not self.initialParameters.get('Metric_2'):

@@ -1,7 +1,7 @@
 import os
 
 import GPUtil
-from .Loggers import Logger
+from mwSuMD_lib.Utilities.Loggers import Logger
 
 
 class ProcessManager:

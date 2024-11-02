@@ -1,14 +1,16 @@
 import os
 import subprocess
 from subprocess import DEVNULL
-from .MDoperations import MDoperator
-from .MDsettings import MDsetter
-from .Metrics import MetricsParser
-from .Parser import mwInputParser
-from .Runners import Runner
-from .GPUoperations import ProcessManager
-from .TrajectoryOperator import TrajectoryOperator
-from .Loggers import Logger
+from random import choice
+
+from mwSuMD_lib.MetricOperators.MDoperations import MDoperator
+from mwSuMD_lib.MDsetters.MDsettings import MDsetter
+from mwSuMD_lib.MetricOperators.Metrics import MetricsParser
+from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
+from mwSuMD_lib.Protocol.Runners import Runner
+from mwSuMD_lib.Utilities.GPUoperations import ProcessManager
+from mwSuMD_lib.MDutils.TrajectoryWrapper import TrajectoryOperator
+from mwSuMD_lib.Utilities.Loggers import Logger
 from warnings import filterwarnings
 
 filterwarnings(action='ignore')
@@ -26,7 +28,7 @@ class Checker(mwInputParser):
         self.scores = None
         self.best_value = None
         self.bestWalker = None
-        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
+        self.trajCount = len([trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
 
     def checkIfFailed(self, vals1=None, vals2=None, accumulatedFails=0):
         Logger.LogToFile("w", self.trajCount,
@@ -60,9 +62,8 @@ class Checker(mwInputParser):
             Logger.LogToFile('ad', self.trajCount, f"EXCLUDED GPU: {self.initialParameters['EXCLUDED_GPUS']}")
             for excluded in self.initialParameters['EXCLUDED_GPUS']:
                 GPUs.remove(excluded)
-        # strGPU = map(str, GPUs)
+        # strGPU = map(str, GPUs)  # gsd calls an error when using multiple GPUs. See https://github.com/openmm/openmm/issues/2535
         # jointGPUs = ','.join(strGPU)
-        from random import choice
         jointGPUs = choice(GPUs)
         # we create a special input file that has a longer runtime (5ns default or user-defined)
         MDsetter(self.initialParameters).createInputFile()
@@ -80,14 +81,18 @@ class Checker(mwInputParser):
                 command = f'gmx mdrun -deffnm {self.initialParameters["Output"]}_{self.trajCount} > relax.log 2>&1'
                 subprocess.Popen(command, shell=True, stdout=DEVNULL).wait()
         os.chdir(f'{self.folder}')
-        TrajectoryOperator().wrap(1)
+        if self.initialParameters['WrapEngine'] == 'MDA':
+            TrajectoryOperator().wrap(1)
+        else:
+            TrajectoryOperator().wrapVMD(1)
         # we then compute its metrics as a reference
         self.scores = MetricsParser().getChosenMetrics()
         # then the last coordinate is saved
         # we then extract the best metric/score and store it as a reference
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
-        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(1, self.best_walker_score, self.best_metric_result)
+        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(1, self.best_walker_score,
+                                                                              self.best_metric_result)
 
         Logger.LogToFile('ad', self.trajCount, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.trajCount += 1
@@ -103,7 +108,8 @@ class Checker(mwInputParser):
         # we then extract the best metric/score and store it as a reference
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
-        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score, self.best_metric_result)
+        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score,
+                                                                              self.best_metric_result)
 
         Logger.LogToFile('ad', self.trajCount, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.trajCount += 1

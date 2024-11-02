@@ -1,12 +1,12 @@
 import time
 import os
 
-from .MDoperations import MDoperator
-from .MDsettings import MDsetter
-from .Metrics import MetricsParser
-from .Parser import mwInputParser
+from mwSuMD_lib.MetricOperators.MDoperations import MDoperator
+from mwSuMD_lib.MDsetters.MDsettings import MDsetter
+from mwSuMD_lib.MetricOperators.Metrics import MetricsParser
+from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
 from .Runners import Runner
-from .Loggers import Logger
+from mwSuMD_lib.Utilities.Loggers import Logger
 from warnings import filterwarnings
 
 filterwarnings(action='ignore')

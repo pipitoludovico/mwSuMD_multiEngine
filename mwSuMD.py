@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
-import os.path
+import warnings
+from mwSuMD_lib.Utilities import GPUoperations, Loggers
+from mwSuMD_lib.Parsers import CLIparser
 
-if not os.path.exists('./system'):
-    print('\nPlease make your ./system folder with the equilibrated system files and outputs')
-    exit()
-
-from mwSuMD_lib import GPUoperations
-from mwSuMD_lib import ArgParser
-from mwSuMD_lib import Loggers
-
+warnings.filterwarnings('ignore')
 
 Loggers.Logger.LogToFile('ad', '',
                          "If you want to use your personal setting for simulating, please, place it the system folder, call it \n "
@@ -17,11 +12,10 @@ Loggers.Logger.LogToFile('ad', '',
 
 
 def main():
-    parser = ArgParser.ArgParser()
+    parser = CLIparser.ArgParser()
     openMM = parser.argumentParser()
     GPUoperations.ProcessManager()
-    from mwSuMD_lib import SuMD
-    print("\nRunning mwSuMD")
+    from mwSuMD_lib.Protocol import SuMD
     multiSumd = SuMD.suMD1(openMM)
     multiSumd.run_mwSuMD()
     exit()

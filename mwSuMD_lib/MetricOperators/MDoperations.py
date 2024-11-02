@@ -4,12 +4,12 @@ import subprocess
 import numpy as np
 from subprocess import DEVNULL
 from random import choice
-from .MDsettings import MDsetter
-from .Metrics import MetricsParser
-from .GPUoperations import ProcessManager
-from .Runners import Runner
-from .TrajectoryOperator import TrajectoryOperator
-from .Loggers import Logger
+from mwSuMD_lib.MDsetters.MDsettings import MDsetter
+from mwSuMD_lib.MetricOperators.Metrics import MetricsParser
+from mwSuMD_lib.Utilities.GPUoperations import ProcessManager
+from mwSuMD_lib.Protocol.Runners import Runner
+from mwSuMD_lib.MDutils.TrajectoryWrapper import TrajectoryOperator
+from mwSuMD_lib.Utilities.Loggers import Logger
 from warnings import filterwarnings
 
 filterwarnings(action='ignore')
@@ -32,11 +32,12 @@ class MDoperator:
         self.best_value = None
         self.bestWalker = None
         self.walker_metrics = []
+        self.info_to_write = ""
 
     def saveStep(self, best_walker, walker_score, best_metric_result):
         """Handles the restart files and the binary storage for OPENMM"""
         os.chdir('tmp/walker_%s' % str(best_walker))
-        check = [binary for binary in os.listdir("./") if binary.endswith(self.extensions)]
+        check = any(binary.endswith(self.extensions) for binary in os.listdir("./"))
         if check:
             self.cycle += 1
             os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
@@ -44,7 +45,6 @@ class MDoperator:
                 os.system(f'cp *.chk {self.folder}/restarts/previous.chk')
                 os.system(f'cp *.xml {self.folder}/restarts/previous.xml')
                 Logger.LogToFile('a', self.cycle, "FINISHED SAVING FRAMES")
-            # os.system(f'cp wrapped.xtc {self.folder}/trajectories/{self.par["Output"]}_step_{self.cycle}.xtc')
             else:
                 if self.par['MDEngine'] != 'GROMACS':
                     os.system(f'cp *.coor {self.folder}/restarts/previous.coor')
@@ -62,9 +62,9 @@ class MDoperator:
                             outFile = match.group(1)
                             Logger.LogToFile('ad', self.cycle, str(os.getcwd() + outFile))
                             os.system(f'cp {outFile} %s/restarts/' % self.folder)
-                for filename in os.listdir("./"):
+                for filename in os.listdir("../"):
                     if '.' not in filename:
-                        fullname = os.path.join("./", filename)
+                        fullname = os.path.join("../", filename)
                         os.system(f'cp {fullname}  %s/restarts/ ' % self.folder)
                     if filename.endswith(".dat"):
                         os.system(f'cp {filename} %s/restarts/' % self.folder)
@@ -75,25 +75,18 @@ class MDoperator:
                 walkerSummary.write(f"No binary produced. Simulation failed at cycle: {self.cycle}")
 
         os.chdir(self.folder)
-
         with open('walkerSummary.log', 'a') as walkerSummary:
             if self.par['NumberCV'] == 1:
                 if self.par['Relax'] and check:
-                    info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(
-                        round(walker_score, 3)) + " Metrics: " + str(
-                        best_metric_result) + "\n"
+                    self.info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(round(walker_score, 3)) + " Metrics: " + str(best_metric_result) + "\n"
                 if not self.par['Relax'] and check:
-                    info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Best Metric: " + str(
-                        round(walker_score, 3)) + " Last Metric: " + str(best_metric_result) + "\n"
+                    self.info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Best Metric: " + str(round(walker_score, 3)) + " Last Metric: " + str(best_metric_result) + "\n"
             if self.par['NumberCV'] == 2:
                 if self.par['Relax'] and check:
-                    info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(
-                        round(walker_score, 3)) + " Metrics: " + str(best_metric_result) + "\n"
+                    self.info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(round(walker_score, 3)) + " Metrics: " + str(best_metric_result) + "\n"
                 if not self.par['Relax'] and check:
-                    info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Score Result: " + str(
-                        round(walker_score, 3)) + " Last Metrics from best: " + str(best_metric_result) + "\n"
-            walkerSummary.write(info_to_write)
-
+                    self.info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Score Result: " + str(round(walker_score, 3)) + " Last Metrics from best: " + str(best_metric_result) + "\n"
+            walkerSummary.write(self.info_to_write)
         os.system('rm -r tmp')
         self.par['Relax'] = False
 
@@ -101,13 +94,9 @@ class MDoperator:
         gro = f'{self.par["Root"]}/system/{self.par["GRO"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.gro'
         cpt = f'{self.par["Root"]}/system/{self.par["CPT"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.cpt'
         if customFile is None:
-            command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp' \
-                      f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \
-                      f' -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr -maxwarn 3 > tpr_log.log 2>&1'
+            command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]} -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr -maxwarn 3 > tpr_log.log 2>&1'
         else:
-            command = f'gmx grompp -f production.mdp' \
-                      f' -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]}' \
-                      f' -o production.tpr -maxwarn 3 >tpr_log.log 2>&1'
+            command = f'gmx grompp -f production.mdp -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]} -o production.tpr -maxwarn 3 >tpr_log.log 2>&1'
 
         tprPreparation = subprocess.Popen(command, shell=True, stdout=DEVNULL)
         tprPreparation.wait()
@@ -171,7 +160,10 @@ class MDoperator:
                 command = f'gmx mdrun -deffnm {self.par["Output"]}_{self.cycle} > gromacs_run.log 2>&1'
                 subprocess.Popen(command, shell=True, stdout=DEVNULL).wait()
         os.chdir(f'{self.folder}')
-        TrajectoryOperator().wrap(1)
+        if self.par['WrapEngine'] == 'MDA':
+            TrajectoryOperator().wrap(1)
+        else:
+            TrajectoryOperator().wrapVMD(1)
         # we then compute its metrics as a reference
         self.scores = MetricsParser().getChosenMetrics()
         # then the last coordinate is saved

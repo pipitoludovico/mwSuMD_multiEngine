@@ -1,14 +1,17 @@
 import warnings
 import argparse
-from .Parser import mwInputParser
-from .Loggers import Logger
+from os import path
+from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
+from mwSuMD_lib.Utilities.Loggers import Logger
 
 warnings.filterwarnings(action='ignore')
 
 
 class ArgParser:
     def __init__(self):
-        pass
+        if not path.exists('./system'):
+            print('\nPlease make your ./system folder with the equilibrated system files and outputs')
+            exit()
 
     @staticmethod
     def argumentParser():
@@ -36,19 +39,10 @@ class ArgParser:
             exit()
 
         if args.join is not None:
-            from mwSuMD_lib import Merger
+            from mwSuMD_lib.MDutils import Merger
             merger = Merger.TrajMerger()
-            merger.loadTrajectories()
-            if len(args.join) == 1 and 'all' in args.join[0]:
-                merger.mergeAll()
-            elif len(args.join) == 1 and 'all' not in args.join:
-                merger.mergeFromToEnd(args.join[0])
-            elif len(args.join) == 2 and 'all' not in args.join:
-                merger.mergeFromTo(args.join[0], args.join[1])
-            else:
-                print(
-                    "Error: incorrect arguments for -j. -join needs 2 number to set the starting and ending steps to be merged")
-                exit()
+            merger.LoadParameters(args.join)
+            merger.Merge()
             exit()
 
         mwInputParser.initialParameters['COMMAND'] = None

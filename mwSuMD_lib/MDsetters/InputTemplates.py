@@ -1,6 +1,6 @@
 import os
 
-from .Parser import mwInputParser
+from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
 from warnings import filterwarnings
 
 filterwarnings(action='ignore')

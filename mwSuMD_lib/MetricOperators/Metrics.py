@@ -1,8 +1,8 @@
 import traceback
 
-from .Getters import *
-from .Loggers import Logger
-from .Parser import *
+from mwSuMD_lib.MetricOperators.Getters import *
+from mwSuMD_lib.Utilities.Loggers import Logger
+from mwSuMD_lib.Parsers.InputfileParser import *
 
 from signal import signal, SIGPIPE, SIG_DFL
 
@@ -28,15 +28,16 @@ class MetricsParser(mwInputParser):
             Logger.LogToFile('a', self.trajCount,
                              f"Relax mode: calculating metrics: {self.initialParameters['Relax']}, Walker set to relax: {self.initialParameters['Walkers']}")
         subprocesses = []
-        try:
-            for walker in range(1, self.initialParameters.get('Walkers') + 1):
+        for walker in range(1, self.initialParameters.get('Walkers') + 1):
+            try:
                 Logger.LogToFile('a', self.trajCount, f"Calculating metrics in walker #: {walker}")
                 subprocesses.append(self.calculateMetrics(walker, self.selection_list))
+            except FileNotFoundError:
+                Logger.LogToFile('a', self.trajCount, "\nMetric calculation failed. Check if all the simulations ended well.")
+                os.chdir(self.folder)
+                Logger.LogToFile('a', self.trajCount, f"\nAn error occurred in calculating the metrics. Check the simulations inside walker {walker}")
+                exit()
             self.initialParameters['Walkers'] = self.walkers_number_snapshot
-        except FileNotFoundError:
-            Logger.LogToFile('a', self.trajCount,
-                             "\nMetric calculation failed. Check if all the simulations ended well.")
-            exit()
 
     def calculateMetrics(self, walker, selection_list):
         os.chdir(f'tmp/walker_{walker}')
@@ -62,7 +63,8 @@ class MetricsParser(mwInputParser):
                     for idx, report_metric in enumerate([metric_1, metric_2]):
                         if report_metric in self.scores[walker]:
                             Logger(self.initialParameters['Root']).logData(idx, walker, report_metric,
-                                                                           self.scores[walker][report_metric]['allMetricValues'],
+                                                                           self.scores[walker][report_metric][
+                                                                               'allMetricValues'],
                                                                            np.mean(self.scores[walker][report_metric][
                                                                                        'allMetricValues']),
                                                                            self.scores[walker][report_metric][

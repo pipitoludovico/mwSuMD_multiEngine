@@ -1,10 +1,10 @@
 import os
 import pandas as pd
 
-from .Parser import mwInputParser
-from .Protocol import ProtocolRunner
-from .SimulationChecker import Checker
-from .Loggers import Logger
+from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
+from mwSuMD_lib.Protocol import ProtocolSelector
+from mwSuMD_lib.MDutils.SimulationChecker import Checker
+from mwSuMD_lib.Utilities.Loggers import Logger
 
 from warnings import filterwarnings
 
@@ -20,7 +20,7 @@ class suMD1(mwInputParser):
         super(mwInputParser, self).__init__()
         self.openMM = openMM
         self.checker = Checker(self.openMM)
-        self.ProtocolRunner = ProtocolRunner(self.openMM)
+        self.ProtocolRunner = ProtocolSelector.ProtocolRunner(self.openMM)
         self.scores = None
         self.output_to_check = 0
         self.checkVals_1 = []
@@ -73,7 +73,10 @@ class suMD1(mwInputParser):
                     self.UpdateCondition(x)
             except Exception as e:
                 print("Conditions changed: rerunning mwSuMD")
+
                 print(repr(e))
+                pars = mwInputParser()
+                self.parameters, self.selection_list, self.parameterFolderPath = pars.getSettings()
                 self.run_mwSuMD()
 
         if self.parameters['NumberCV'] == 2:
@@ -84,6 +87,8 @@ class suMD1(mwInputParser):
                     self.UpdateCondition()
             except Exception as e:
                 print("Conditions changed: rerunning mwSuMD")
+                pars = mwInputParser()
+                self.parameters, self.selection_list, self.parameterFolderPath = pars.getSettings()
                 print(repr(e))
                 self.run_mwSuMD()
         if not self.condition:

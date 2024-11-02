@@ -1,7 +1,7 @@
 import os
 
-from .EngineInputParser import EngineInputs
-from .Parser import mwInputParser
+from mwSuMD_lib.Parsers.EngineInputParser import EngineInputs
+from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
 from warnings import filterwarnings
 
 filterwarnings(action='ignore')

@@ -6,3 +6,4 @@ openmm
 pandas==2.0.3
 setuptools==70.0.1
 openmmplumed
+mdtraj

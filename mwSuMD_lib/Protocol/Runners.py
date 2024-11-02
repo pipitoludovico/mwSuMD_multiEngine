@@ -3,9 +3,9 @@ import concurrent.futures
 import subprocess
 from subprocess import DEVNULL
 import re
-from .GPUoperations import ProcessManager
-from .TrajectoryOperator import *
-from mwSuMD_lib.openMMsetter import *
+from mwSuMD_lib.Utilities.GPUoperations import ProcessManager
+from mwSuMD_lib.MDutils.TrajectoryWrapper import *
+from mwSuMD_lib.OpenMMbranch.openMMsetter import *
 
 from signal import signal, SIGPIPE, SIG_DFL
 from warnings import filterwarnings
@@ -34,8 +34,6 @@ class Runner(mwInputParser):
         self.runSimulation()
 
         Logger.LogToFile('ad', self.trajCount, "Wrapping results...")
-        trajOperator = TrajectoryOperator()
-
         for i in range(1, self.initialParameters['Walkers'] + 1):
             files = os.listdir(f"./tmp/walker_{i}")
             trajectory = next((file for file in files if file.endswith('.xtc') or file.endswith('dcd')), None)
@@ -46,7 +44,10 @@ class Runner(mwInputParser):
                 exit()
         try:
             for walker_wrap in range(1, self.par['Walkers'] + 1):
-                trajOperator.wrap(walker_wrap)
+                if self.par['WrapEngine'] == 'MDA':
+                    TrajectoryOperator().wrap(walker_wrap)
+                else:
+                    TrajectoryOperator().wrapVMD(walker_wrap)
         except Exception as e:
             print("Wrapping failed: ", e)
             exit()
@@ -104,7 +105,7 @@ class Runner(mwInputParser):
 
             for filename in os.listdir("../../restarts"):
                 if '.' not in filename:
-                    fullname = os.path.join("./", filename)
+                    fullname = os.path.join("../", filename)
                     plumedCopy += f'cp ../../restarts/{fullname} .;'
             if any(plumedFile.endswith(".dat") for plumedFile in os.listdir("../../restarts")):
                 plumedCopy += "cp ../../restarts/*.dat .;"
@@ -188,9 +189,13 @@ class Runner(mwInputParser):
 
         try:
             processes = []
+            if self.par['WrapEngine'] == 'MDA':
+                wrapcall = TrajectoryOperator().wrap
+            else:
+                wrapcall = TrajectoryOperator().wrapVMD
             with concurrent.futures.ProcessPoolExecutor() as executor:
                 for walker_wrap in range(1, self.initialParameters['Walkers'] + 1):
-                    future = executor.submit(trajOperator.wrap, walker_wrap)
+                    future = executor.submit(wrapcall, walker_wrap)
                     processes.append(future)
         except Exception as e:
             print("Wrapping failed: ", e)
