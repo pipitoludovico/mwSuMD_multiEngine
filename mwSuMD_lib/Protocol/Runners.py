@@ -177,7 +177,6 @@ class Runner(mwInputParser):
         self.runSimulationOpen()
 
         Logger.LogToFile('ad', self.trajCount, "Wrapping results...")
-        trajOperator = TrajectoryOperator()
 
         for i in range(1, self.initialParameters['Walkers'] + 1):
             files = os.listdir(f"./tmp/walker_{i}")

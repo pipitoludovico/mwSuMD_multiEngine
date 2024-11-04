@@ -76,7 +76,7 @@ class Logger:
     def LogToFile(mode, cycle, message):
         if mode == "w":
             with open('LogFile.txt', 'w') as settingsFile:
-                settingsFile.write(f"Settings at cycle: {cycle}.\n")
+                settingsFile.write(f"This cycle started at step #{cycle}.\n")
                 settingsFile.write(message + "\n")
         if mode == "a":
             with open('LogFile.txt', 'a') as settingsFile:

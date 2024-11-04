@@ -152,7 +152,7 @@ class mwInputParser:
 
                 if line.startswith('CheckEvery'):
                     if line.split('=')[1].strip() != '':
-                        self.initialParameters['CheckEvery'] = float(line.split('=')[1].strip())
+                        self.initialParameters['CheckEvery'] = int(line.split('=')[1].strip())
 
                 if line.startswith('Restart'):
                     mwInputParser.initialParameters['Restart'] = line.split('=')[1].strip().upper()

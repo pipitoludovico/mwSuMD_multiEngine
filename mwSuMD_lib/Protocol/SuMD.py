@@ -144,11 +144,15 @@ class suMD1(mwInputParser):
         if not self.openMM:
             if self.cycle != 0:
                 try:
-                    del parametersSnapshot['coor'], parametersSnapshot['vel'], parametersSnapshot['xsc']
-                    del tempParametersSnapshot['coor'], tempParametersSnapshot['vel'], tempParametersSnapshot['xsc']
-                except Exception:  # using GROMACS?
-                    del parametersSnapshot['CPT'], parametersSnapshot['GRO'], parametersSnapshot['TPR']
-                    del tempParametersSnapshot['CPT'], tempParametersSnapshot['GRO'], tempParametersSnapshot['TPR']
+                    if self.parameters['MDEngine'] != 'GROMACS':
+                        del parametersSnapshot['coor'], parametersSnapshot['vel'], parametersSnapshot['xsc']
+                        del tempParametersSnapshot['coor'], tempParametersSnapshot['vel'], tempParametersSnapshot['xsc']
+                    else:
+                        del parametersSnapshot['CPT'], parametersSnapshot['GRO'], parametersSnapshot['TPR']
+                        del tempParametersSnapshot['CPT'], tempParametersSnapshot['GRO'], tempParametersSnapshot['TPR']
+                except Exception as e:
+                    Logger.LogToFile('w', self.cycle, "#" * 200 + f"\nSetting's dictionary has changed. " + "#" * 200)
+                    Logger.LogToFile('w', self.cycle, "#" * 200 + f"\n{repr(e)}" + "#" * 200)
 
         if parametersSnapshot != tempParametersSnapshot or selectionShapshot != self.selection_list:
             temp = set(self.selection_list) - set(selectionShapshot)

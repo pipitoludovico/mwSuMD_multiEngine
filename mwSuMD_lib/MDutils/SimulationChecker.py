@@ -31,9 +31,7 @@ class Checker(mwInputParser):
         self.trajCount = len([trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
 
     def checkIfFailed(self, vals1=None, vals2=None, accumulatedFails=0):
-        Logger.LogToFile("w", self.trajCount,
-                         "#" * 200 + '\nChecking if trajectory is stuck with values: ' + str(vals1) +
-                         ". Total fails accumulated: " + str(accumulatedFails) + "\n" + "#" * 200)
+        Logger.LogToFile("w", self.trajCount, "#" * 200 + '\nChecking if trajectory is stuck with values: ' + str(vals1) + ". Total fails accumulated: " + str(accumulatedFails) + "\n" + "#" * 200)
         mdOperator = MDoperator(self.initialParameters, self.folder, self.openMM)
         if mdOperator.checkIfStuck([vals1, vals2], accumulatedFails) is True:
             Logger.LogToFile("ad", self.trajCount, "\nRUNNING RELAXATION PROTOCOL" + "#" * 200)
@@ -108,8 +106,7 @@ class Checker(mwInputParser):
         # we then extract the best metric/score and store it as a reference
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
-        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score,
-                                                                              self.best_metric_result)
+        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score, self.best_metric_result)
 
         Logger.LogToFile('ad', self.trajCount, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.trajCount += 1

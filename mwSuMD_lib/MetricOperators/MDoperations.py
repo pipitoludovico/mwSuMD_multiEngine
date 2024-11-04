@@ -104,8 +104,7 @@ class MDoperator:
     def checkIfStuck(self, values, accumulatedFails) -> bool:
         if accumulatedFails >= self.par['Fails'] * int(self.par['NumberCV']):
             with open('walkerSummary.log', 'a') as logFile:
-                logFile.write(
-                    '\nSimulation seemed stuck. It will run the last relaxation protocol and it will be terminated\n')
+                logFile.write('\nSimulation seemed stuck. It will run the last relaxation protocol and it will be terminated\n')
                 logFile.close()
             if not self.openMM:
                 self.relaxSystemMulti()
