@@ -68,6 +68,7 @@ class openMMsetter:
                 except Exception as e:
                     print(repr(e))
                     Logger.LogToFile('a', self.trajCount, repr(e))
+
             if self.initialParameters['Forcefield'] == 'AMBER':
                 p_top = app.AmberPrmtopFile(
                     f"{self.initialParameters['Root']}/system/{self.initialParameters['PRMTOP']}")
