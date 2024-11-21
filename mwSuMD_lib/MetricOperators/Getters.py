@@ -48,8 +48,7 @@ class Getters(mwInputParser):
                         Logger.LogToFile('a', self.trajCount, self.selection_error)
                         raise ValueError
                     else:
-                        distance = \
-                            Mda.lib.distances.distance_array(sel1.center_of_mass(), sel2.center_of_mass())[0][0]
+                        distance = Mda.lib.distances.distance_array(sel1.center_of_mass(), sel2.center_of_mass())[0][0]
                         distances.append(distance)
             mean_lin = np.mean(distances)
             distMetric = (mean_lin * distances[-1]) ** 0.5

@@ -38,7 +38,6 @@ class MDsetter(mwInputParser):
                                     mw_file.write(f'parameters		%s\n' % e)
                     # writing the input file
                     for line in txt:
-
                         mw_file.write(line)
                     if self.setterParameters['PLUMED'] is not None:
                         mw_file.write('plumedFile		%s\n' % self.setterParameters['PLUMED'])

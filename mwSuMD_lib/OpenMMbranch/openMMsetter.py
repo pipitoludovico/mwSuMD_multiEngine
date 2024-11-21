@@ -42,6 +42,7 @@ class openMMsetter:
             if self.initialParameters.get('Relax') is True:
                 self.initialParameters['Timewindow'] = int(self.initialParameters['RelaxTime'] * 1000)
                 number_of_steps = int((self.initialParameters['RelaxTime'] * 1000) / (self.initialParameters['Timestep'] / 1000))
+                saveFreq = 50000
 
             os.makedirs(folder_path, exist_ok=True)
             os.chdir(folder_path)
@@ -146,3 +147,4 @@ class openMMsetter:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(exc_type, fname, exc_tb.tb_lineno)
+            print(repr(e))

@@ -19,6 +19,7 @@ class EngineInputs(mwInputParser):
     def getInputFile(self):
         if self.initialParameters['Relax'] is True:
             self.par['Timewindow'] = self.par['RelaxTime'] * 1000
+            self.par['saveFreq'] = 50000
             Logger.LogToFile('ad', self.trajCount, "\nTemporary changing the timewindow for relaxation protocol to: " + str(self.par['Timewindow']) + " ps.")
         restartInput = Template().inputFile
         self.par['Timewindow'] = self.timewindow
