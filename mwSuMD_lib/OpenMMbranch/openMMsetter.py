@@ -1,10 +1,7 @@
-import os
-import sys
 import numpy as np
 import pkg_resources
 
 from openmm import *
-from openmm.app import *
 import openmm as mm
 from openmm import XmlSerializer, LangevinIntegrator, Platform
 import openmm.app as app
@@ -78,13 +75,6 @@ class openMMsetter:
             else:
                 system = p_top.createSystem(nonbondedMethod=app.PME, nonbondedCutoff=0.9 * nanometer, switchDistance=0.75 * nanometer, constraints=app.HBonds, rigidWater=True, hydrogenMass=4 * amu)
 
-            # restraint = mm.CustomExternalForce('k*periodicdistance(x, y, z, x0, y0, z0)^2')
-            # restraint.addGlobalParameter('k', 0.0 * kilojoules_per_mole / nanometer)
-            # restraint.addPerParticleParameter('x0')
-            # restraint.addPerParticleParameter('y0')
-            # restraint.addPerParticleParameter('z0')
-            # system.addForce(restraint)
-
             def CheckPlumed():
                 if self.initialParameters.get("PLUMED"):
                     try:
@@ -94,10 +84,9 @@ class openMMsetter:
                         with open(plumedPath, 'r') as pd:
                             for line in pd.readlines():
                                 script += line
-                        print(script)
                         system.addForce(PlumedForce(script))
-                    except Exception as e:
-                        Logger.LogToFile('a', self.trajCount, repr(e))
+                    except Exception as excep:
+                        Logger.LogToFile('a', self.trajCount, repr(excep))
                         raise ModuleNotFoundError
 
             if self.initialParameters.get("PLUMED") and self.trajCount != 0:

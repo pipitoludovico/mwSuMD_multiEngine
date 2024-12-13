@@ -14,12 +14,12 @@ class mwInputParser:
     initialParameters = {'Root': os.getcwd()}
     selection_list = []
     walker_metrics = []
-    package_dir = ''
-    if 'parameters' not in os.listdir(folder):
-        package_dir = pkg_resources.resource_filename('mwSuMD_lib', 'parameters')
-        parameterFolderPath = os.path.abspath(package_dir)
-    else:
-        parameterFolderPath = os.path.abspath('../parameters')
+    package_dir = pkg_resources.resource_filename('mwSuMD_lib', 'parameters')
+    parameterFolderPath = os.path.abspath(package_dir)
+    parameterPaths = [parameterFolderPath, ]
+    if 'parameters' in os.listdir(folder):
+        print("Custom Parameters Found. Appending to builtins...")
+        parameterPaths.append(os.path.join(folder, "parameters"))
     new_value = 0
     max_value = 0
     metric_1 = 0
@@ -51,8 +51,7 @@ class mwInputParser:
             file.endswith('.inp') for file in os.listdir("./system")) else "OPENMM" if any(
             file.endswith('.chk') for file in os.listdir("./system")) else None
         if not self.initialParameters['MDEngine']:
-            raise FileNotFoundError(
-                "No MD Engine detected. Make sure you kept your input setting's file in the system folder")
+            raise FileNotFoundError("No MD Engine detected. Make sure you kept your input setting's file in the system folder")
         if self.initialParameters.get('MDEngine') == 'GROMACS':
             if not any(file.endswith('tpr') for file in os.listdir('./system')):
                 try:
@@ -77,9 +76,10 @@ class mwInputParser:
             for params in os.listdir(f'{self.folder}/system'):
                 if params.endswith(self.initialParametersameter_extensions):
                     self.initialParameters['Parameters'].append(self.folder + "/system/" + params)
-            for dirpath, dirnames, generalParams in os.walk(self.parameterFolderPath):
-                for filename in [f for f in generalParams if f.endswith(self.initialParametersameter_extensions)]:
-                    self.initialParameters['Parameters'].append(dirpath + "/" + filename)
+            for path_ in self.parameterPaths:
+                for dirpath, dirnames, generalParams in os.walk(path_):
+                    for filename in [f for f in generalParams if f.endswith(self.initialParametersameter_extensions)]:
+                        self.initialParameters['Parameters'].append(dirpath + "/" + filename)
         else:
             return self.initialParameters['Parameters']
 
@@ -246,8 +246,7 @@ class mwInputParser:
                         if len(u.select_atoms(f"{line.split('=')[1].strip()}")) != 0:
                             self.selection_list.append(line.split('=')[1].strip())
                         else:
-                            raise ValueError(
-                                "One of your selection pointed to 0 atoms: please check your selection with your structure file")
+                            raise ValueError("One of your selection pointed to 0 atoms: please check your selection with your structure file")
         # cleaning Universe as the check is completed
         del u
         if self.initialParameters['NumberCV'] == 2 and (
@@ -259,8 +258,7 @@ class mwInputParser:
                 "Please make sure if you choose at least one metric to supervise (Distance, Contacts, RMSD, HB)")
         if self.initialParameters.get('NumberCV') == 2 and (
                 not self.initialParameters.get('Metric_1') or not self.initialParameters.get('Metric_2')):
-            raise ValueError(
-                "Please make sure if you use CV2 to specify all the CVs choosing one metric to supervise (Distance, Contacts, RMSD, HB)")
+            raise ValueError("Please make sure if you use CV2 to specify all the CVs choosing one metric to supervise (Distance, Contacts, RMSD, HB)")
         if not self.initialParameters.get('NumberCV'):
             print("Please set the NumberCV in the input file")
             exit()

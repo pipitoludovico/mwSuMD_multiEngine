@@ -36,7 +36,7 @@ class MDoperator:
 
     def saveStep(self, best_walker, walker_score, best_metric_result):
         """Handles the restart files and the binary storage for OPENMM"""
-        os.chdir('tmp/walker_%s' % str(best_walker))
+        os.chdir(f'tmp/walker_{best_walker}')
         check = any(binary.endswith(self.extensions) for binary in os.listdir("./"))
         if check:
             self.cycle += 1
@@ -61,14 +61,16 @@ class MDoperator:
                         if match:
                             outFile = match.group(1)
                             Logger.LogToFile('ad', self.cycle, str(os.getcwd() + outFile))
-                            os.system(f'cp {outFile} %s/restarts/' % self.folder)
+                            os.system(f'cp {outFile} {self.folder}/restarts/')
                 for filename in os.listdir("../"):
                     if '.' not in filename:
                         fullname = os.path.join("../", filename)
-                        os.system(f'cp {fullname}  %s/restarts/ ' % self.folder)
+                        print(f'STO COPIANDO CON cp {fullname}  {self.folder}/restarts/')
+                        os.system(f'cp {fullname}  {self.folder}/restarts/')
                     if filename.endswith(".dat"):
-                        os.system(f'cp {filename} %s/restarts/' % self.folder)
-                os.system('cp plumed.log  %s/restarts/ ' % self.folder)
+                        os.system(f'cp {filename} {self.folder}/restarts/')
+
+                os.system(f'cp plumed.log  {self.folder}/restarts/ ')
         else:
             Logger.LogToFile('ad', self.cycle, "No binary saved: restarting from last checkpoint.")
             with open('walkerSummary.log', 'a') as walkerSummary:
