@@ -18,7 +18,6 @@ class mwInputParser:
     parameterFolderPath = os.path.abspath(package_dir)
     parameterPaths = [parameterFolderPath, ]
     if 'parameters' in os.listdir(folder):
-        print("Custom Parameters Found. Appending to builtins...")
         parameterPaths.append(os.path.join(folder, "parameters"))
     new_value = 0
     max_value = 0

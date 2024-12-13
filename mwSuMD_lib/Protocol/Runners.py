@@ -71,8 +71,7 @@ class Runner(mwInputParser):
         for GPUbatch in GPUbatches:
             for GPU in GPUbatch:
                 os.chdir('tmp/walker_' + str(self.walk_count))
-                command = self.lauchEngine(self.trajCount, self.walk_count, GPU,
-                                           self.customProductionFile)
+                command = self.lauchEngine(self.trajCount, self.walk_count, GPU, self.customProductionFile)
                 processes.append(subprocess.Popen(command, shell=True, stdout=DEVNULL))
                 self.walk_count += 1
                 os.chdir(self.folder)
