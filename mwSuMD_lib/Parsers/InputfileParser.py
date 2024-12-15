@@ -137,6 +137,8 @@ class mwInputParser:
             self.initialParameters['CheckEvery'] = None
             self.initialParameters['Temperature'] = 310
             self.initialParameters['WrapEngine'] = "MDA"
+            self.initialParameters['WrapOn'] = "protein"
+            self.initialParameters['FilterOut'] = "protein"
             for line in infile:
                 if line.startswith('#'):
                     continue
@@ -232,9 +234,13 @@ class mwInputParser:
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['Transition_2'] = line.split('=')[1].strip().lower()
 
-                if line.startswith('Wrap'):
+                if line.startswith('WrapOn'):
                     if line.split('=')[1].strip() != '':
-                        self.initialParameters['Wrap'] = line.split('=')[1].strip()
+                        self.initialParameters['WrapOn'] = line.split('=')[1].strip()
+
+                if line.startswith('FilterOut'):
+                    if line.split('=')[1].strip() != '':
+                        self.initialParameters['FilterOut'] = line.split('=')[1].strip()
 
                 if line.startswith('Fails'):
                     if line.split('=')[1].strip() != '':

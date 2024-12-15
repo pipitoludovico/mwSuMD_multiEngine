@@ -3,9 +3,10 @@ Restart = NO
 ########################################################################
 ### Selection for wrapping (default "protein")
 ### You can use either MDAnalysis or VMD.
-### If you use VMD, you need to have mdconvert/mdtraj installed
+### WrapEngine = MDA/VMD
 WrapEngine = VMD
-Wrap = protein or segid MEMB
+WrapOn = protein or segid MEMB
+FilterOut = protein or resname UNL
 ########################################################################
 # Output name of the files
 Output = S25_A13

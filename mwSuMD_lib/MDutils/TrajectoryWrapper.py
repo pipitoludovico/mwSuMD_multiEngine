@@ -63,12 +63,11 @@ class TrajectoryOperator(mwInputParser):
                 Logger.LogToFile('a', self.trajCount, "No trajectory or psf found. Check your simulation parameters and make sure production went well")
                 raise FileNotFoundError
 
-            selection = u.select_atoms(f"{self.initialParameters['Wrap']}")
+            selection = u.select_atoms(f"{self.initialParameters['WrapOn']}")
             if len(selection.atoms) == 0:
-                Logger.LogToFile('a', self.trajCount,
-                                 "your wrapping selection selected 0 atoms! using protein and name CA instead...")
+                Logger.LogToFile('a', self.trajCount, "your wrapping selection selected 0 atoms! using protein and name CA instead...")
                 selection = u.select_atoms('protein and name CA')
-            ag = u.atoms
+            ag = u.select_atoms(f"{self.initialParameters['FilterOut']}")
             workflow = [transformations.unwrap(selection), transformations.center_in_box(selection), transformations.wrap(ag, compound="fragments")]
             u.trajectory.add_transformations(*workflow)
             with Mda.Writer('wrapped.xtc', ag) as w:
@@ -91,7 +90,8 @@ class TrajectoryOperator(mwInputParser):
                 if trajectory.endswith(ext):
                     trajFile = trajectory
 
-            unwrapSel = f"{self.initialParameters['Wrap']}"
+            unwrapSel = f"{self.initialParameters['WrapOn']}"
+            filterSel = f"{self.initialParameters['FilterOut']}"
             topExt = 'psf' if self.topology.endswith('psf') else 'parm7' if self.topology.endswith('prmtop') else "top"
             pdbExt = "pdb" if self.coordinates.endswith('pdb') else 'rst7' if self.coordinates.endswith('inpcrd') else "gro"
             extension = 'xtc' if trajFile.endswith('xtc') else 'dcd'
@@ -101,9 +101,9 @@ class TrajectoryOperator(mwInputParser):
                    f'mol new {self.topology} type {topExt}',
                    f'mol addfile {self.coordinates} type {pdbExt}',
                    f'mol addfile {trajFile} type {extension} first 0 last -1 step 1 filebonds 1 autobonds 1 waitfor all',
-                   f'set sel [atomselect top "{unwrapSel}"]',
+                   f'set sel [atomselect top "{filterSel}"]',
                    "animate goto 0",
-                   f'pbc join residue -all -sel "{unwrapSel}"',
+                   f'pbc join residue -all -sel "protein or {unwrapSel}"',
                    f'pbc wrap -center com -centersel "{unwrapSel}" -compound residue -all',
 
                    "proc align { rmolid smolid2 seltext } {",

@@ -89,7 +89,7 @@ class MDoperator:
                 if not self.par['Relax'] and check:
                     self.info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Score Result: " + str(round(walker_score, 3)) + " Last Metrics from best: " + str(best_metric_result) + "\n"
             walkerSummary.write(self.info_to_write)
-        os.system('rm -r tmp')
+        os.system('rm -rf tmp')
         self.par['Relax'] = False
 
     def prepareTPR(self, walk_count, trajcount, customFile=None):
