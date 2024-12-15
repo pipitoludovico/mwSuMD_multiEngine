@@ -1,4 +1,3 @@
-from shutil import rmtree
 import time
 import os
 
@@ -31,7 +30,10 @@ class ProtocolRunner(mwInputParser):
         # create input files per walker after purging the existing one
         begin = time.perf_counter()
         if os.path.exists('./tmp'):
-            rmtree('./tmp')
+            while any(".nfs" in f for _, _, files in os.walk("./tmp/") for f in files):
+                print("found at standard")
+                time.sleep(1)
+            os.system('rm -rf ./tmp')
         op = MDoperator(self.initialParameters, self.folder, self.openMM)
         if not self.openMM:
             MDsetter(self.initialParameters).createInputFile()

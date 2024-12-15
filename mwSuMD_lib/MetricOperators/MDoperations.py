@@ -1,8 +1,8 @@
 import os
 import re
 import subprocess
+
 import numpy as np
-from shutil import rmtree
 from subprocess import DEVNULL
 from random import choice
 from mwSuMD_lib.MDsetters.MDsettings import MDsetter
@@ -90,7 +90,6 @@ class MDoperator:
                 if not self.par['Relax'] and check:
                     self.info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Score Result: " + str(round(walker_score, 3)) + " Last Metrics from best: " + str(best_metric_result) + "\n"
             walkerSummary.write(self.info_to_write)
-        rmtree('./tmp')
         self.par['Relax'] = False
 
     def prepareTPR(self, walk_count, trajcount, customFile=None):

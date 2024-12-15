@@ -1,6 +1,7 @@
 import os
-
+import psutil
 import GPUtil
+
 from mwSuMD_lib.Utilities.Loggers import Logger
 
 
@@ -44,3 +45,19 @@ class ProcessManager:
         result = quotient * total_gpu_ids + total_gpu_ids[:rest]
         batches = [result[i:i + len(total_gpu_ids)] for i in range(0, len(result), len(total_gpu_ids))]
         return batches, total_gpu_ids
+
+    @staticmethod
+    def get_pid_from_file(pid_file):
+        if os.path.exists(pid_file):
+            with open(pid_file, 'r') as f:
+                pid = f.read().strip()
+                return int(pid)
+        return None
+
+    @staticmethod
+    def is_process_running(pid):
+        try:
+            process = psutil.Process(pid)
+            return process.is_running()
+        except psutil.NoSuchProcess:
+            return False
