@@ -16,6 +16,8 @@ class ProcessManager:
                 exit()
             else:
                 ProcessManager.getpid()
+        else:
+            ProcessManager.getpid()
 
     @staticmethod
     def getpid():
