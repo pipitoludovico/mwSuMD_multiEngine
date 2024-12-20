@@ -1,8 +1,7 @@
 import warnings
 import argparse
-from os import path, listdir, getcwd
+from os import path
 from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
-from mwSuMD_lib.Utilities.GPUoperations import ProcessManager
 from mwSuMD_lib.Utilities.Loggers import Logger
 
 warnings.filterwarnings(action='ignore')
@@ -13,11 +12,6 @@ class ArgParser:
         if not path.exists('./system'):
             print('\nPlease make your ./system folder with the equilibrated system files and outputs')
             exit()
-        if ".mypid" in listdir(getcwd()):
-            existing_pid = ProcessManager.get_pid_from_file(".mypid")
-            if existing_pid and ProcessManager.is_process_running(existing_pid):
-                print(f"An instance of mwSuMD is already running")
-                exit()
 
     @staticmethod
     def argumentParser():

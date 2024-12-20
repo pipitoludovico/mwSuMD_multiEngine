@@ -33,6 +33,7 @@ MASS  -1  CTO1      12.01100 C !
 MASS  -1  CEL3      12.01100 C !
 MASS  -1  CTO2      12.01100 C !
 
+AUTO ANGLE DIHE
 
 RESI PSM          0.00 !   sphingomyelin d18:1/16:0
 GROUP                  !
@@ -5897,7 +5898,7 @@ IMPR   C1F C2F NF OF  NF C1F C2S HNF
 PATCH FIRST NONE LAST NONE
 
 RESI CER3E        0.00 !   CERAMIDE t16:2/18:1
-GROUP                  !      HO1                                           
+GROUP                  !      HO1
 ATOM O1   OHL    -0.69 !        \
 ATOM HO1  HOL     0.30 !         O1
 ATOM C1S  CTO2    0.49 !         |
@@ -5938,7 +5939,7 @@ ATOM H10S HAL2    0.09 !         ||
 GROUP                  !        C9S--C19S--H19S
 ATOM C19S CTL3   -0.27 !         |    |  \
 ATOM H19S HAL3    0.09 !         |    |   \
-ATOM H19T HAL3    0.09 !         |   H19T H19U 
+ATOM H19T HAL3    0.09 !         |   H19T H19U
 ATOM H19U HAL3    0.09 !         |
 GROUP                  !         |
 ATOM C11S CTL2   -0.18 !      [(CH)2]8 (C10S, C11S....C17S)
@@ -6055,7 +6056,7 @@ BOND  C13S C12S C12S H12S  C12S H12T
 BOND  C12S C11S C11S H11S  C11S H11T
 BOND  C11S C10S C10S H10S  C10S H10T
 BOND  C10S C9S  C9S  C19S  C19S H19S
-BOND  C19S H19T C19S H19U  C8S  H8S 
+BOND  C19S H19T C19S H19U  C8S  H8S
 BOND  C8S  C7S  C7S  H7S   C7S  H7T
 BOND  C7S  C6S  C6S  H6S   C6S  H6T
 BOND  C6S  C5S  C5S  H5S   C4S  H4S
@@ -6250,7 +6251,7 @@ CTO2  OHL   428.000     1.420  ! glycerol
 
 !! by Shasha, Im lab.
 CEL3  CTL3  383.00  1.5040 !from CG2D1  CG331   383.00     1.5040
-C     CTL1  250.00  1.4900 !from CG2O1  CG311   250.00     1.4900 
+C     CTL1  250.00  1.4900 !from CG2O1  CG311   250.00     1.4900
 
 
 ANGLES
@@ -6330,14 +6331,14 @@ OHL    CTO2   CTL1    75.700   110.10   ! prot22; MeOH, EMB, 10/10/89; OH1 CT2 C
 
 !! by Shasha, Im lab.
 CEL3  CEL3  CTL3    48.00 123.50 !from CG2D1  CG2D1  CG331    48.00    123.50
-CTL3  CEL3  CTL2    48.00 123.50 !from CG321  CG2D1  CG331    48.00    123.50  
+CTL3  CEL3  CTL2    48.00 123.50 !from CG321  CG2D1  CG331    48.00    123.50
 CEL3  CTL3  HAL3    42.00 111.50 !from CG2D1  CG331  HGA3     42.00    111.50
 NHL   C     CTL1    80.00 116.50 !from CG311  CG2O1  NG2S1    80.00    116.50
 O     C     CTL1    80.00 121.00 !from CG311  CG2O1  OG2D1    80.00    121.00
 C     CTL1  CEL3    52.00 108.00 !from CG2O1  CG311  CG311    52.00    108.00
 C     CTL1  HAL1    50.00 109.50 !from CG2O1  CG311  HGA1     50.00    109.50
-C     CTL1  OH1     75.70 110.10 !from CL     CTL1   OH1      75.70    110.10, ABLIPA 
-OH1   CTL1  CEL3    75.70 110.10 !from CG2D1  CG321  OG311    75.70    110.10 
+C     CTL1  OH1     75.70 110.10 !from CL     CTL1   OH1      75.70    110.10, ABLIPA
+OH1   CTL1  CEL3    75.70 110.10 !from CG2D1  CG321  OG311    75.70    110.10
 
 
 !
@@ -6376,7 +6377,7 @@ CTL2 CTL1 CTO1 OHL      0.200   3     0.00 ! lip36; alkane, 3/92, X CTL1 CTL1 X
 CTO1 CTL1 CTL2 OSL      0.390   1   180.00 ! torsfit MP2/ccpVTZ, sph model, erh 8/09; transferred from cer4
 CTO1 CTL1 CTL2 OSL      0.510   2   180.00 ! ""
 CTO1 CTL1 CTL2 OSL      0.870   3   180.00 ! ""
-CTL2 CTL1 CTO1 OSL      0.390   1   180.00 ! torsfit MP2/ccpVTZ, sph model, erh 8/09; transferred from cer4 
+CTL2 CTL1 CTO1 OSL      0.390   1   180.00 ! torsfit MP2/ccpVTZ, sph model, erh 8/09; transferred from cer4
 CTL2 CTL1 CTO1 OSL      0.510   2   180.00 ! ""       analogy for TACSPH, rmv nov 2009
 CTL2 CTL1 CTO1 OSL      0.870   3   180.00 ! ""
 !HCOH
@@ -6528,7 +6529,7 @@ CEL3 CTO1 CTL1 CTO2     0.000   1     0.00 ! torfit to cer4 qm, jbk 10/12
 
 !! by Shasha, Im lab.
 NHL   C     CTL1   HAL1 0.0000  1  0.00 !from NG2S1  CG2O1  CG311  HGA1   0.0000  1   0.00
-NHL   C     CTL1   OH1  0.0000  1  0.00 !from NG2S1  CG2O1  CG311  CG311  0.0000  1   0.00  
+NHL   C     CTL1   OH1  0.0000  1  0.00 !from NG2S1  CG2O1  CG311  CG311  0.0000  1   0.00
 NHL   C     CTL1   CEL3 0.0000  1  0.00 !from NG2S1  CG2O1  CG311  CG311  0.0000  1   0.00
 H     NHL   C      CTL1 2.5000  2   180.00 !CG311  CG2O1  NG2S1  HGP1       2.5000  2   180.00
 CTL1  NHL   C      CTL1 1.6000  1     0.00 !CG311  CG2O1  NG2S1  CG311      1.6000  1     0.00
@@ -6537,25 +6538,25 @@ CTL2  CEL3  CEL3   CTL3 0.4500  1   180.00 !CG321  CG2D1  CG2D1  CG331      0.45
 CTL2  CEL3  CEL3   CTL3 8.5000  2   180.00 !CG321  CG2D1  CG2D1  CG331      8.5000  2   180.00
 CTL2  CEL3  CEL3   CTL2 0.4500  1   180.00 !CG321  CG2D1  CG2D1  CG321      0.4500  1   180.00
 CTL2  CEL3  CEL3   CTL2 8.5000  2   180.00 !CG321  CG2D1  CG2D1  CG321      8.5000  2   180.00
-CEL3  CEL3  CTL3   HAL3 0.3000  3   180.00 !CG2D1  CG2D1  CG331  HGA3       0.3000  3   180.00 
+CEL3  CEL3  CTL3   HAL3 0.3000  3   180.00 !CG2D1  CG2D1  CG331  HGA3       0.3000  3   180.00
 HEL1  CEL3  CEL3   CTL3 1.0000  2     0.00 !CG331  CG2D1  CG2D1  HGA4       1.0000  2   180.00,trans-double bond
 CTL3  CEL3  CTL2   HAL2 1.9000  3     0.00 !CG331  CG2D1  CG321  HGA2       0.1900  3     0.00
 CTL3  CEL3  CTL2   CTL2 1.9000  3     0.00 !CG331  CG2D1  CG321  CG321      0.1900  3     0.00
 HAL3  CTL3  CEL3   CTL2 1.6000  3     0.00 !CG321  CG2D1  CG331  HGA3       0.1600  3     0.00
-C     CTL1  OH1    H    0.35    1     0.00 !CL CTL1 OH1 H 
-C     CTL1  OH1    H    0.37    2     0.00 !CL CTL1 OH1 H 
-C     CTL1  OH1    H    0.19    3   180.00 !CL CTL1 OH1 H 
+C     CTL1  OH1    H    0.35    1     0.00 !CL CTL1 OH1 H
+C     CTL1  OH1    H    0.37    2     0.00 !CL CTL1 OH1 H
+C     CTL1  OH1    H    0.19    3   180.00 !CL CTL1 OH1 H
 C     CTL1  CEL3   HEL1 0.0000  3     0.00 !HGA4   CG2D1  CG321  CG311      0.0000  3     0.00
 C     CTL1  CEL3   CEL3 0.5000  1   180.00 !CG2D1  CG2D1  CG321  CG311      0.5000  1   180.00, correct by adm 2020/7
 C     CTL1  CEL3   CEL3 1.3000  3   180.00 !CG2D1  CG2D1  CG321  CG311      1.3000  3   180.00
 O     C     CTL1   HAL1 0.0000  1     0.00 !OG2D1  CG2O1  CG311  HGA1       0.0000  1     0.00
-O     C     CTL1   OH1  1.4000  1     0.00 !OG2D1  CG2O1  CG311  CG311      1.4000  1     0.00,cannot find close analog 
+O     C     CTL1   OH1  1.4000  1     0.00 !OG2D1  CG2O1  CG311  CG311      1.4000  1     0.00,cannot find close analog
 O     C     CTL1   CEL3 1.4000  1     0.00 !OG2D1  CG2O1  CG311  CG311      1.4000  1     0.00,cannot find close analog
-CTL1  CEL3  CEL3   HEL1 1.0000  2     0.00 !CG321  CG2D1  CG2D1  HGA4       1.0000  2   180.00,trans-double bond 
+CTL1  CEL3  CEL3   HEL1 1.0000  2     0.00 !CG321  CG2D1  CG2D1  HGA4       1.0000  2   180.00,trans-double bond
 OH1   CTL1  CEL3   HEL1 0.2000  3     0.00 !HGA4   CG2D1  CG321  OG311      0.2000  3     0.00
 OH1   CTL1  CEL3   CEL3 0.5000  1   180.00 !CG2D1  CG2D1  CG321  CG311      0.5000  1   180.00,cannot find close analog
 OH1   CTL1  CEL3   CEL3 1.3000  3   180.00 !CG2D1  CG2D1  CG321  CG311      1.3000  3   180.00,cannot find close analog
-H     OH1   CTL1   CEL3 1.3000  1     0.00 !CG2D1  CG321  OG311  HGP1       1.3000  1     0.00 
+H     OH1   CTL1   CEL3 1.3000  1     0.00 !CG2D1  CG321  OG311  HGP1       1.3000  1     0.00
 H     OH1   CTL1   CEL3 0.7000  2     0.00 !CG2D1  CG321  OG311  HGP1       0.7000  2     0.00
 H     OH1   CTL1   CEL3 0.1400  3     0.00 !CG2D1  CG321  OG311  HGP1       0.1400  3     0.00
 
@@ -6597,5 +6598,4 @@ CTO2     0.0       -0.0560    2.010 0.0 -0.01 1.9 ! STN, 3/13
 end
 
 return
-
 

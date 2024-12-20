@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import warnings
-from mwSuMD_lib.Utilities import GPUoperations, Loggers
+from mwSuMD_lib.Utilities import ProcessAndGPUutilities, Loggers
 from mwSuMD_lib.Parsers import CLIparser
 
 warnings.filterwarnings('ignore')
@@ -14,7 +14,8 @@ Loggers.Logger.LogToFile('ad', '',
 def main():
     parser = CLIparser.ArgParser()
     openMM = parser.argumentParser()
-    GPUoperations.ProcessManager()
+    ProcessAndGPUutilities.ProcessManager.checkIfInstanceIsRunning()
+
     from mwSuMD_lib.Protocol import SuMD
     multiSumd = SuMD.suMD1(openMM)
     multiSumd.run_mwSuMD()

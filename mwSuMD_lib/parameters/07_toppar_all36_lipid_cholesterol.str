@@ -50,6 +50,8 @@ read rtf card @app
 *
 31  1
 
+AUTO ANGLE DIHE
+
 RESI CHL1          0.00  !cholesterol v. 2(name to avoid conflict with choline)
 ! by Joseph Lim, based on DEC2
 ! atoms names correspond to the correct cholesterol nomenclature
@@ -721,7 +723,7 @@ IC      H28A    C24     *C28    H28C    1.1113  110.24  118.88  111.07  1.1085
 
 RESI SITO         0.0   !  beta-Sitosterol
 GROUP                   !
-ATOM C3  CRL1 0.14      ! 
+ATOM C3  CRL1 0.14      !
 ATOM H3  HGA1 0.09      !
 ATOM O3  OHL -0.66      !
 ATOM H3' HOL  0.43      !
@@ -738,7 +740,7 @@ ATOM C7 CRL2 -0.18      !                             C25
 ATOM H7A HGA2 0.09      !                             |
 ATOM H7B HGA2 0.09      !                             |
 GROUP                   !                             |
-ATOM C8 CRL1 -0.09      !                             |           
+ATOM C8 CRL1 -0.09      !                             |
 ATOM H8 HGA1 0.09       !                             |       H28B     H29A
 GROUP                   !                             |       |        |
 ATOM C14 CRL1 -0.09     !                        H24--C24-----C28-----C29--H29B
@@ -865,7 +867,7 @@ BOND C28 H28A C28 H28B C28 C29
 BOND C29 H29A C29 H29B C29 H29C
 
 !IC table by CHARMM ic generate
-!      I      J      K     L  R(I(J/K)) T(I(JK/KJ))  PHI   T(JKL)  R(KL) 
+!      I      J      K     L  R(I(J/K)) T(I(JK/KJ))  PHI   T(JKL)  R(KL)
 IC C1    C2    C3    C4     1.5425  109.98   58.15  109.78   1.5363
 IC C4    C2   *C3    O3     1.5614  110.14  115.63  112.44   1.4052
 IC O3    C2   *C3    H3     1.4052  112.44  121.91  109.94   1.1110
@@ -948,7 +950,7 @@ IC H29A  C28  *C29   H29C   1.1110  109.11  130.25  116.78   1.1110
 
 RESI STIG         0.0   !  Stigmasterol
 GROUP                   !
-ATOM C3  CRL1 0.14      ! 
+ATOM C3  CRL1 0.14      !
 ATOM H3  HGA1 0.09      !
 ATOM O3  OHL -0.66      !
 ATOM H3' HOL  0.43      !
@@ -965,7 +967,7 @@ ATOM C7 CRL2 -0.18      !                             C25
 ATOM H7A HGA2 0.09      !                             |
 ATOM H7B HGA2 0.09      !                             |
 GROUP                   !                             |
-ATOM C8 CRL1 -0.09      !                             |           
+ATOM C8 CRL1 -0.09      !                             |
 ATOM H8 HGA1 0.09       !                             |       H28B     H29A
 GROUP                   !                             |       |        |
 ATOM C14 CRL1 -0.09     !                        H24--C24-----C28-----C29--H29B
@@ -1090,7 +1092,7 @@ BOND C28 H28A C28 H28B C28 C29
 BOND C29 H29A C29 H29B C29 H29C
 
 !IC table by CHARMM ic generate
-!      I      J      K     L  R(I(J/K)) T(I(JK/KJ))  PHI   T(JKL)  R(KL) 
+!      I      J      K     L  R(I(J/K)) T(I(JK/KJ))  PHI   T(JKL)  R(KL)
 IC C1    C2    C3    C4     1.5374  109.66   53.63  111.70   1.5357
 IC C4    C2   *C3    O3     1.4600  116.45  124.37  115.09   1.4138
 IC O3    C2   *C3    H3     1.4138  115.09  111.63  103.06   1.1110
@@ -1986,8 +1988,8 @@ endif
 ! Original model of Suits et al., which is used on ANTON as well as
 !being suitable for other systems (set chol_model 2 (or anything but 1....))
 !
-!Suits, F., Pitman, M., MacKerell, A.D., Jr., Feller, S.E. "Molecular Level 
-!Organization of Saturated and Polyunsaturated Fatty Acids in a 
+!Suits, F., Pitman, M., MacKerell, A.D., Jr., Feller, S.E. "Molecular Level
+!Organization of Saturated and Polyunsaturated Fatty Acids in a
 !Phosphatidylcholine Bilayer Containing Cholesterol" Biochemistry,
 !43(49):15318-28, 2004
 !
@@ -2000,12 +2002,12 @@ read rtf card @app
 RESI CHL1          0.00  !cholesterol (name to avoid conflict with choline)
 ! atoms names correspond to the correct cholesterol nomenclature
 GROUP
-ATOM C3   CTL1     0.14  
+ATOM C3   CTL1     0.14
 ATOM H3   HAL1     0.09
 ATOM O3   OHL     -0.66
 ATOM H3'  HOL      0.43
 GROUP
-ATOM C4   CTL2    -0.18  
+ATOM C4   CTL2    -0.18
 ATOM H4A  HAL2     0.09
 ATOM H4B  HAL2     0.09
 GROUP
@@ -2018,10 +2020,10 @@ ATOM H7A  HAL2     0.09
 ATOM H7B  HAL2     0.09
 GROUP
 ATOM C8   CTL1    -0.09
-ATOM H8   HAL1     0.09 
+ATOM H8   HAL1     0.09
 GROUP
 ATOM C14  CTL1    -0.09
-ATOM H14  HAL1     0.09 
+ATOM H14  HAL1     0.09
 GROUP
 ATOM C15  CTL2    -0.18
 ATOM H15A HAL2     0.09
@@ -2105,10 +2107,10 @@ BOND C3   C2   C2   H2A  C2   H2B
 BOND C2   C1   C1   H1A  C1   H1B
 BOND C3   C4   C4   H4A  C4   H4B
 BOND C4   C5
-BOND C5   C10  
+BOND C5   C10
 BOND C10  C1
 BOND C10  C19  C19  H19A C19  H19B C19  H19C
-DOUBLE C5   C6   
+DOUBLE C5   C6
 BOND C6   H6
 BOND C6   C7   C7   H7A  C7   H7B
 BOND C7   C8   C8   H8
@@ -2228,10 +2230,10 @@ ATOM H5   HAL2     0.09
 ATOM H5'  HAL2     0.09
 
 ATOM C6   CTL1    -0.09  !c8
-ATOM H6   HAL1     0.09 
+ATOM H6   HAL1     0.09
 
 ATOM C7   CTL1    -0.09  !c14
-ATOM H7   HAL1     0.09 
+ATOM H7   HAL1     0.09
 
 ATOM C8   CTL2    -0.18  !c15
 ATOM H8   HAL2     0.09
@@ -2406,7 +2408,7 @@ ATOM H5   HAL2     0.09
 ATOM H5'  HAL2     0.09
 
 ATOM C6   CTL2    -0.18  !c8
-ATOM H6   HAL2     0.09 
+ATOM H6   HAL2     0.09
 ATOM H6'  HAL2     0.09
 
 ATOM C14  CTL2    -0.18  !c9
@@ -2487,8 +2489,8 @@ CTL1 CTL2 CEL1   32.00     112.20   !from CEL1 CTL2 CTL2 !all CEL1 containing te
 CTL2 CTL1 CEL1   32.00     112.20   !from CEL1 CTL2 CTL2 !involve the dR1 and dR2 terms
 CTL1 CTL1 CEL1   32.00     112.20   !from CEL1 CTL2 CTL2
 CTL3 CTL1 CEL1   32.00     112.20   !from CEL1 CTL2 CTL2
-CTL1 CEL1 CTL2   50.00     113.00   !guess FC, eq. angle to yield 360 deg sum  
-CEL1 CEL1 CTL1   48.00     123.50   ! from CEL1 CEL1 CTL1 
+CTL1 CEL1 CTL2   50.00     113.00   !guess FC, eq. angle to yield 360 deg sum
+CEL1 CEL1 CTL1   48.00     123.50   ! from CEL1 CEL1 CTL1
 !
 DIHEDRALS
 !
@@ -2505,11 +2507,11 @@ CTL2 CEL1 CTL1 CTL3     0.00    3   180.0  ! bR12
 CTL2 CEL1 CTL1 CTL2     0.30    3   180.0  ! torR1
 HAL2 CTL2 CEL1 CTL1     0.0300  3     0.0  ! CH2 wag and twist, from CEL1 CEL1 CTL2 HAL2
 CEL1 CEL1 CTL2 CTL1     0.5000  1   180.0  ! torR2, CEL1 CEL1 CTL2 CTL2
-CEL1 CEL1 CTL2 CTL1     1.3000  3   180.0  ! 
+CEL1 CEL1 CTL2 CTL1     1.3000  3   180.0  !
 CEL1 CEL1 CTL1 CTL1     0.5000  1   180.0  ! torR2, CEL1 CEL1 CTL2 CTL2
-CEL1 CEL1 CTL1 CTL1     1.3000  3   180.0  ! 
+CEL1 CEL1 CTL1 CTL1     1.3000  3   180.0  !
 CEL1 CEL1 CTL1 CTL2     0.5000  1   180.0  ! bR12, CEL1 CEL1 CTL2 CTL2
-CEL1 CEL1 CTL1 CTL2     1.3000  3   180.0  ! 
+CEL1 CEL1 CTL1 CTL2     1.3000  3   180.0  !
 CEL1 CEL1 CTL1 CTL3     0.5000  1   180.0  ! bR13, rCH3, CEL1 CEL1 CTL2 CTL2
 CEL1 CEL1 CTL1 CTL3     1.3000  3   180.0  !
 HEL1 CEL1 CTL2 CTL1     0.00    3     0.0  ! wC9H, HEL1 CEL1 CTL2 CTL2

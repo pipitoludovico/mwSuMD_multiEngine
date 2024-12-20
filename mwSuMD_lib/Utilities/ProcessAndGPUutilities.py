@@ -6,8 +6,16 @@ from mwSuMD_lib.Utilities.Loggers import Logger
 
 
 class ProcessManager:
-    def __init__(self):
-        self.getpid()
+
+    @staticmethod
+    def checkIfInstanceIsRunning():
+        if os.path.exists("./.mypid"):
+            oldPID = ProcessManager.get_pid_from_file("./.mypid")
+            if psutil.pid_exists(oldPID):
+                print("Only one instance of mwSuMD can run in the same folder.")
+                exit()
+            else:
+                ProcessManager.getpid()
 
     @staticmethod
     def getpid():
@@ -53,11 +61,3 @@ class ProcessManager:
                 pid = f.read().strip()
                 return int(pid)
         return None
-
-    @staticmethod
-    def is_process_running(pid):
-        try:
-            process = psutil.Process(pid)
-            return process.is_running()
-        except psutil.NoSuchProcess:
-            return False

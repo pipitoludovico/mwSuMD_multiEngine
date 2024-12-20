@@ -3,7 +3,7 @@ import concurrent.futures
 import subprocess
 from subprocess import DEVNULL
 import re
-from mwSuMD_lib.Utilities.GPUoperations import ProcessManager
+from mwSuMD_lib.Utilities.ProcessAndGPUutilities import ProcessManager
 from mwSuMD_lib.MDutils.TrajectoryWrapper import *
 from mwSuMD_lib.OpenMMbranch.openMMsetter import *
 

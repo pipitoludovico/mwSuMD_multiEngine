@@ -49,7 +49,7 @@ MASS  -1  HX         1.00800 H ! hydroxide hydrogen
 MASS  -1  OT        15.99940 O ! TIPS3P WATER OXYGEN
 MASS  -1  OX        15.99940 O ! hydroxide oxygen
 MASS  -1  HPER       1.00800 H ! H of H2O2
-MASS  -1  OPER      15.99900 O ! O of H2O2
+MASS  -1  OPER      15.99940 O ! O of H2O2
 MASS  -1  LIT        6.94100 LI ! Lithium ion
 MASS  -1  SOD       22.98977 NA ! Sodium Ion
 MASS  -1  MG        24.30500 MG ! Magnesium Ion
@@ -63,8 +63,9 @@ MASS  -1  CAD      112.41100 CD ! cadmium (II) cation
 MASS  -1  CLA       35.45000 CL ! Chloride Ion
 
 default first none last none
+AUTO ANGLE DIHE
 
-RESI TIP3         0.000 ! tip3p water model, generate using noangle nodihedral
+RESI TIP3         0.000 NOANG NODIH ! tip3p water model
 GROUP
 ATOM OH2  OT     -0.834
 ATOM H1   HT      0.417
@@ -76,7 +77,7 @@ DONOR H2 OH2
 ACCEPTOR OH2
 PATCHING FIRS NONE LAST NONE
 
-RESI TP3M         0.000 ! "mmff" water model, as an analog of tip3p
+RESI TP3M         0.000 NOANG NODIH ! "mmff" water model, as an analog of tip3p
 GROUP
 ATOM OH2  OT     -0.834 ! these charges are replaced by the mmff setup
 ATOM H1   HT      0.417 ! these charges are replaced by the mmff setup
@@ -277,7 +278,7 @@ OPER     0.0       -0.20384   1.67423
 !ions
 LIT      0.0      -0.00233       1.2975  ! Lithium
                    ! From S Noskov, target ddG(Li-Na) was 23-26.0 kcal/mol (see JPC B, Lamoureux&Roux,2006)
-SOD      0.0       -0.0469    1.41075  ! new CHARMM Sodium 
+SOD      0.0       -0.0469    1.41075  ! new CHARMM Sodium
                    ! ddG of -18.6 kcal/mol with K+ from S. Noskov
 MG       0.0       -0.0150    1.18500   ! Magnesium
                    ! B. Roux dA = -441.65
@@ -301,8 +302,8 @@ CLA      0.0       -0.150      2.27     ! Chloride
 NBFIX
 !              Emin         Rmin
 !            (kcal/mol)     (A)
-SOD    CLA      -0.083875   3.731 !  From osmotic pressure calibration, J. Phys.Chem.Lett. 1:183-189
-POT    CLA      -0.114236   4.081 !  From osmotic pressure calibration, J. Phys.Chem.Lett. 1:183-189
+!SOD    CLA      -0.083875   3.731 !  From osmotic pressure calibration, J. Phys.Chem.Lett. 1:183-189
+!POT    CLA      -0.114236   4.081 !  From osmotic pressure calibration, J. Phys.Chem.Lett. 1:183-189, repeated below
 END
 
 ! The following section contains NBFixes for sodium interacting with
@@ -334,8 +335,8 @@ NBFIX
 
 !new SOD NBFIX values
 ! Simulations of Anionic Lipid Membranes: Development of Interaction-Specific
-! Ion Parameters and Validation using NMR Data. 
-! Venable, R.M.; Luo, Y,; Gawrisch, K.; Roux, B.; Pastor, R.W. 
+! Ion Parameters and Validation using NMR Data.
+! Venable, R.M.; Luo, Y,; Gawrisch, K.; Roux, B.; Pastor, R.W.
 ! J. Phys. Chem. B 2013, 117 (35), pp 10183–10192.  DOI: 10.1021/jp401512z
 !
 ! prot
@@ -361,20 +362,26 @@ CLA    LIT      -0.0187     3.6875 ! Savelyev and MacKerell, JPCB 2015
 CLA    SOD      -0.0839     3.7310 ! Savelyev and MacKerell, JPCB 2015
 CLA    POT      -0.1142     4.0810 ! Savelyev and MacKerell, JPCB 2015
 
+!Potassium NBFixes
+!carboxylate O
+POT    OC       -0.1022   3.524   ! PNAS, 111: E5354-E5362 (2014)
+POT    OCL      -0.1022   3.524   ! PNAS, 111: E5354-E5362 (2014)
+POT    OC2D2    -0.1022   3.524   ! PNAS, 111: E5354-E5362 (2014)
+POT    OG2D2    -0.1022   3.524   ! PNAS, 111: E5354-E5362 (2014)
+
 !Calcium NBFixes: 2019-8
 CAL    CLA      -0.134164   3.727 ! from J. Phys. Chem. B 2018, 122, 1484−1494
 CAL    O2L      -0.12       3.256 ! from J. Phys. Chem. B 2018, 122, 1484−1494
 CAL    OC2DP    -0.12       3.256 ! from J. Phys. Chem. B 2018, 122, 1484−1494
 CAL    OG2P1    -0.12       3.256 ! from J. Phys. Chem. B 2018, 122, 1484−1494
-!
+!carboxylate O
 CAL    OCL      -0.12       3.232 ! Rong Shen and Benoit Roux, personal communication
-CAL    OC       -0.12       3.232 ! Rong Shen and Benoit Roux, personal communication
-CAL    OC2D2    -0.12       3.232 ! Rong Shen and Benoit Roux, personal communication
-CAL    OG2D2    -0.12       3.232 ! Rong Shen and Benoit Roux, personal communication
+CAL    OC       -0.12       3.232 ! Nature Structural & Molecular Biology 23: 590 (2016)
+CAL    OC2D2    -0.12       3.232 !
+CAL    OG2D2    -0.12       3.232 !
 
 END
 BOMLEV @bom @PARA
 WRNLEV @wrn @PARA
 
 return
-

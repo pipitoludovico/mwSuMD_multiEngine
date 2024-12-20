@@ -8,7 +8,7 @@ from mwSuMD_lib.MDsetters.MDsettings import MDsetter
 from mwSuMD_lib.MetricOperators.Metrics import MetricsParser
 from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
 from mwSuMD_lib.Protocol.Runners import Runner
-from mwSuMD_lib.Utilities.GPUoperations import ProcessManager
+from mwSuMD_lib.Utilities.ProcessAndGPUutilities import ProcessManager
 from mwSuMD_lib.MDutils.TrajectoryWrapper import TrajectoryOperator
 from mwSuMD_lib.Utilities.Loggers import Logger
 from warnings import filterwarnings
