@@ -122,7 +122,7 @@ class TrajectoryOperator(mwInputParser):
                    "$sel delete",
                    "return",
                    "}",
-                   f'align 0 0 {unwrapSel}',
+                   f'align 0 0 "{unwrapSel}"',
                    f'pbc unwrap -sel "{unwrapSel}"',
                    "$sel writepsf filtered.psf",
                    "$sel writepsf ../../filtered_topology.psf" if not os.path.exists("../../filtered_topology.psf") else "",
