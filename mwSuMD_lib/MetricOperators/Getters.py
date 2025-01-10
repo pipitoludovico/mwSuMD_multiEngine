@@ -38,7 +38,7 @@ class Getters(mwInputParser):
         else:
             psf = 'filtered.psf'
         # temporary hotfix
-        psf = "filtered.psf"
+        psf = "filtered.pdb"
         if str(metric).startswith('DISTANCE'):
             u = Mda.Universe(psf, xtc)
             sel1 = u.select_atoms(sel_1)
