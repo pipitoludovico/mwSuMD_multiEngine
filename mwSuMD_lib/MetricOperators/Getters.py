@@ -37,6 +37,8 @@ class Getters(mwInputParser):
                         psf = "../../system/%s" % self.initialParameters.get('TPR')
         else:
             psf = 'filtered.psf'
+        # temporary hotfix
+        psf = "filtered.psf"
         if str(metric).startswith('DISTANCE'):
             u = Mda.Universe(psf, xtc)
             sel1 = u.select_atoms(sel_1)
