@@ -126,7 +126,7 @@ Enjoy using mwSuMD for monitoring your molecular dynamics simulations! If you ha
 
 ## Config File Keyword explanation
 
-
+```
 Restart [YES/NO]; specify if you wish to continue a previously interrupted mwSuMD simulation. If the “trajectories” folder is present and contains xtc files output from the previous simulation, then is Restart YES by default
 
 WrapEngine = [VMD/MDA]; select how to perform the wrapping of the short simulations before computation of the supervised metric(s) [set MDA to use MDAnalysis, VMD to use VMD]
@@ -202,4 +202,4 @@ Savefreq = time interval between saved frames, in ps; should be 1/3 of Timewindo
 
 
 It is possible to run plumed at the same time as the mwSuMD simulations by creating a folder called "plumed" outside "system", where this input file is located, and placing your plumed.inp file in it.
-
+```
