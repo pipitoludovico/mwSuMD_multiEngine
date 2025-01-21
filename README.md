@@ -79,25 +79,30 @@ Before you start, make sure you have the following prerequisites installed on yo
     ```
 
 ## Setting up the System
-!!! You "./system" folder should include the input file you used to initially equilibrate the system !!!
+To run, mwSuMD needs a prepared and equilibrated system to start with. For instance, if you want to sample the binding of a ligand, place your molecule away from the supposed binding site. Prepare and equilibrate the system as if you were about to run your productive MD.
+Remember: your "./system" folder should include the input file you used to initially equilibrate the system!
 
 
 # mwSuMD looks for file extension to determine the engine you used for the equilibration!
-It is important you either keep your input file or even create a tag file for the engine selection.
+It is important you either keep your input file or either create a tag file for the engine selection.
 Each engine compiles the binaries in a slight different way. mwSuMD looks for file extensions that are usually default for that specific engine.
 
 For example: if you used NAMD to produce the binaries, mwSuMD will expect either your .namd input file, or either an empty tag file ending with .namd inside the "./system" folder. The same way, if you used ACEMD you will need a file ending in .inp, an .gro if you used GROMACS, or a .chk file if you used openMM.
-The choice of these files was dictated by their simplicity and uniqueness.
+The choice of these files was dictated by their simplicity and uniqueness. It is much more straightforward to look at your equilibration input file extension rather than comparing binary signatures to determine the source.
+
+## Extra Parameters
+
+You can add additional parameter files by either adding your "'.param', '.prm', '.par', '.top', '.rtf', '.str'" files straight into the "./system" folder or, for a tidy working environment, by making an external directory called "parameters" and adding your files there. Remember: your custom parameter files will be added last, hence they will update the builtin files!
+
+
+## Run Preparation
 
 1. Create your working folder, and make a new folder named "system" in. The settings_mwSuMD.inp file must be located outside this folder.
 
-2. Copy your structure inside "system" and run your equilibration there using your preferred molecular dynamics engine among OPENMM, NAMD, ACEMD, or GROMACS. You can use either AMBER or CHARMM force fields, or GROMACS's own OPLS ff.
+2. Copy your structure inside "system" and run your equilibration there as usual, using your preferred molecular dynamics engine among OPENMM, NAMD, ACEMD, or GROMACS. You can use either AMBER or CHARMM force fields, or GROMACS's own OPLS ff. MwSuMD will look for file extension to guess the FF you used.
 
 3. Ensure the "system" folder contains a properly equilibrated system with the necessary binary files generated during equilibration.
 
-
-## Extra Parameters
-You can add additional parameter files by either adding your "'.param', '.prm', '.par', '.top', '.rtf', '.str'" files straight into the "./system" folder or, for a tidy working environment, by making an external directory called "parameters" and adding your files there. Remember: your custom parameter files will be added last, hence they will update the builtin files!
 
 ## Using PLUMED
 It is possible to run MetaDynamics in conjunction with mwSuMD, should you want to. To activate PLUMED, make a folder called "plumed" outside "./system", in your cwd, and write a file called "plumed.inp" in it. Edit your file following your needs and mwSuMD will read that during each step.
