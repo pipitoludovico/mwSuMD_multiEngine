@@ -127,8 +127,6 @@ Enjoy using mwSuMD for monitoring your molecular dynamics simulations! If you ha
 ## Config File Keyword explanation
 
 ```
-Restart [YES/NO]; specify if you wish to continue a previously interrupted mwSuMD simulation. If the “trajectories” folder is present and contains xtc files output from the previous simulation, then is Restart YES by default
-
 WrapEngine = [VMD/MDA]; select how to perform the wrapping of the short simulations before computation of the supervised metric(s) [set MDA to use MDAnalysis, VMD to use VMD]
 
 WrapOn = selection for wrapping
