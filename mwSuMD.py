@@ -6,9 +6,9 @@ from mwSuMD_lib.Parsers import CLIparser
 warnings.filterwarnings('ignore')
 
 Loggers.Logger.LogToFile('ad', '',
-                         "If you want to use your personal setting for simulating, please, place it the system folder, call it \n "
-                         "production.inp/namd/mdp (according to your engine) and mwSuMD will use that instead of the default file. \n"
-                         "If you choose to do so, make sure it points to a folder named 'restart' to look for the restart binaries.\n")
+                         "If you want to use a custom input file for your engine of choice, please, place it in the './system' folder, and call it \n "
+                         "production.inp/namd/mdp (according to your engine). MwSuMD will use that instead of the default file. \n"
+                         "If you choose to do so, make sure it points to a folder named 'restart' for continuing from the last binaries!\n")
 
 
 def main():
