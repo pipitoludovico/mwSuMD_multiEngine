@@ -1,5 +1,8 @@
 import os
 import re
+from MDAnalysis import Universe
+from MDAnalysis.coordinates.chain import ChainReader
+from MDAnalysis.coordinates.XTC import XTCWriter
 
 from warnings import filterwarnings
 
@@ -48,7 +51,14 @@ class TrajMerger:
             self.outputFileName = f'merged_from_{interval[0]}_to_{interval[1]}.xtc'
 
     def Merge(self):
-        os.system(f"mdconvert {' '.join(self.sortedTrajs)} -f -o {self.outputFileName}")
+        chain_reader = ChainReader(self.sortedTrajs)
+        natoms = chain_reader.n_atoms
+        u = Universe.empty(natoms, trajectory=True)
+        u.trajectory = chain_reader
+        ag = u.select_atoms('all')
+        with XTCWriter("merged.xtc", n_atoms=natoms) as writer:
+            for ts in u.trajectory:
+                writer.write(ag)
 
     def ReadWrap(self) -> None:
         with open(self.inputFile) as infile:

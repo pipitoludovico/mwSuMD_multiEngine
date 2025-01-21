@@ -2,9 +2,12 @@
 
 ## Introduction
 
-Welcome to mwSuMD, a tool for supervising molecular dynamics simulations. This README will guide you through the setup process to ensure a smooth experience with mwSuMD.
+Welcome to mwSuMD, a tool for supervising molecular dynamics simulations. This README will guide you through the setup process to ensure a smooth experience with mwSuMD. Multiple walker supervised molecular dynamics (mwSuMD) is an adaptive sampling molecular dynamics (MD) technique for studying ligand-receptor binding and unbinding pathways or conformational changes (https://doi.org/10.7554/eLife.96513.2) not accessible to classic MD simulations. It is a scalable multi-engine software meant to run batches of simulations either in parallel or serial. The philosophy behind mwSuMD is to narrow down as much as possible the use of third-party software, limiting the tools only to GNU free licenced software. Furthermore, we decided to open the software to different engines to facilitate its use for those familiar with either NAMD, GROMACS, ACEMD or OPENMM.
+The code is available and you can easily customise the files, your inputs and your criteria to conduct your simulations. 
+
 
 ## Prerequisites
+Conda is not mandatory but is warmly suggested, to avoid dependency conflicts or versioning issues.
 
 Before you start, make sure you have the following prerequisites installed on your system:
 

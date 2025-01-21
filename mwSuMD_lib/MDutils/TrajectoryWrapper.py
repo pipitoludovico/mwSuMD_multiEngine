@@ -2,6 +2,9 @@ import os
 
 import MDAnalysis as Mda
 from MDAnalysis import transformations
+from MDAnalysis import Universe
+from MDAnalysis.coordinates.chain import ChainReader
+from MDAnalysis.coordinates.XTC import XTCWriter
 import traceback
 
 from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
@@ -75,6 +78,9 @@ class TrajectoryOperator(mwInputParser):
             u.trajectory.add_transformations(*workflow)
             # we write the filtered out trj and coords for the metrics
             ag.write("filtered.pdb")
+            if not os.path.exists("../../filtered_topology.pdb"):
+                ag.write("../../filtered_topology.pdb")
+            # write now the wrapped xtc
             with Mda.Writer('wrapped.xtc', ag) as w:
                 for ts in u.trajectory:
                     if ts:
@@ -166,7 +172,14 @@ class TrajectoryOperator(mwInputParser):
                 for line in txt:
                     vmdscr.write(f'{line}\n')
             os.system('vmd -dispdev text -e filterTrj.vmd > vmd.log 2>&1')
-            os.system('mdconvert -o wrapped.xtc -f wrapped.dcd > mdconvert.log')
+            chain_reader = ChainReader("wrapped.dcd")
+            natoms = chain_reader.n_atoms
+            u = Universe.empty(natoms, trajectory=True)
+            u.trajectory = chain_reader
+            ag = u.select_atoms('all')
+            with XTCWriter("wrapped.xtc", n_atoms=natoms) as writer:
+                for ts in u.trajectory:
+                    writer.write(ag)
             os.chdir(self.folder)
         except RuntimeError:
             print(traceback.format_exc())
