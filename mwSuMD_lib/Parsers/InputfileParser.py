@@ -114,7 +114,6 @@ class mwInputParser:
         # Default settings:
         self.initialParameters['Metric_1'] = None
         self.initialParameters['Metric_2'] = None
-        self.initialParameters['Restart'] = None
         self.initialParameters['CUSTOMFILE'] = None
         self.initialParameters['Timestep'] = 2
         self.initialParameters['Savefreq'] = 20
@@ -125,7 +124,7 @@ class mwInputParser:
         for customFile in os.listdir(f"{self.initialParameters['Root']}/system"):
             if customFile.startswith('production') and customFile.endswith(self.customInputFileExtension):
                 self.initialParameters['CUSTOMFILE'] = f"{self.folder}/system/{customFile}"
-                if self.trajCount == 0 and self.initialParameters['Restart'] == 'NO':
+                if self.trajCount == 0 :
                     for extension in self.outExtensions:
                         Popen(f'cp {self.folder}/system/*.{extension} restarts/previous.{extension}',
                               shell=True)
@@ -154,9 +153,6 @@ class mwInputParser:
                 if line.startswith('CheckEvery'):
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['CheckEvery'] = int(line.split('=')[1].strip())
-
-                if line.startswith('Restart'):
-                    mwInputParser.initialParameters['Restart'] = line.split('=')[1].strip().upper()
 
                 if line.startswith('Output'):
                     mwInputParser.initialParameters['Output'] = line.split('=')[1].strip()
@@ -270,7 +266,7 @@ class mwInputParser:
 
     def getRestartOutput(self):
         os.makedirs('restarts', exist_ok=True)
-        if self.trajCount != 0 or self.initialParameters['Restart'] == 'YES':
+        if self.trajCount != 0:
             directory = f'{self.folder}/restarts'
         else:
             directory = f'{self.folder}/system'
