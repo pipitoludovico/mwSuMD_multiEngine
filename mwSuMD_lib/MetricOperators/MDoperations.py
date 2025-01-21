@@ -66,7 +66,6 @@ class MDoperator:
                 for filename in os.listdir("../"):
                     if '.' not in filename:
                         fullname = os.path.join("../", filename)
-                        print(f'STO COPIANDO CON cp {fullname}  {self.folder}/restarts/')
                         os.system(f'cp {fullname}  {self.folder}/restarts/')
                     if filename.endswith(".dat"):
                         os.system(f'cp {filename} {self.folder}/restarts/')

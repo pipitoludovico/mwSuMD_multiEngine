@@ -21,24 +21,24 @@ class Getters(mwInputParser):
         filterwarnings(action='ignore')
 
     def GetMetric(self, metric, sel_1, sel_2):
-        psf = None
-        xtc = 'wrapped.xtc'
-        if self.initialParameters.get('WrapEngine') != 'VMD':
-            if self.initialParameters['Forcefield'] == 'CHARMM':
-                if self.initialParameters['PSF'] is not None:  # check for OpenMM with no psf
-                    psf = '../../system/%s' % self.initialParameters['PSF']
-            elif self.initialParameters['Forcefield'] == 'AMBER':
-                psf = '../../system/%s' % self.initialParameters['PRMTOP']
-            elif self.initialParameters['Forcefield'] == 'GROMOS':
-                for gro in os.listdir(os.getcwd()):
-                    if gro.endswith('.gro'):
-                        psf = gro
-                    else:
-                        psf = "../../system/%s" % self.initialParameters.get('TPR')
-        else:
-            psf = 'filtered.psf'
+        psf = "filtered.pdb"
+        xtc = 'wrapped.xtc'  #
+        # if self.initialParameters.get('WrapEngine') != 'VMD':
+        #     if self.initialParameters['Forcefield'] == 'CHARMM':
+        #         if self.initialParameters['PSF'] is not None:  # check for OpenMM with no psf
+        #             psf = '../../system/%s' % self.initialParameters['PSF']
+        #     elif self.initialParameters['Forcefield'] == 'AMBER':
+        #         psf = '../../system/%s' % self.initialParameters['PRMTOP']
+        #     elif self.initialParameters['Forcefield'] == 'GROMOS':
+        #         for gro in os.listdir(os.getcwd()):
+        #             if gro.endswith('.gro'):
+        #                 psf = gro
+        #             else:
+        #                 psf = "../../system/%s" % self.initialParameters.get('TPR')
+        # else:
+        #     psf = 'filtered.psf'
+        u = Mda.Universe(psf, xtc)
         if str(metric).startswith('DISTANCE'):
-            u = Mda.Universe(psf, xtc)
             sel1 = u.select_atoms(sel_1)
             sel2 = u.select_atoms(sel_2)
             distances = []
@@ -48,7 +48,7 @@ class Getters(mwInputParser):
                         Logger.LogToFile('a', self.trajCount, self.selection_error)
                         raise ValueError
                     else:
-                        distance = Mda.lib.distances.distance_array(sel1.center_of_mass(), sel2.center_of_mass())[0][0]
+                        distance = Mda.lib.distances.distance_array(sel1.center_of_geometry(), sel2.center_of_geometry())[0][0]
                         distances.append(distance)
             mean_lin = np.mean(distances)
             distMetric = (mean_lin * distances[-1]) ** 0.5
@@ -56,7 +56,6 @@ class Getters(mwInputParser):
 
         if str(metric).upper().startswith('CONTACTS'):
             try:
-                u = Mda.Universe(psf, xtc)
                 if len(u.select_atoms(sel_1)) == 0 and len(u.select_atoms(sel_2)) == 0:
                     Logger.LogToFile('a', self.trajCount, self.selection_error)
                     raise ValueError
@@ -81,13 +80,11 @@ class Getters(mwInputParser):
         if str(metric).startswith('RMSD'):
             import MDAnalysis.analysis.rms
 
-            pdb = f'{self.folder}/system/reference/' + str(self.initialParameters['REFERENCE'])
+            referencePDB = f'{self.folder}/system/reference/' + str(self.initialParameters['REFERENCE'])
             try:
-                u = Mda.Universe(psf, xtc)
-                ref = Mda.Universe(pdb)
+                ref = Mda.Universe(referencePDB)
                 if len(u.select_atoms(sel_1)) == 0 or len(u.select_atoms(sel_2)) == 0:
                     Logger.LogToFile('a', self.trajCount, self.selection_error)
-                    # os.kill(os.getpid(), signal.SIGKILL)
                     raise ValueError
                 else:
                     R = Mda.analysis.rms.RMSD(u, ref, tol_mass=100, select="%s" % sel_1, groupselections=["%s" % sel_2])
@@ -106,7 +103,6 @@ class Getters(mwInputParser):
 
         if str(metric).startswith('HB'):
             try:
-                u = Mda.Universe(psf, xtc)
                 if sel_1 or sel_2 is not None:
                     lig_sele = u.select_atoms(f"({sel_1}) or ({sel_2})")
                     try:
@@ -149,7 +145,6 @@ class Getters(mwInputParser):
 
         if str(metric).startswith('SOLVATION'):
             try:
-                u = Mda.Universe(psf, xtc)
                 if sel_1 or sel_2 is not None:
                     lig_sele = u.select_atoms(f"({sel_1}) or ({sel_2})")
                     try:

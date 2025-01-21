@@ -60,20 +60,26 @@ class TrajectoryOperator(mwInputParser):
             try:
                 u = Mda.Universe(self.topology, trajFile)
             except:
-                Logger.LogToFile('a', self.trajCount, "No trajectory or psf found. Check your simulation parameters and make sure production went well")
+                Logger.LogToFile('a', self.trajCount,
+                                 "No trajectory or psf found. Check your simulation parameters and make sure production went well")
                 raise FileNotFoundError
 
             selection = u.select_atoms(f"{self.initialParameters['WrapOn']}")
             if len(selection.atoms) == 0:
-                Logger.LogToFile('a', self.trajCount, "your wrapping selection selected 0 atoms! using protein and name CA instead...")
+                Logger.LogToFile('a', self.trajCount,
+                                 "your wrapping selection selected 0 atoms! using protein and name CA instead...")
                 selection = u.select_atoms('protein and name CA')
             ag = u.select_atoms(f"{self.initialParameters['FilterOut']}")
-            workflow = [transformations.unwrap(selection), transformations.center_in_box(selection), transformations.wrap(ag, compound="fragments")]
+            workflow = [transformations.unwrap(selection), transformations.center_in_box(selection),
+                        transformations.wrap(ag, compound="fragments")]
             u.trajectory.add_transformations(*workflow)
+            # we write the filtered out trj and coords for the metrics
+            ag.write("filtered.pdb")
             with Mda.Writer('wrapped.xtc', ag) as w:
                 for ts in u.trajectory:
                     if ts:
                         w.write(ag)
+
             os.chdir(self.folder)
         except Exception as e:
             with open('wrappingLog.txt', 'a') as wrapLog:
@@ -93,7 +99,8 @@ class TrajectoryOperator(mwInputParser):
             unwrapSel = f"{self.initialParameters['WrapOn']}"
             filterSel = f"{self.initialParameters['FilterOut']}"
             topExt = 'psf' if self.topology.endswith('psf') else 'parm7' if self.topology.endswith('prmtop') else "top"
-            pdbExt = "pdb" if self.coordinates.endswith('pdb') else 'rst7' if self.coordinates.endswith('inpcrd') else "gro"
+            pdbExt = "pdb" if self.coordinates.endswith('pdb') else 'rst7' if self.coordinates.endswith(
+                'inpcrd') else "gro"
             extension = 'xtc' if trajFile.endswith('xtc') else 'dcd'
             txt = ['package require psfgen\n',
                    'package require pbctools',
@@ -101,6 +108,31 @@ class TrajectoryOperator(mwInputParser):
                    f'mol new {self.topology} type {topExt}',
                    f'mol addfile {self.coordinates} type {pdbExt}',
                    f'mol addfile {trajFile} type {extension} first 0 last -1 step 1 filebonds 1 autobonds 1 waitfor all',
+
+                   "proc get_cell {molid top} {",
+                   "    set all [atomselect $molid all]",
+                   "    set minmax [measure minmax $all]",
+                   "    # Calculate the vector representing the cell dimensions",
+                   "    set vec [vecsub [lindex $minmax 1] [lindex $minmax 0]]",
+                   "    # Define cell basis vectors for each dimension based on the vector values",
+                   "    puts \"cellBasisVector1 [lindex $vec 0] 0 0\"",
+                   "    puts \"cellBasisVector2 0 [lindex $vec 1] 0\"",
+                   "    puts \"cellBasisVector3 0 0 [lindex $vec 2]\"",
+                   "    set center [measure center $all]",
+                   "    puts \"cellOrigin $center\"",
+                   "    # Print the dimensions of the cell vector",
+                   "    puts \"[lindex $vec 0] [lindex $vec 1] [lindex $vec 2]\"",
+                   "    # Set the x, y, z dimensions using the calculated vector",
+                   "    set x [expr {[lindex $vec 0]}]",
+                   "    set y [expr {[lindex $vec 1]}]",
+                   "    set z [expr {[lindex $vec 2]}]",
+                   "    pbc set \"$x $y $z\" -all",
+                   "    # Delete the atom selection to free up memory",
+                   "    $all delete",
+                   "}",
+                   'if {[pbc get] == "0 0 0"} {\n',
+                   "get_cell}",
+
                    f'set sel [atomselect top "{filterSel}"]',
                    "animate goto 0",
                    f'pbc join residue -all -sel "protein or {unwrapSel}"',
@@ -125,6 +157,7 @@ class TrajectoryOperator(mwInputParser):
                    f'align 0 0 "{unwrapSel}"',
                    f'pbc unwrap -sel "{unwrapSel}"',
                    "$sel writepsf filtered.psf",
+                   "$sel writepdb filtered.pdb",
                    "$sel writepsf ../../filtered_topology.psf" if not os.path.exists("../../filtered_topology.psf") else "",
                    "$sel writepdb ../../filtered_topology.pdb" if not os.path.exists("../../filtered_topology.pdb") else "",
                    'animate write dcd wrapped.dcd beg 1 end -1 waitfor all sel $sel',

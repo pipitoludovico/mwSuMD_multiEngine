@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='mwSuMD',
-    version='1.22.5',
+    version='1.23.5',
     description='multiple walker Supervised Molecular Dynamics',
     author='Giuseppe Deganutti, Ludovico Pipitò',
     author_email='pipitol@uni.coventry.ac.uk',

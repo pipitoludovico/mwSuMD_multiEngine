@@ -1,5 +1,3 @@
-### Is this a restart? YES or NO
-Restart = NO
 ########################################################################
 ### Selection for wrapping (default "protein")
 ### You can use either MDAnalysis or VMD.
