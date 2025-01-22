@@ -91,7 +91,6 @@ class Checker(mwInputParser):
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
         MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(1, self.best_walker_score,
                                                                               self.best_metric_result)
-
         Logger.LogToFile('ad', self.trajCount, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.trajCount += 1
         # setting our check to False and end the protocol, beginning a new cycle.

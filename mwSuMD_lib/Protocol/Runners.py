@@ -38,7 +38,7 @@ class Runner(mwInputParser):
             files = os.listdir(f"./tmp/walker_{i}")
             trajectory = next((file for file in files if file.endswith('.xtc') or file.endswith('dcd')), None)
             if trajectory:
-                continue
+                del files
             else:
                 Logger.LogToFile('ad', self.trajCount, "No trajectory found. Check your tmp folder.")
                 exit()
@@ -181,7 +181,7 @@ class Runner(mwInputParser):
             files = os.listdir(f"./tmp/walker_{i}")
             trajectory = next((file for file in files if file.endswith('.xtc') or file.endswith('dcd')), None)
             if trajectory:
-                continue
+                del files
             else:
                 raise Exception("No trajectory found. Check your tmp folder.")
 

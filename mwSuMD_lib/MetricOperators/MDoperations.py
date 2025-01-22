@@ -1,7 +1,8 @@
 import os
 import re
+import shutil
 import subprocess
-
+from time import sleep
 import numpy as np
 from subprocess import DEVNULL
 from random import choice
@@ -75,19 +76,30 @@ class MDoperator:
             Logger.LogToFile('ad', self.cycle, "No binary saved: restarting from last checkpoint.")
             with open('walkerSummary.log', 'a') as walkerSummary:
                 walkerSummary.write(f"No binary produced. Simulation failed at cycle: {self.cycle}")
+                exit()
 
         os.chdir(self.folder)
+        # while any(".nfs" in f for _, _, files in os.walk("./tmp/") for f in files):
+        #     print(f'found nfs inside tmp')
+        #     sleep(1)
+        shutil.rmtree('./tmp', ignore_errors=True)
+
         with open('walkerSummary.log', 'a') as walkerSummary:
             if self.par['NumberCV'] == 1:
                 if self.par['Relax'] and check:
-                    self.info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(round(walker_score, 3)) + " Metrics: " + str(best_metric_result) + "\n"
+                    self.info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(
+                        round(walker_score, 3)) + " Metrics: " + str(best_metric_result) + "\n"
                 if not self.par['Relax'] and check:
-                    self.info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Best Metric: " + str(round(walker_score, 3)) + " Last Metric: " + str(best_metric_result) + "\n"
+                    self.info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Best Metric: " + str(
+                        round(walker_score, 3)) + " Last Metric: " + str(best_metric_result) + "\n"
             if self.par['NumberCV'] == 2:
                 if self.par['Relax'] and check:
-                    self.info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(round(walker_score, 3)) + " Metrics: " + str(best_metric_result) + "\n"
+                    self.info_to_write = str(self.cycle) + " RELAXATION SCORE: " + str(
+                        round(walker_score, 3)) + " Metrics: " + str(best_metric_result) + "\n"
                 if not self.par['Relax'] and check:
-                    self.info_to_write = str(self.cycle) + " Best Walker: " + str(best_walker) + " Score Result: " + str(round(walker_score, 3)) + " Last Metrics from best: " + str(best_metric_result) + "\n"
+                    self.info_to_write = str(self.cycle) + " Best Walker: " + str(
+                        best_walker) + " Score Result: " + str(
+                        round(walker_score, 3)) + " Last Metrics from best: " + str(best_metric_result) + "\n"
             walkerSummary.write(self.info_to_write)
         self.par['Relax'] = False
 
@@ -105,7 +117,8 @@ class MDoperator:
     def checkIfStuck(self, values, accumulatedFails) -> bool:
         if accumulatedFails >= self.par['Fails'] * int(self.par['NumberCV']):
             with open('walkerSummary.log', 'a') as logFile:
-                logFile.write('\nSimulation seemed stuck. It will run the last relaxation protocol and it will be terminated\n')
+                logFile.write(
+                    '\nSimulation seemed stuck. It will run the last relaxation protocol and it will be terminated\n')
                 logFile.close()
             if not self.openMM:
                 self.relaxSystemMulti()
@@ -172,7 +185,6 @@ class MDoperator:
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
 
         MDoperator(self.par, self.folder, self.openMM).saveStep(1, self.best_walker_score, self.best_metric_result)
-
         Logger.LogToFile('ad', self.cycle, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.cycle += 1
         # setting our check to False and end the protocol, beginning a new cycle.
@@ -189,7 +201,7 @@ class MDoperator:
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
         MDoperator(self.par, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score,
                                                                 self.best_metric_result)
-
+        # os.system('rm -rf ./tmp')
         Logger.LogToFile('ad', self.cycle, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.cycle += 1
         # setting our check to False and end the protocol, beginning a new cycle.

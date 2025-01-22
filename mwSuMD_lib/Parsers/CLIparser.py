@@ -34,8 +34,8 @@ class ArgParser:
 
         if args.kill is True:
             import os
+            os.system('val=$(<.mypid ) && kill -9 -$val')
             Logger.LogToFile('ad', "", "\nProcess terminated by user.")
-            os.system('val=$(<.mypid ) && kill -15 -$val')
             exit()
 
         if args.join is not None:

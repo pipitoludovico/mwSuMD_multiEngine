@@ -29,11 +29,6 @@ class ProtocolRunner(mwInputParser):
         Logger.LogToFile("w", self.trajCount, "*" * 200 + "\nRunning mwSuMD protocol\n" + "#" * 200)
         # create input files per walker after purging the existing one
         begin = time.perf_counter()
-        if os.path.exists('./tmp'):
-            while any(".nfs" in f for _, _, files in os.walk("./tmp/") for f in files):
-                print("found at standard")
-                time.sleep(1)
-            os.system('rm -rf ./tmp')
         op = MDoperator(self.initialParameters, self.folder, self.openMM)
         if not self.openMM:
             MDsetter(self.initialParameters).createInputFile()
@@ -47,7 +42,7 @@ class ProtocolRunner(mwInputParser):
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
         MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score, self.best_metric_result)
-
+        os.chdir(self.folder)
         end = time.perf_counter()
         final = end - begin
         Logger.LogToFile('ad', self.trajCount, "Cycle completed in:" + str(final))

@@ -22,10 +22,8 @@ class ProcessManager:
     @staticmethod
     def getpid():
         mypid = os.getpid()
-        pidFile = open(".mypid", "w")
-        pidFile.write(str(mypid))
-        pidFile.close()
-        os.system('date >> .dates.txt')
+        with open(".mypid", "w") as pidFile:
+            pidFile.write(str(mypid))
 
     @staticmethod
     def check_kill_process():

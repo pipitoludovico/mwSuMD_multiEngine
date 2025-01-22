@@ -20,7 +20,9 @@ class Logger:
 
     @staticmethod
     def logStep(par, trajCount, best_walker, walkers_metrics, walkers_metrics_1=None, walkers_metrics_2=None):
-        """Write log file with minimum info"""
+        """
+        DEPRECATED
+        Write log file with minimum info"""
         if walkers_metrics_1 is None:
             walkers_metrics_1 = []
         walkers_metrics_1.append(best_walker)
@@ -53,6 +55,9 @@ class Logger:
 
     @staticmethod
     def logSlope(data):
+        """
+        DEPRECATED
+        """
         # maxDist = max((dist, value) for dist, value in data.items())
         mD = max(dist for dist in data.values())
         with open('slope_logs', 'w') as slopeLog:
@@ -74,17 +79,19 @@ class Logger:
 
     @staticmethod
     def LogToFile(mode, cycle, message):
-        if mode == "w":
-            with open('LogFile.txt', 'w') as settingsFile:
-                settingsFile.write(f"This cycle started at step #{cycle}.\n")
-                settingsFile.write(message + "\n")
-        if mode == "a":
-            with open('LogFile.txt', 'a') as settingsFile:
-                settingsFile.write(f"\nSettings at cycle: {cycle}.\n")
-                settingsFile.write(message + "\n")
-        if mode == "ad":
-            with open('LogFile.txt', 'a') as settingsFile:
-                settingsFile.write(message + "\n")
+        pass
+        # if mode == "w":
+        #     with open('LogFile.txt', 'w') as settingsFile:
+        #         settingsFile.write(f"This cycle started at step #{cycle}.\n")
+        #         settingsFile.write(message + "\n")
+        # if mode == "a":
+        #     with open('LogFile.txt', 'a') as settingsFile:
+        #         settingsFile.write(f"\nSettings at cycle: {cycle}.\n")
+        #         settingsFile.write(message + "\n")
+        # if mode == "ad":
+        #     with open('LogFile.txt', 'a') as settingsFile:
+        #         settingsFile.write(message + "\n")
+        # settingsFile.close()
 
     @staticmethod
     def countTraj_logTraj(initialParameters, selection_list):

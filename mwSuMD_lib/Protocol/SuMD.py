@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import shutil
 
 from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
 from mwSuMD_lib.Protocol import ProtocolSelector
@@ -34,6 +35,11 @@ class suMD1(mwInputParser):
         self.run_First()
 
     def run_First(self):
+        # purging old tmp folders to start
+        if os.path.exists("./tmp"):
+            print("Found existing ./tmp. Purging the folder for the first cycle.")
+            shutil.rmtree('./tmp', ignore_errors=True)
+
         if self.parameters['NumberCV'] == 1:
             self.output_to_check = self.runProtocol()
         if self.parameters['NumberCV'] == 2:
@@ -91,6 +97,7 @@ class suMD1(mwInputParser):
                 self.parameters, self.selection_list, self.parameterFolderPath = pars.getSettings()
                 print(repr(e))
                 self.run_mwSuMD()
+
         if not self.condition:
             self.run_mwSuMD()
         Logger.LogToFile('w', self.cycle,
