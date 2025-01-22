@@ -79,9 +79,6 @@ class MDoperator:
                 exit()
 
         os.chdir(self.folder)
-        # while any(".nfs" in f for _, _, files in os.walk("./tmp/") for f in files):
-        #     print(f'found nfs inside tmp')
-        #     sleep(1)
         shutil.rmtree('./tmp', ignore_errors=True)
 
         with open('walkerSummary.log', 'a') as walkerSummary:
