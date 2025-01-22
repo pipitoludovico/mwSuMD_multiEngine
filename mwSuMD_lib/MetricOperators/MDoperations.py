@@ -2,7 +2,6 @@ import os
 import re
 import shutil
 import subprocess
-from time import sleep
 import numpy as np
 from subprocess import DEVNULL
 from random import choice
