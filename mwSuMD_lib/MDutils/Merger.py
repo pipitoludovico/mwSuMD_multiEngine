@@ -33,22 +33,25 @@ class TrajMerger:
                 self.trajList.append('trajectories/' + traj)
         natsort = lambda s: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', s)]
         self.sortedTrajs = (sorted(self.trajList, key=natsort))
-
-        if len(interval) == 1 and interval[0] != 'all':
-            start: int = int(interval[0]) - 1
-            self.sortedTrajs = (sorted(self.trajList[start:], key=natsort))
-            print(f"Merging from {self.sortedTrajs[0]} to the end.")
-            self.outputFileName = f'merged_from_{interval[0]}_to_last_step.xtc'
-        elif len(interval) == 1 and interval[0] == 'all':
-            print("Merging all steps into one.")
-            self.sortedTrajs = (sorted(self.trajList, key=natsort))
-            self.outputFileName = f'merged_full_movie.xtc'
-        elif len(interval) == 2:
-            startIndex = int(interval[0]) - 1
-            endIndex = int(interval[1])
-            self.sortedTrajs = (sorted(self.trajList[startIndex:endIndex], key=natsort))
-            print(f"Merging from {self.sortedTrajs[0]} to {self.sortedTrajs[-1]}.")
-            self.outputFileName = f'merged_from_{interval[0]}_to_{interval[1]}.xtc'
+        try:
+            if len(interval) == 1 and interval[0] != 'all':
+                start: int = int(interval[0]) - 1
+                self.sortedTrajs = (sorted(self.trajList[start:], key=natsort))
+                print(f"Merging from {self.sortedTrajs[0]} to the end.")
+                self.outputFileName = f'merged_from_{interval[0]}_to_last_step.xtc'
+            elif len(interval) == 1 and interval[0] == 'all':
+                print("Merging all steps into one.")
+                self.sortedTrajs = (sorted(self.trajList, key=natsort))
+                self.outputFileName = f'merged_full_movie.xtc'
+            elif len(interval) == 2:
+                startIndex = int(interval[0]) - 1
+                endIndex = int(interval[1])
+                self.sortedTrajs = (sorted(self.trajList[startIndex:endIndex], key=natsort))
+                print(f"Merging from {self.sortedTrajs[0]} to {self.sortedTrajs[-1]}.")
+                self.outputFileName = f'merged_from_{interval[0]}_to_{interval[1]}.xtc'
+        except:
+            print('The index of the step returned an error. Make sure the index you used is inside the trajectory folder')
+            exit()
 
     def Merge(self):
         chain_reader = ChainReader(self.sortedTrajs)
