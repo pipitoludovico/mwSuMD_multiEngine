@@ -56,7 +56,7 @@ class TrajMerger:
         u = Universe.empty(natoms, trajectory=True)
         u.trajectory = chain_reader
         ag = u.select_atoms('all')
-        with XTCWriter("merged.xtc", n_atoms=natoms) as writer:
+        with XTCWriter(f"{self.outputFileName}", n_atoms=natoms) as writer:
             for ts in u.trajectory:
                 writer.write(ag)
 
