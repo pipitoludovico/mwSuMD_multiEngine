@@ -15,23 +15,15 @@ class ProcessManager:
                 print("Only one instance of mwSuMD can run in the same folder.")
                 exit()
             else:
-                ProcessManager.getpid()
+                ProcessManager.writepid()
         else:
-            ProcessManager.getpid()
+            ProcessManager.writepid()
 
     @staticmethod
-    def getpid():
+    def writepid():
         mypid = os.getpid()
         with open(".mypid", "w") as pidFile:
             pidFile.write(str(mypid))
-
-    @staticmethod
-    def check_kill_process():
-        with open(".mypid", "r") as f:
-            for line in f:
-                pid = line.split()[0].strip()
-        os.system('kill %s' % pid)
-        quit()
 
     @staticmethod
     def getGPUids():
