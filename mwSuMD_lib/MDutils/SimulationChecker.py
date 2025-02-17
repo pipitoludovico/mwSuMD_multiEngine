@@ -1,7 +1,6 @@
 import os
 import subprocess
 from subprocess import DEVNULL
-from random import choice
 
 from mwSuMD_lib.MetricOperators.MDoperations import MDoperator
 from mwSuMD_lib.MDsetters.MDsettings import MDsetter
@@ -46,6 +45,7 @@ class Checker(mwInputParser):
         return accumulatedFails
 
     def relaxSystemMulti(self):
+        jointGPUs = ""
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         Logger.LogToFile('ad', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         # The relaxation protocol starts here
@@ -60,9 +60,9 @@ class Checker(mwInputParser):
             Logger.LogToFile('ad', self.trajCount, f"EXCLUDED GPU: {self.initialParameters['EXCLUDED_GPUS']}")
             for excluded in self.initialParameters['EXCLUDED_GPUS']:
                 GPUs.remove(excluded)
-        # strGPU = map(str, GPUs)  # gsd calls an error when using multiple GPUs. See https://github.com/openmm/openmm/issues/2535
-        # jointGPUs = ','.join(strGPU)
-        jointGPUs = choice(GPUs)
+        check = True
+        while check:
+            check, jointGPUs = manager.CheckIfAnyGPUisFree(GPUs)
         # we create a special input file that has a longer runtime (5ns default or user-defined)
         MDsetter(self.initialParameters).createInputFile()
         # we run this inside walker_1 for convenience

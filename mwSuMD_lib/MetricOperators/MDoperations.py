@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import numpy as np
 from subprocess import DEVNULL
-from random import choice
+
 from mwSuMD_lib.MDsetters.MDsettings import MDsetter
 from mwSuMD_lib.MetricOperators.Metrics import MetricsParser
 from mwSuMD_lib.Utilities.ProcessAndGPUutilities import ProcessManager
@@ -140,6 +140,8 @@ class MDoperator:
     def relaxSystemMulti(self):
         Logger.LogToFile('ad', self.cycle, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         self.par['Relax'] = True
+        jointGPUs = None
+
         manager = ProcessManager()
         if not self.par['NOGPU']:
             GPUs = manager.getGPUids()
@@ -150,9 +152,9 @@ class MDoperator:
             Logger.LogToFile('ad', self.cycle, f"EXCLUDED GPU: {self.par['EXCLUDED_GPUS']}")
             for excluded in self.par['EXCLUDED_GPUS']:
                 GPUs.remove(excluded)
-        # strGPU = map(str, GPUs)     # activate these once the multiGPU issues is solved
-        # jointGPUs = ','.join(strGPU)
-        jointGPUs = str(choice(GPUs))
+        check = True
+        while check:
+            check, jointGPUs = manager.CheckIfAnyGPUisFree(GPUs)
         # we create a special input file that has a longer runtime (5ns default or user-defined)
         MDsetter(self.par).createInputFile()
         # we run this inside walker_1 for convenience

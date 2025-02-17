@@ -1,7 +1,7 @@
 import os
 import psutil
 import GPUtil
-
+from time import sleep
 from mwSuMD_lib.Utilities.Loggers import Logger
 
 
@@ -53,3 +53,13 @@ class ProcessManager:
                 pid = f.read().strip()
                 return int(pid)
         return None
+
+    @staticmethod
+    def CheckIfAnyGPUisFree(GPUs: list):
+        for device in GPUtil.getGPUs():
+            if device.id in GPUs:
+                usage = round(device.memoryUsed / device.memoryTotal)
+                if usage < 0.7:
+                    check = False
+                    return check, device.id
+        sleep(60)
