@@ -29,7 +29,7 @@ class openMMsetter:
             saveFreq = (int(self.initialParameters['Savefreq'] / (self.initialParameters['Timestep'] / 1000)))
             ts = float(self.initialParameters.get('Timestep') / 1000)
             temperature = self.initialParameters.get('Temperature', 310)
-            integrator = LangevinIntegrator(temperature * kelvin, 1 / picosecond, ts * picoseconds)
+            integrator = LangevinMiddleIntegrator(temperature * kelvin, 1 / picosecond, ts * picoseconds)
             platform = Platform.getPlatformByName('CUDA')
             if not self.initialParameters['NOGPU']:
                 properties = {'DeviceIndex': str(gpu), 'Precision': 'mixed'}
@@ -99,21 +99,18 @@ class openMMsetter:
             xmlPATH = [os.path.abspath(os.path.join(self.initialParameters['Root'], _PATH, file)) for file in os.listdir(os.path.join(self.initialParameters['Root'], _PATH)) if file.endswith(".xml")][0]
             chkPATH = [os.path.abspath(os.path.join(self.initialParameters['Root'], _PATH, file)) for file in os.listdir(os.path.join(self.initialParameters['Root'], _PATH)) if file.endswith(".chk")][0]
             try:
-                sim.loadState(xmlPATH)
-                sim.loadCheckpoint(chkPATH)
+                if xmlPATH:
+                    try:
+                        sim.loadState(xmlPATH)
+                    except:
+                        if walker_folder == 1:
+                            print("A new NVT system was built with default parameters.")
+                else:
+                    sim.loadCheckpoint(chkPATH)
             except Exception as e:
                 print(repr(e))
                 Logger.LogToFile('a', self.trajCount, repr(e))
-            # checking parameters
-            p = sim.context.getParameters()
-
-            for f in system.getForces():
-                if isinstance(f, mm.MonteCarloBarostat):
-                    f.setFrequency(0)
-            for k in p:
-                if k == "k":
-                    sim.context.setParameter('k', 0)
-                    sim.context.reinitialize(True)
+            sim.context.reinitialize(True)
             sim.context.setStepCount(0)
             sim.reporters.append(app.StateDataReporter(f"{self.initialParameters['Root']}/{folder_path}/openMM_{walker_folder}.log", saveFreq, step=True, totalSteps=number_of_steps, remainingTime=True, potentialEnergy=True, speed=True, temperature=True))
             try:
