@@ -105,11 +105,11 @@ class openMMsetter:
                     except:
                         if walker_folder == 1:
                             print("A new NVT system was built with default parameters.")
-                else:
-                    sim.loadCheckpoint(chkPATH)
+
             except Exception as e:
                 print(repr(e))
                 Logger.LogToFile('a', self.trajCount, repr(e))
+            sim.loadCheckpoint(chkPATH)
             sim.context.reinitialize(True)
             sim.context.setStepCount(0)
             sim.reporters.append(app.StateDataReporter(f"{self.initialParameters['Root']}/{folder_path}/openMM_{walker_folder}.log", saveFreq, step=True, totalSteps=number_of_steps, remainingTime=True, potentialEnergy=True, speed=True, temperature=True))
