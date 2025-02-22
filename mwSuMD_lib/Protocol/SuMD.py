@@ -30,6 +30,11 @@ class suMD1(mwInputParser):
         self.fails = 0
         self.condition = None
         self.cycle = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
+        if self.cycle == 0:
+            Logger.LogToFile('ad', '',
+                             "If you want to use a custom input file for your engine of choice, please, place it in the './system' folder, and call it \n "
+                             "production.inp/namd/mdp (according to your engine). MwSuMD will use that instead of the default file. \n"
+                             "If you choose to do so, make sure it points to a folder named 'restart' for continuing from the last binaries!\n")
         Logger.PrintSettingsToFile("w", self.cycle, str(self.settings_df))
         Logger.countTraj_logTraj(self.initialParameters, self.selection_list)
         self.run_First()
