@@ -54,14 +54,21 @@ class TrajMerger:
             exit()
 
     def Merge(self):
-        chain_reader = ChainReader(self.sortedTrajs)
-        natoms = chain_reader.n_atoms
-        u = Universe.empty(natoms, trajectory=True)
-        u.trajectory = chain_reader
-        ag = u.select_atoms('all')
+        first_batch = self.sortedTrajs[0]
+        temp_reader = ChainReader(first_batch)
+        natoms = temp_reader.n_atoms
+        del temp_reader
+
         with XTCWriter(f"{self.outputFileName}", n_atoms=natoms) as writer:
-            for ts in u.trajectory:
-                writer.write(ag)
+            for i in range(0, len(self.sortedTrajs), 100):
+                batch_files = self.sortedTrajs[i:i + 100]
+                batch_reader = ChainReader(batch_files)
+                u = Universe.empty(natoms, trajectory=True)
+                u.trajectory = batch_reader
+                ag = u.select_atoms("all")
+                for ts in u.trajectory:
+                    writer.write(ag)
+                del batch_reader, u, ag
 
     def ReadWrap(self) -> None:
         with open(self.inputFile) as infile:

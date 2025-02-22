@@ -105,7 +105,6 @@ class openMMsetter:
                     except:
                         if walker_folder == 1:
                             print("A new NVT system was built with default parameters.")
-
             except Exception as e:
                 print(repr(e))
                 Logger.LogToFile('a', self.trajCount, repr(e))
