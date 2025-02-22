@@ -2,8 +2,7 @@ import numpy as np
 import pkg_resources
 
 from openmm import *
-import openmm as mm
-from openmm import XmlSerializer, LangevinIntegrator, Platform
+from openmm import XmlSerializer, Platform, LangevinMiddleIntegrator
 import openmm.app as app
 from openmm.unit import *
 
@@ -39,7 +38,7 @@ class openMMsetter:
             if self.initialParameters.get('Relax') is True:
                 self.initialParameters['Timewindow'] = int(self.initialParameters['RelaxTime'] * 1000)
                 number_of_steps = int((self.initialParameters['RelaxTime'] * 1000) / (self.initialParameters['Timestep'] / 1000))
-                saveFreq = 50000
+                saveFreq = 5000
 
             os.makedirs(folder_path, exist_ok=True)
             os.chdir(folder_path)
@@ -103,7 +102,7 @@ class openMMsetter:
                     try:
                         sim.loadState(xmlPATH)
                     except:
-                        if walker_folder == 1:
+                        if walker_folder == 1 and self.trajCount == 0:
                             print("A new NVT system was built with default parameters.")
             except Exception as e:
                 print(repr(e))

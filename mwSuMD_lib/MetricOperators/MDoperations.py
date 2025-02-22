@@ -98,6 +98,7 @@ class MDoperator:
                         round(walker_score, 3)) + " Last Metrics from best: " + str(best_metric_result) + "\n"
             walkerSummary.write(self.info_to_write)
         self.par['Relax'] = False
+        shutil.rmtree('./tmp', ignore_errors=True)
 
     def prepareTPR(self, walk_count, trajcount, customFile=None):
         gro = f'{self.par["Root"]}/system/{self.par["GRO"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.gro'
