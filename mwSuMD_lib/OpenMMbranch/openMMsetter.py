@@ -1,6 +1,6 @@
 import numpy as np
 import pkg_resources
-
+from subprocess import Popen, DEVNULL
 from openmm import *
 from openmm import XmlSerializer, Platform, LangevinMiddleIntegrator
 import openmm.app as app
@@ -75,7 +75,15 @@ class openMMsetter:
                 system = p_top.createSystem(nonbondedMethod=app.PME, nonbondedCutoff=0.9 * nanometer, switchDistance=0.75 * nanometer, constraints=app.HBonds, rigidWater=True, hydrogenMass=4 * amu)
 
             def CheckPlumed():
+                plumedCopy = ""
                 if self.initialParameters.get("PLUMED"):
+                    for filename in os.listdir("../../restarts"):
+                        if '.' not in filename:
+                            fullname = os.path.join("../../restarts", filename)
+                            plumedCopy += f'cp {fullname} .;'
+                    if any(plumedFile.endswith(".dat") for plumedFile in os.listdir("../../restarts")):
+                        plumedCopy += "cp ../../restarts/*.dat .;"
+                    Popen(plumedCopy, shell=True, stdout=DEVNULL)
                     try:
                         from openmmplumed import PlumedForce
                         plumedPath = self.initialParameters.get("PLUMED")

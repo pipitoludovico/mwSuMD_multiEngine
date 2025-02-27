@@ -23,20 +23,6 @@ class Getters(mwInputParser):
     def GetMetric(self, metric, sel_1, sel_2):
         psf = "filtered.pdb"
         xtc = 'wrapped.xtc'  #
-        # if self.initialParameters.get('WrapEngine') != 'VMD':
-        #     if self.initialParameters['Forcefield'] == 'CHARMM':
-        #         if self.initialParameters['PSF'] is not None:  # check for OpenMM with no psf
-        #             psf = '../../system/%s' % self.initialParameters['PSF']
-        #     elif self.initialParameters['Forcefield'] == 'AMBER':
-        #         psf = '../../system/%s' % self.initialParameters['PRMTOP']
-        #     elif self.initialParameters['Forcefield'] == 'GROMOS':
-        #         for gro in os.listdir(os.getcwd()):
-        #             if gro.endswith('.gro'):
-        #                 psf = gro
-        #             else:
-        #                 psf = "../../system/%s" % self.initialParameters.get('TPR')
-        # else:
-        #     psf = 'filtered.psf'
         u = Mda.Universe(psf, xtc)
         if str(metric).startswith('DISTANCE'):
             sel1 = u.select_atoms(sel_1)

@@ -39,8 +39,6 @@ class MDsetter(mwInputParser):
                     # writing the input file
                     for line in txt:
                         mw_file.write(line)
-                    if self.setterParameters['PLUMED'] is not None:
-                        mw_file.write('plumedFile		%s\n' % self.setterParameters['PLUMED'])
             else:
                 os.system(f'cp {self.initialParameters["CUSTOMFILE"]} {self.initialParameters["Root"]}/tmp/walker_{walker}')
         self.initialParameters['Walkers'] = self.walkers_snaphot

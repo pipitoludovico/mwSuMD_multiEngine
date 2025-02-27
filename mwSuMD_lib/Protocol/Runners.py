@@ -1,7 +1,6 @@
 import time
 import concurrent.futures
 import subprocess
-from subprocess import DEVNULL
 import re
 from mwSuMD_lib.Utilities.ProcessAndGPUutilities import ProcessManager
 from mwSuMD_lib.MDutils.TrajectoryWrapper import *
@@ -104,8 +103,8 @@ class Runner(mwInputParser):
 
             for filename in os.listdir("../../restarts"):
                 if '.' not in filename:
-                    fullname = os.path.join("../", filename)
-                    plumedCopy += f'cp ../../restarts/{fullname} .;'
+                    fullname = os.path.join("../../restarts", filename)
+                    plumedCopy += f'cp {fullname} .;'
             if any(plumedFile.endswith(".dat") for plumedFile in os.listdir("../../restarts")):
                 plumedCopy += "cp ../../restarts/*.dat .;"
         else:
@@ -137,13 +136,13 @@ class Runner(mwInputParser):
                 gpuCall = '--platfrom CPU'
             # standard call: no custom file, no custom command
             if customFile is None and self.initialParameters['COMMAND'] is None:
-                command = f'acemd {gpuCall} input_{walk_count}_{trajCount}.inp > acemd.log'
+                command = f'acemd3 {gpuCall} input_{walk_count}_{trajCount}.inp > acemd.log'
             # no custom file / custom command
             if customFile is None and self.initialParameters['COMMAND'] is not None:
                 command = f'{self.initialParameters["COMMAND"]} {gpuCall} input_{walk_count}_{trajCount}.inp > acemd.log'
             # custom file / no custom command
             if customFile is not None and self.initialParameters['COMMAND'] is None:
-                command = f'acemd {gpuCall} production.inp > acemd.log'
+                command = f'acemd3 {gpuCall} production.inp > acemd.log'
             # custom file / custom command
             if customFile is not None and self.initialParameters['COMMAND'] is not None:
                 command = f'{self.initialParameters["COMMAND"]} {gpuCall} production.inp > acemd.log'

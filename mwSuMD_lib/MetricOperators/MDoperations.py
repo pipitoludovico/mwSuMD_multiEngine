@@ -36,7 +36,7 @@ class MDoperator:
         self.info_to_write = ""
 
     def saveStep(self, best_walker, walker_score, best_metric_result):
-        """Handles the restart files and the binary storage for OPENMM"""
+        """Handles the restart files and the binary storage"""
         os.chdir(f'tmp/walker_{best_walker}')
         check = any(binary.endswith(self.extensions) for binary in os.listdir("./"))
         if check:
@@ -63,9 +63,9 @@ class MDoperator:
                             outFile = match.group(1)
                             Logger.LogToFile('ad', self.cycle, str(os.getcwd() + outFile))
                             os.system(f'cp {outFile} {self.folder}/restarts/')
-                for filename in os.listdir("../"):
+                for filename in os.listdir("./"):
                     if '.' not in filename:
-                        fullname = os.path.join("../", filename)
+                        fullname = os.path.join("./", filename)
                         os.system(f'cp {fullname}  {self.folder}/restarts/')
                     if filename.endswith(".dat"):
                         os.system(f'cp {filename} {self.folder}/restarts/')
