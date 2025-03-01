@@ -28,7 +28,7 @@ Before you start, make sure you have the following prerequisites installed on yo
 1. Clone the mwSuMD repository to your local machine:
 
     ```bash
-    git clone https://github.com/pipitoludovico/mwSuMD_multiEngine.git
+    git clone https://gitlab.com/pipitoludovico/mwSuMD_multiEngine.git
     ```
 
 2. Navigate to the cloned directory:
