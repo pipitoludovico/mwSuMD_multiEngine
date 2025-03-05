@@ -1,6 +1,7 @@
 import os
 import subprocess
 from subprocess import DEVNULL
+import re
 
 from mwSuMD_lib.MetricOperators.MDoperations import MDoperator
 from mwSuMD_lib.MDsetters.MDsettings import MDsetter
@@ -46,6 +47,9 @@ class Checker(mwInputParser):
 
     def relaxSystemMulti(self):
         jointGPUs = ""
+        plumedCopy = ''
+        plumed = f'-plumed {self.initialParameters["PLUMED"]}' if self.initialParameters['PLUMED'] is not None else ''
+
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         Logger.LogToFile('ad', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
         # The relaxation protocol starts here
@@ -67,16 +71,34 @@ class Checker(mwInputParser):
         MDsetter(self.initialParameters).createInputFile()
         # we run this inside walker_1 for convenience
         os.chdir('tmp/walker_1')
+
+        if self.initialParameters.get("PLUMED") and self.trajCount != 0:
+            with open(self.initialParameters['PLUMED'], 'r') as plumedINP:
+                for line in plumedINP.readlines():
+                    match = re.search(r'FILE=([^\s]+)', line)
+                    if match:
+                        outFile = match.group(1).split(',')
+                        for chunk in outFile:
+                            plumedCopy += f"cp ../../restarts/{chunk} .; "
+            for filename in os.listdir("../../restarts"):
+                if '.' not in filename:
+                    fullname = os.path.join("../../restarts", filename)
+                    plumedCopy += f'cp {fullname} .;'
+            if any(plumedFile.endswith(".dat") for plumedFile in os.listdir("../../restarts")):
+                plumedCopy += "cp ../../restarts/*.dat .;"
+        else:
+            plumedCopy = ''
+
         for file in os.listdir(os.getcwd()):
             if file.endswith('.inp'):
-                subprocess.Popen(f'acemd --device {jointGPUs} {file} 1> relax.log', shell=True).wait()
+                subprocess.Popen(f'{plumedCopy} acemd --device {jointGPUs} {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.namd'):
-                subprocess.Popen(f'namd3 +p8 +devices {jointGPUs} {file} 1> relax.log', shell=True).wait()
+                subprocess.Popen(f'{plumedCopy} namd3 +p8 +devices {jointGPUs} {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.mdp'):
                 subprocess.Popen(
                     f'gmx convert-tpr -s {self.folder}/restarts/previous.tpr -extend {int(self.initialParameters["RelaxTime"] * 1000)} -o {self.initialParameters["Output"]}_{self.trajCount}.tpr > tpr_log.log 2>&1',
                     shell=True, stdout=DEVNULL).wait()
-                command = f'gmx mdrun -deffnm {self.initialParameters["Output"]}_{self.trajCount} > relax.log 2>&1'
+                command = f'{plumedCopy} gmx mdrun -v {plumed} -deffnm {self.initialParameters["Output"]}_{self.trajCount} > relax.log 2>&1'
                 subprocess.Popen(command, shell=True, stdout=DEVNULL).wait()
         os.chdir(f'{self.folder}')
         if self.initialParameters['WrapEngine'] == 'MDA':
