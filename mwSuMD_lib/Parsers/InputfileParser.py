@@ -54,10 +54,10 @@ class mwInputParser:
         if self.initialParameters.get('MDEngine') == 'GROMACS':
             if not any(file.endswith('tpr') for file in os.listdir('./system')):
                 try:
-                    Popen(f"touch {self.folder}/system/gic.mdp", shell=True, stdout=DEVNULL)
+                    Popen(f"touch {self.folder}/system/gic.mdp", shell=True, stdout=DEVNULL).wait()
                     Popen(
                         f"gmx grompp -c {self.folder}/system/{self.initialParameters['GRO']} -p {self.folder}/system/{self.initialParameters['TOP']} -f {self.folder}/system/gic.mdp -o {self.folder}/system/{str(self.initialParameters['GRO']).replace('gro', 'tpr')}",
-                        shell=True, stdout=DEVNULL)
+                        shell=True, stdout=DEVNULL).wait()
                 except FileNotFoundError:
                     print(
                         "You need a .tpr file with GROMACS for MDAnalysis as GROMACS's .gro or .top lack any meaningful information for MDAnalysis")
@@ -127,7 +127,7 @@ class mwInputParser:
                 if self.trajCount == 0 :
                     for extension in self.outExtensions:
                         Popen(f'cp {self.folder}/system/*.{extension} restarts/previous.{extension}',
-                              shell=True)
+                              shell=True).wait()
 
         with open(self.inputFile, "r") as infile:
             self.initialParameters['NumberCV'] = None

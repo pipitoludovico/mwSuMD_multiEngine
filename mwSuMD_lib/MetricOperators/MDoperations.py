@@ -108,7 +108,7 @@ class MDoperator:
         else:
             command = f'gmx grompp -f production.mdp -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]} -o production.tpr -maxwarn 3 >tpr_log.log 2>&1'
 
-        tprPreparation = subprocess.Popen(command, shell=True, stdout=DEVNULL)
+        tprPreparation = subprocess.Popen(command, shell=True, stdout=DEVNULL).wait()
         tprPreparation.wait()
 
     def checkIfStuck(self, values, accumulatedFails) -> bool:

@@ -90,29 +90,6 @@ class Getters(mwInputParser):
         if str(metric).startswith('HB'):
             try:
                 if sel_1 or sel_2 is not None:
-                    lig_sele = u.select_atoms(f"({sel_1}) or ({sel_2})")
-                    try:
-                        water_sele = u.select_atoms('(resname TIP3 and name H*) or (resname TIP3 and name OH2)')
-                        if len(water_sele) == 0:
-                            water_sele = u.select_atoms(
-                                '(resname SOL and name OW) or (type OH2) or (type H1) or (type H2)')
-                            if len(water_sele) == 0:
-                                water_sele = u.select_atoms('(resname TIP4 and name H*) or (resname TIP4 and name OH2)')
-                                if len(water_sele) == 0:
-                                    water_sele = u.select_atoms(
-                                        '(resname WAT and name H*) or (resname WAT and name OH*)')
-                                else:
-                                    water_sele = u.select_atoms('not (protein or membrane or ion) ')
-                    except:
-                        raise SyntaxError('Supported water resnames are TIP3, TIP4, WAT, SOL')
-                    if lig_sele.n_atoms == 0:
-                        Logger.LogToFile('a', self.trajCount,
-                                         "Your ligand selection produced 0 atoms. Check if your selection is correct or present in the psf/pdb")
-                        raise SyntaxError
-                    if water_sele.n_atoms == 0:
-                        Logger.LogToFile('a', self.trajCount,
-                                         "Warning: no molecule waters were detected. Make sure your system doesn't have implicit solvent or has not been filtered")
-                        raise SyntaxError
                     hbonds = HydrogenBondAnalysis(universe=u, between=[f'{sel_1}', f'{sel_2}'], d_a_cutoff=3,
                                                   d_h_a_angle_cutoff=120, update_selections=False)
                     hbonds.run(verbose=False)
