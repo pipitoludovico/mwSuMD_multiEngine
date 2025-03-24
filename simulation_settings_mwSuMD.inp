@@ -5,10 +5,20 @@
 WrapEngine = VMD
 WrapOn = protein or segid MEMB
 FilterOut = protein or resname UNL
+#######################################################################
+#RESTAINT SECTION (openMM only)
+# PROTEIN RESTRAINTS uses comma-separated selections (Default = NO). Ex protein and name CA, protein and name N
+PROTEIN_RESTRAINTS = NO
+# MEMBRANE RESTRAINTS APPLIES DEFAULT RESTRAINTS TO THE MEMBRANE. (Default = NO). Allowes: YES/NO
+MEMBRANE_RESTRAINTS = NO
+# LIGAND RESNAME APPLIES RESTRAINTS TO THE LIGAND. Just put the resname of the ligand (Default = NO). Ex: UNL
+LIGAND_RESNAMES = NO
 ########################################################################
 # Output name of the files
 Output = S25_A13
-# Temperature
+# Temperature.
+# You can choose between "NO" and a given temperature. If NO, it will use
+# a centroid-distance based adjustment of the temperature (experimental)
 Temperature = 310
 # number of fails allowed [Default = 5]
 Fails = 10
@@ -41,7 +51,9 @@ Transition_2 = positive
 
 # You can add plumed by creating a folder called "plumed" outside "system" where this input file is located
 # and placing your plumed.inp file in it.
-
+PROTEIN_RESTRAINTS = protein and name CA
+MEMBRANE_RESTRAINTS = NO
+LIGAND_RESNAMES = UNL
 ######################################################################
 ### Algorithm and MD settings
 # number of walkers

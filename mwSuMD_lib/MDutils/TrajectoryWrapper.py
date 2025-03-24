@@ -24,23 +24,23 @@ class TrajectoryOperator(mwInputParser):
                 Logger.LogToFile('a', self.trajCount, self.setting_error)
                 raise FileNotFoundError
             else:
-                self.topology = '../../system/%s' % self.initialParameters['PSF']
-                self.coordinates = '../../system/%s' % self.initialParameters['PDB']
+                self.topology = '%s' % self.initialParameters['PSF']
+                self.coordinates = '%s' % self.initialParameters['PDB']
         if self.initialParameters['Forcefield'] == 'AMBER':
             if self.initialParameters['PRMTOP'] is None:
                 Logger.LogToFile('a', self.trajCount, self.setting_error)
                 raise FileNotFoundError
             else:
-                self.topology = '../../system/%s' % self.initialParameters['PRMTOP']
-                self.coordinates = '../../system/%s' % self.initialParameters['INPCRD']
+                self.topology = '%s' % self.initialParameters['PRMTOP']
+                self.coordinates = '%s' % self.initialParameters['INPCRD']
 
         if self.initialParameters['Forcefield'] == 'GROMOS':
             for new_coords in os.listdir(os.getcwd()):
                 if new_coords.endswith('.tpr'):
                     self.topology = new_coords
                 else:
-                    self.topology = "../../system/%s" % self.initialParameters.get('TPR')
-            self.coordinates = '../../system/%s' % self.initialParameters['GRO']
+                    self.topology = "%s" % self.initialParameters.get('TPR')
+            self.coordinates = '%s' % self.initialParameters['GRO']
 
     def wrap(self, folder):
         try:
@@ -142,7 +142,8 @@ class TrajectoryOperator(mwInputParser):
                    f'set sel [atomselect top "{filterSel}"]',
                    "animate goto 0",
                    f'pbc join residue -all -sel "protein or {unwrapSel}"',
-                   f'pbc wrap -center com -centersel "{unwrapSel}" -compound residue -all',
+
+                   f'pbc wrap -center bb -centersel "{unwrapSel}" -compound residue -all',
 
                    "proc align { rmolid smolid2 seltext } {",
                    "set ref [atomselect $rmolid $seltext frame 0]",

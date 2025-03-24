@@ -16,6 +16,7 @@ class mwInputParser:
     walker_metrics = []
     package_dir = pkg_resources.resource_filename('mwSuMD_lib', 'parameters')
     parameterFolderPath = os.path.abspath(package_dir)
+    coordExtensions = ('.pdb', '.gro', '.inpcrd', '.restrt')
     parameterPaths = [parameterFolderPath, ]
     if 'parameters' in os.listdir(folder):
         parameterPaths.append(os.path.join(folder, "parameters"))
@@ -50,7 +51,8 @@ class mwInputParser:
             file.endswith('.inp') for file in os.listdir("./system")) else "OPENMM" if any(
             file.endswith('.chk') for file in os.listdir("./system")) else None
         if not self.initialParameters['MDEngine']:
-            raise FileNotFoundError("No MD Engine detected. Make sure you kept your input setting's file in the system folder")
+            raise FileNotFoundError(
+                "No MD Engine detected. Make sure you kept your input setting's file in the system folder")
         if self.initialParameters.get('MDEngine') == 'GROMACS':
             if not any(file.endswith('tpr') for file in os.listdir('./system')):
                 try:
@@ -67,14 +69,15 @@ class mwInputParser:
         for ext in self.fileExtensions:
             for file in os.listdir('./system'):
                 if file.endswith(ext):
-                    self.initialParameters[ext.replace('.', '').upper()] = file
+                    self.initialParameters[ext.replace('.', '').upper()] = f"{self.folder}/system/{file}"
 
     def getParameters(self):
         if 'Parameters' not in self.initialParameters:
             self.initialParameters['Parameters'] = []
-            for params in os.listdir(f'{self.folder}/system'):
-                if params.endswith(self.initialParametersameter_extensions):
-                    self.initialParameters['Parameters'].append(self.folder + "/system/" + params)
+            for main, _, paramFolder in os.walk(f'{self.folder}/system'):
+                for params in paramFolder:
+                    if params.endswith(self.initialParametersameter_extensions):
+                        self.initialParameters['Parameters'].append(f"{main}/{params}")
             for path_ in self.parameterPaths:
                 for dirpath, dirnames, generalParams in os.walk(path_):
                     for filename in [f for f in generalParams if f.endswith(self.initialParametersameter_extensions)]:
@@ -82,23 +85,20 @@ class mwInputParser:
         else:
             return self.initialParameters['Parameters']
 
-    def getReferencePDB(self):
-        def checkRMSDoption():
-            if not os.path.isdir(f'{self.folder}/system/reference'):
-                print('You need a reference folder with a reference pdb in it if you use the RMSD as a metric.')
-                exit()
-            if len(os.listdir(f'{self.folder}/system/reference')) > 0:
-                files = os.listdir(f'{self.folder}/system/reference')
-                refext = ('.pdb', '.gro')
-                reference = next((file for file in files if file.endswith(refext)), None)
-                if reference:
-                    self.initialParameters['REFERENCE'] = reference
-                else:
-                    print("Put a reference pdb file in the 'reference' folder inside system and rerun.")
-                    exit()
-
-        if self.initialParameters.get('Metric_1') == 'RMSD' or self.initialParameters.get('Metric_2') == 'RMSD':
-            checkRMSDoption()
+    def getReferencePDB(self) -> None:
+        """Check if any folder called ./reference exists inside cwd or system. Else, it will set the reference using the
+         first coordinate file found inside ./system"""
+        systemPath: str = ""
+        if not os.path.exists(f'{self.folder}/system/reference') or not os.path.exists(f'{self.folder}/reference'):
+            systemPath = f"{self.folder}/system/"
+        else:
+            if any(os.path.exists(refPath) and "reference" in refPath.lower() for refPath in os.listdir("./")):
+                for refFolder in os.listdir("./"):
+                    if "reference" in refFolder.lower():
+                        systemPath = f"{self.folder}/{refFolder}"
+        pdbFile = [f"{systemPath}" + pdb for pdb in os.listdir(f"{systemPath}") if pdb.endswith(self.coordExtensions)][
+            0]
+        self.initialParameters['REFERENCE'] = pdbFile
 
     def getForcefields(self):
         self.initialParameters['Forcefield'] = 'CHARMM' \
@@ -107,9 +107,9 @@ class mwInputParser:
 
     def getSettingsFromInputFile(self):
         if self.initialParameters.get('MDEngine') != 'GROMACS':
-            u = Mda.Universe(f"{self.folder}/system/{self.initialParameters['PDB']}")
+            u = Mda.Universe(f"{self.initialParameters['PDB']}")
         else:
-            u = Mda.Universe(f"{self.folder}/system/{self.initialParameters['GRO']}")
+            u = Mda.Universe(f"{self.initialParameters['GRO']}")
 
         # Default settings:
         self.initialParameters['Metric_1'] = None
@@ -120,11 +120,12 @@ class mwInputParser:
         self.initialParameters['Wrap'] = 'protein and name CA'
         self.initialParameters['Fails'] = 5
         self.initialParameters['Tolerance'] = 0.3
+        self.initialParameters['ACTUAL_DISTANCE'] = None
 
         for customFile in os.listdir(f"{self.initialParameters['Root']}/system"):
             if customFile.startswith('production') and customFile.endswith(self.customInputFileExtension):
                 self.initialParameters['CUSTOMFILE'] = f"{self.folder}/system/{customFile}"
-                if self.trajCount == 0 :
+                if self.trajCount == 0:
                     for extension in self.outExtensions:
                         Popen(f'cp {self.folder}/system/*.{extension} restarts/previous.{extension}',
                               shell=True).wait()
@@ -134,17 +135,45 @@ class mwInputParser:
             self.initialParameters['RelaxTime'] = 5
             self.initialParameters['Relax'] = False
             self.initialParameters['CheckEvery'] = None
-            self.initialParameters['Temperature'] = 310
+            self.initialParameters['Temperature'] = None
             self.initialParameters['WrapEngine'] = "MDA"
             self.initialParameters['WrapOn'] = "protein"
             self.initialParameters['FilterOut'] = "protein"
+            self.initialParameters['PROTEIN_RESTRAINTS'] = None
+            self.initialParameters['MEMBRANE_RESTRAINTS'] = None
+            self.initialParameters['LIGAND_RESNAME'] = None
             for line in infile:
                 if line.startswith('#'):
                     continue
+
+                if line.startswith("PROTEIN_RESTRAINTS"):
+                    if line.split("=")[1].lower().strip() == "no":
+                        continue
+                    else:
+                        tmpline = line.split("=")[1].split(",")
+                        cleanLine = [parte.strip() for parte in tmpline]
+                        self.initialParameters['PROTEIN_RESTRAINTS'] = cleanLine
+
+                if line.startswith("MEMBRANE_RESTRAINTS"):
+                    if line.split("=")[1].lower().strip().startswith('y'):
+                        self.initialParameters['MEMBRANE_RESTRAINTS'] = True
+
+                if line.startswith("LIGAND_RESNAMES"):
+                    if line.split("=")[1].lower().strip() == "no":
+                        continue
+                    else:
+                        tmpline = line.split("=")[1].split(",")
+                        cleanLine = [parte.strip() for parte in tmpline]
+                        self.initialParameters['LIGAND_RESNAMES'] = cleanLine
+
                 if line.startswith("WrapEngine"):
                     self.initialParameters['WrapEngine'] = line.split("=")[1].strip()
+
                 if line.startswith('Temperature'):
-                    self.initialParameters['Temperature'] = float(line.split('=')[1].strip())
+                    if line.split("=")[1].lower().strip() == "no":
+                        continue
+                    else:
+                        self.initialParameters['Temperature'] = float(line.split('=')[1].strip())
 
                 if line.startswith('RelaxTime'):
                     if line.split('=')[1].strip() != '':
@@ -247,7 +276,8 @@ class mwInputParser:
                         if len(u.select_atoms(f"{line.split('=')[1].strip()}")) != 0:
                             self.selection_list.append(line.split('=')[1].strip())
                         else:
-                            raise ValueError("One of your selection pointed to 0 atoms: please check your selection with your structure file")
+                            raise ValueError(
+                                "One of your selection pointed to 0 atoms: please check your selection with your structure file")
         # cleaning Universe as the check is completed
         del u
         if self.initialParameters['NumberCV'] == 2 and (
@@ -259,7 +289,8 @@ class mwInputParser:
                 "Please make sure if you choose at least one metric to supervise (Distance, Contacts, RMSD, HB)")
         if self.initialParameters.get('NumberCV') == 2 and (
                 not self.initialParameters.get('Metric_1') or not self.initialParameters.get('Metric_2')):
-            raise ValueError("Please make sure if you use CV2 to specify all the CVs choosing one metric to supervise (Distance, Contacts, RMSD, HB)")
+            raise ValueError(
+                "Please make sure if you use CV2 to specify all the CVs choosing one metric to supervise (Distance, Contacts, RMSD, HB)")
         if not self.initialParameters.get('NumberCV'):
             print("Please set the NumberCV in the input file")
             exit()
@@ -276,5 +307,5 @@ class mwInputParser:
 
     def getSettings(self):
         self.checkEngine(), self.getParameters(), self.getForcefields()
-        self.getSettingsFromInputFile(), self.getReferencePDB(), self.getRestartOutput()
+        self.getSettingsFromInputFile(), self.getRestartOutput(), self.getReferencePDB()
         return self.initialParameters, self.selection_list, self.parameterFolderPath

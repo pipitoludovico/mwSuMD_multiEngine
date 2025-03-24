@@ -10,8 +10,9 @@ from mwSuMD_lib.Utilities.Loggers import Logger
 
 
 class Getters(mwInputParser):
-    def __init__(self):
+    def __init__(self, parameters):
         super(mwInputParser, self).__init__()
+        self.initialParameters = parameters
         self.deNume = None
         self.nume = None
         self.com = None
@@ -22,11 +23,13 @@ class Getters(mwInputParser):
 
     def GetMetric(self, metric, sel_1, sel_2):
         psf = "filtered.pdb"
-        xtc = 'wrapped.xtc'  #
+        xtc = 'wrapped.xtc'
         u = Mda.Universe(psf, xtc)
         if str(metric).startswith('DISTANCE'):
             sel1 = u.select_atoms(sel_1)
             sel2 = u.select_atoms(sel_2)
+            ligand = u.select_atoms('resname UNL LIG UNK')
+
             distances = []
             for ts in u.trajectory:
                 if ts is not None:
@@ -36,7 +39,9 @@ class Getters(mwInputParser):
                     else:
                         distance = Mda.lib.distances.distance_array(sel1.center_of_geometry(), sel2.center_of_geometry())[0][0]
                         distances.append(distance)
+            final_distance = ligand.center_of_geometry()
             mean_lin = np.mean(distances)
+            self.initialParameters['ACTUAL_DISTANCE'] = list(final_distance)
             distMetric = (mean_lin * distances[-1]) ** 0.5
             return distMetric, distances, distances[-1]
 
@@ -66,7 +71,7 @@ class Getters(mwInputParser):
         if str(metric).startswith('RMSD'):
             import MDAnalysis.analysis.rms
 
-            referencePDB = f'{self.folder}/system/reference/' + str(self.initialParameters['REFERENCE'])
+            referencePDB = self.initialParameters['REFERENCE']
             try:
                 ref = Mda.Universe(referencePDB)
                 if len(u.select_atoms(sel_1)) == 0 or len(u.select_atoms(sel_2)) == 0:

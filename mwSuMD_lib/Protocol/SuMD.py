@@ -1,4 +1,6 @@
 import os
+
+import numpy as np
 import pandas as pd
 import shutil
 
@@ -152,33 +154,34 @@ class suMD1(mwInputParser):
         selectionShapshot = self.selection_list.copy()
         self.selection_list.clear()
         self.parameters, self.selection_list, self.parameterFolderPath = self.pars.getSettings()
-        tempParametersSnapshot = self.parameters.copy()
         if not self.openMM:
             if self.cycle != 0:
                 try:
                     if self.parameters['MDEngine'] != 'GROMACS':
                         del parametersSnapshot['coor'], parametersSnapshot['vel'], parametersSnapshot['xsc']
-                        del tempParametersSnapshot['coor'], tempParametersSnapshot['vel'], tempParametersSnapshot['xsc']
+                        del self.parameters['coor'], self.parameters['vel'], self.parameters['xsc']
                     else:
                         del parametersSnapshot['CPT'], parametersSnapshot['GRO'], parametersSnapshot['TPR']
-                        del tempParametersSnapshot['CPT'], tempParametersSnapshot['GRO'], tempParametersSnapshot['TPR']
+                        del self.parameters['CPT'], self.parameters['GRO'], self.parameters['TPR']
                 except Exception as e:
                     Logger.LogToFile('w', self.cycle, "#" * 200 + f"\nSetting's dictionary has changed. " + "#" * 200)
                     Logger.LogToFile('w', self.cycle, "#" * 200 + f"\n{repr(e)}" + "#" * 200)
 
-        if parametersSnapshot != tempParametersSnapshot or selectionShapshot != self.selection_list:
+        if parametersSnapshot != self.parameters or selectionShapshot != self.selection_list:
             temp = set(self.selection_list) - set(selectionShapshot)
-            selectionShapshot.clear()
             changes = []
             for key, value in self.parameters.items():
-                if key == 'coor' or key == 'vel' or key == 'xsc':
+                if key == "ACTUAL_DISTANCE":
+                    self.parameters["ACTUAL_DISTANCE"] = parametersSnapshot['ACTUAL_DISTANCE']
+                if key in ('coor', 'vel', ' xsc', 'ACTUAL_DISTANCE'):
                     continue
                 else:
-                    if key in parametersSnapshot and parametersSnapshot[key] != value:
+                    if parametersSnapshot[key] != value:
                         changes.append(f"{key}: {value}")
             try:
-                with open('walkerSummary.log', 'a') as walkCheck:
-                    walkCheck.write(f"Changed settings during protocol: {changes} {temp}\n")
+                if len(changes) > 0:
+                    with open('walkerSummary.log', 'a') as walkCheck:
+                        walkCheck.write(f"Changed settings during protocol: {changes} {temp}\n")
             except Exception as e:
                 print(f"Error writing to file: {e}")
                 print(f"changes: {changes}")

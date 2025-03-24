@@ -78,7 +78,7 @@ class MetricsParser(mwInputParser):
             raise IOError
 
     def calculateMetric(self, metric, selection_list, walker):
-        getter = Getters()
+        getter = Getters(self.initialParameters)
         scoreMetric, allMetricValues, lastValue = getter.GetMetric(metric, selection_list[0], selection_list[1])
         if walker not in self.scores:
             self.scores[walker] = {}
