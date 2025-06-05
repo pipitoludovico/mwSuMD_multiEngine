@@ -88,14 +88,10 @@ class mwInputParser:
     def getReferencePDB(self) -> None:
         """Check if any folder called ./reference exists inside cwd or system. Else, it will set the reference using the
          first coordinate file found inside ./system"""
-        systemPath: str = ""
-        if not os.path.exists(f'{self.folder}/system/reference') or not os.path.exists(f'{self.folder}/reference'):
+        if not os.path.exists(f'{self.folder}/system/reference'):
             systemPath = f"{self.folder}/system/"
         else:
-            if any(os.path.exists(refPath) and "reference" in refPath.lower() for refPath in os.listdir("./")):
-                for refFolder in os.listdir("./"):
-                    if "reference" in refFolder.lower():
-                        systemPath = f"{self.folder}/{refFolder}"
+            systemPath = f"{self.folder}/system/reference/"
         pdbFile = [f"{systemPath}" + pdb for pdb in os.listdir(f"{systemPath}") if pdb.endswith(self.coordExtensions)][
             0]
         self.initialParameters['REFERENCE'] = pdbFile

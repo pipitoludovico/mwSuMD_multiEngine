@@ -28,8 +28,11 @@ class openMMsetter:
         coord = None
         pdbREF: str = self.initialParameters['REFERENCE']
         psfREF: str = self.initialParameters['PSF']
-        refUni = Mda.Universe(psfREF, pdbREF)
-        ligand = refUni.select_atoms('resname UNL LIG UNK')
+        try:
+            refUni = Mda.Universe(pdbREF)
+            ligand = refUni.select_atoms('resname UNL LIG UNK')
+        except:
+            raise ValueError('An issue occurred when loading the reference. Please check the ligand resname (UNL LIG UNK) or if the reference file is coherent with your system.')
         initialDistance = ligand.center_of_geometry()
 
         def ApplyRestraints(system_, coords, restraintIndexesLocal):
