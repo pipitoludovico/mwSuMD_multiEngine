@@ -101,6 +101,8 @@ class suMD1(mwInputParser):
             except Exception as e:
                 print("Conditions changed: rerunning mwSuMD")
                 pars = mwInputParser()
+                working_tree = mwInputParser.folder
+                os.chdir(working_tree)
                 self.parameters, self.selection_list, self.parameterFolderPath = pars.getSettings()
                 print(repr(e))
                 self.run_mwSuMD()

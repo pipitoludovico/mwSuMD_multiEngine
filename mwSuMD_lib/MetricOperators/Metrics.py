@@ -33,9 +33,11 @@ class MetricsParser(mwInputParser):
                 Logger.LogToFile('a', self.trajCount, f"Calculating metrics in walker #: {walker}")
                 subprocesses.append(self.calculateMetrics(walker, self.selection_list))
             except FileNotFoundError:
-                Logger.LogToFile('a', self.trajCount, "\nMetric calculation failed. Check if all the simulations ended well.")
+                Logger.LogToFile('a', self.trajCount,
+                                 "\nMetric calculation failed. Check if all the simulations ended well.")
                 os.chdir(self.folder)
-                Logger.LogToFile('a', self.trajCount, f"\nAn error occurred in calculating the metrics. Check the simulations inside walker {walker}")
+                Logger.LogToFile('a', self.trajCount,
+                                 f"\nAn error occurred in calculating the metrics. Check the simulations inside walker {walker}")
                 exit()
             self.initialParameters['Walkers'] = self.walkers_number_snapshot
 
