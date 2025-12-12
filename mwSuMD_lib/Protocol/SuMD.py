@@ -1,15 +1,13 @@
 import os
-
-import numpy as np
-import pandas as pd
 import shutil
+from warnings import filterwarnings
 
+import pandas as pd
+
+from mwSuMD_lib.MDutils.SimulationChecker import Checker
 from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
 from mwSuMD_lib.Protocol import ProtocolSelector
-from mwSuMD_lib.MDutils.SimulationChecker import Checker
 from mwSuMD_lib.Utilities.Loggers import Logger
-
-from warnings import filterwarnings
 
 filterwarnings(action='ignore')
 
@@ -153,44 +151,39 @@ class suMD1(mwInputParser):
 
     def compareAndUpdateSettings(self) -> None:
         parametersSnapshot = self.parameters.copy()
-        selectionShapshot = self.selection_list.copy()
+        selectionSnapshot = self.selection_list.copy()
         self.selection_list.clear()
         self.parameters, self.selection_list, self.parameterFolderPath = self.pars.getSettings()
-        if not self.openMM:
-            if self.cycle != 0:
-                try:
-                    if self.parameters['MDEngine'] != 'GROMACS':
-                        del parametersSnapshot['coor'], parametersSnapshot['vel'], parametersSnapshot['xsc']
-                        del self.parameters['coor'], self.parameters['vel'], self.parameters['xsc']
-                    else:
-                        del parametersSnapshot['CPT'], parametersSnapshot['GRO'], parametersSnapshot['TPR']
-                        del self.parameters['CPT'], self.parameters['GRO'], self.parameters['TPR']
-                except Exception as e:
-                    Logger.LogToFile('w', self.cycle, "#" * 200 + f"\nSetting's dictionary has changed. " + "#" * 200)
-                    Logger.LogToFile('w', self.cycle, "#" * 200 + f"\n{repr(e)}" + "#" * 200)
 
-        if parametersSnapshot != self.parameters or selectionShapshot != self.selection_list:
-            temp = set(self.selection_list) - set(selectionShapshot)
-            changes = []
-            for key, value in self.parameters.items():
-                if key == "ACTUAL_DISTANCE":
-                    self.parameters["ACTUAL_DISTANCE"] = parametersSnapshot['ACTUAL_DISTANCE']
-                if key in ('coor', 'vel', ' xsc', 'ACTUAL_DISTANCE'):
-                    continue
-                else:
-                    if parametersSnapshot[key] != value:
-                        changes.append(f"{key}: {value}")
-            try:
-                if len(changes) > 0:
+        excluded_keys = {'ACTUAL_DISTANCE'}
+        if self.parameters['MDEngine'] != 'GROMACS':
+            excluded_keys.update({'coor', 'vel', 'xsc'})
+        else:
+            excluded_keys.update({'CPT', 'GRO', 'TPR'})
+
+        filtered_snapshot = {k: v for k, v in parametersSnapshot.items() if k not in excluded_keys}
+        filtered_current = {k: v for k, v in self.parameters.items() if k not in excluded_keys}
+
+        settings_changed = filtered_snapshot != filtered_current
+        selections_changed = set(selectionSnapshot) != set(self.selection_list)
+
+        if settings_changed or selections_changed:
+            changes = [f"{key}: {value}" for key, value in filtered_current.items()
+                       if key not in filtered_snapshot or filtered_snapshot[key] != value]
+
+            new_selections = set(self.selection_list) - set(selectionSnapshot)
+
+            if changes or new_selections:
+                try:
                     with open('walkerSummary.log', 'a') as walkCheck:
-                        walkCheck.write(f"Changed settings during protocol: {changes} {temp}\n")
-            except Exception as e:
-                print(f"Error writing to file: {e}")
-                print(f"changes: {changes}")
-                print(f"temp: {temp}")
+                        log_entry = f"Changed settings during protocol: {changes}"
+                        if new_selections:
+                            log_entry += f" | New selections: {new_selections}"
+                        walkCheck.write(log_entry + "\n")
+                except Exception as e:
+                    Logger.LogToFile('w', self.cycle, f"Error logging changes: {repr(e)}")
 
             Logger.PrintSettingsToFile("w", self.cycle, str(self.settings_df))
-            changes.clear()
-            del changes
-            del temp
-        del parametersSnapshot, selectionShapshot
+
+        if 'ACTUAL_DISTANCE' in parametersSnapshot:
+            self.parameters['ACTUAL_DISTANCE'] = parametersSnapshot['ACTUAL_DISTANCE']

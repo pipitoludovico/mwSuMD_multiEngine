@@ -28,6 +28,10 @@ Tolerance = 20
 CheckEvery = 1000
 # Relaxation protocol time in case of stuck condition [Default = 5 ns]
 RelaxTime = 10
+RelaxTimestep = 2
+# in ps
+RelaxSavefreq = 20
+KeepPlumedForRelax = Y
 ########################################################################
 # Supervision on one or two metrics?
 NumberCV = 2

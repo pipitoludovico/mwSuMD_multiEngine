@@ -40,7 +40,7 @@ class TrajectoryOperator(mwInputParser):
                     self.topology = new_coords
                 else:
                     self.topology = "%s" % self.initialParameters.get('TPR')
-            self.coordinates = '%s' % self.initialParameters['GRO']
+            self.coordinates = self.initialParameters['GRO']
 
     def wrap(self, folder):
         try:

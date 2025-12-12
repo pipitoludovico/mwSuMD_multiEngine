@@ -1,17 +1,17 @@
 import os
+import re
 import subprocess
 from subprocess import DEVNULL
-import re
+from warnings import filterwarnings
 
-from mwSuMD_lib.MetricOperators.MDoperations import MDoperator
 from mwSuMD_lib.MDsetters.MDsettings import MDsetter
+from mwSuMD_lib.MDutils.TrajectoryWrapper import TrajectoryOperator
+from mwSuMD_lib.MetricOperators.MDoperations import MDoperator
 from mwSuMD_lib.MetricOperators.Metrics import MetricsParser
 from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
 from mwSuMD_lib.Protocol.Runners import Runner
-from mwSuMD_lib.Utilities.ProcessAndGPUutilities import ProcessManager
-from mwSuMD_lib.MDutils.TrajectoryWrapper import TrajectoryOperator
 from mwSuMD_lib.Utilities.Loggers import Logger
-from warnings import filterwarnings
+from mwSuMD_lib.Utilities.ProcessAndGPUutilities import ProcessManager
 
 filterwarnings(action='ignore')
 
@@ -28,12 +28,14 @@ class Checker(mwInputParser):
         self.scores = None
         self.best_value = None
         self.bestWalker = None
-        self.trajCount = len([trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
+        self.trajCount = len(
+            [trajFile for trajFile in os.listdir(f'{self.folder}/trajectories') if trajFile.endswith('xtc')])
 
     def checkIfFailed(self, vals1=None, vals2=None, accumulatedFails=0):
-        Logger.LogToFile("w", self.trajCount, "#" * 200 + '\nChecking if trajectory is stuck with values: ' + str(vals1) + ". Total fails accumulated: " + str(accumulatedFails) + "\n" + "#" * 200)
+        Logger.LogToFile("w", self.trajCount, "#" * 200 + '\nChecking if trajectory is stuck with values: ' + str(
+            vals1) + ". Total fails accumulated: " + str(accumulatedFails) + "\n" + "#" * 200)
         mdOperator = MDoperator(self.initialParameters, self.folder, self.openMM)
-        if mdOperator.checkIfStuck([vals1, vals2], accumulatedFails) is True:
+        if mdOperator.checkIfStuck([vals1, vals2], accumulatedFails):
             Logger.LogToFile("ad", self.trajCount, "\nRUNNING RELAXATION PROTOCOL" + "#" * 200)
             if not self.openMM:
                 self.relaxSystemMulti()
@@ -48,7 +50,7 @@ class Checker(mwInputParser):
     def relaxSystemMulti(self):
         jointGPUs = ""
         plumedCopy = ''
-        plumed = f'-plumed {self.initialParameters["PLUMED"]}' if self.initialParameters['PLUMED'] is not None else ''
+        plumed = f'-plumed {self.initialParameters["PLUMED"]}' if self.initialParameters['KeepPlumedForRelax'] is not False else ''
 
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         Logger.LogToFile('ad', self.trajCount, 'Relaxation Protocol begins now:\n' + ('#' * 200))
@@ -127,7 +129,8 @@ class Checker(mwInputParser):
         # we then extract the best metric/score and store it as a reference
         self.bestWalker, self.best_walker_score, self.best_metric_result = None, None, None
         self.bestWalker, self.best_walker_score, self.best_metric_result = MetricsParser().getBestWalker(self.scores)
-        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score, self.best_metric_result)
+        MDoperator(self.initialParameters, self.folder, self.openMM).saveStep(self.bestWalker, self.best_walker_score,
+                                                                              self.best_metric_result)
 
         Logger.LogToFile('ad', self.trajCount, "\nRelaxation Protocol Ended\n" + "#" * 200)
         self.trajCount += 1

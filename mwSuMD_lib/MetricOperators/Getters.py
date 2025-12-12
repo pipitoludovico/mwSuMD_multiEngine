@@ -1,6 +1,8 @@
 import os
 
 import MDAnalysis as Mda
+import MDAnalysis.analysis.rms
+
 import numpy as np
 from MDAnalysis.analysis.hydrogenbonds import HydrogenBondAnalysis
 from MDAnalysis.lib.distances import distance_array
@@ -69,7 +71,6 @@ class Getters(mwInputParser):
                 raise ArithmeticError
 
         if str(metric).startswith('RMSD'):
-            import MDAnalysis.analysis.rms
 
             referencePDB = self.initialParameters['REFERENCE']
             try:

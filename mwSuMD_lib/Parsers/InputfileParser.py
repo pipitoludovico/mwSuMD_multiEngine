@@ -1,8 +1,9 @@
 import os
 from subprocess import Popen, DEVNULL
-import pkg_resources
-import MDAnalysis as Mda
 from warnings import filterwarnings
+
+import MDAnalysis as Mda
+import pkg_resources
 
 filterwarnings(action='ignore')
 
@@ -31,17 +32,11 @@ class mwInputParser:
         self.outExtensions = ('cpi', 'coor', 'vel', 'xsc')
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
         self.initialParametersameter_extensions = ('.param', '.prm', '.par', '.top', '.rtf', '.str')
-        self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
+        self.trajCount = len([traj for traj in os.listdir(f'{self.folder}/trajectories') if traj.endswith('.xtc')])
         self.allowedMetrics = ("DISTANCE", "RMSD", "CONTACTS", "HB", "SOLVATION")
         if not os.path.isfile(f'{self.folder}/{self.inputFile}'):
             print('Input file for SuMD simulation required')
             quit()
-        if not os.path.exists(f'{self.folder}/plumed'):
-            self.initialParameters['PLUMED'] = None
-        else:
-            for file in os.listdir(self.folder + "/plumed"):
-                if file.endswith('.inp'):
-                    self.initialParameters['PLUMED'] = f'{self.folder}/plumed/{file}'
 
     def checkEngine(self):
         self.getSystem()
@@ -72,6 +67,13 @@ class mwInputParser:
                     self.initialParameters[ext.replace('.', '').upper()] = f"{self.folder}/system/{file}"
 
     def getParameters(self):
+        if not os.path.exists(f'{self.folder}/plumed'):
+            self.initialParameters['PLUMED'] = None
+        else:
+            for file in os.listdir(self.folder + "/plumed"):
+                if file.endswith('.inp'):
+                    self.initialParameters['PLUMED'] = f'{self.folder}/plumed/{file}'
+
         if 'Parameters' not in self.initialParameters:
             self.initialParameters['Parameters'] = []
             for main, _, paramFolder in os.walk(f'{self.folder}/system'):
@@ -82,8 +84,7 @@ class mwInputParser:
                 for dirpath, dirnames, generalParams in os.walk(path_):
                     for filename in [f for f in generalParams if f.endswith(self.initialParametersameter_extensions)]:
                         self.initialParameters['Parameters'].append(dirpath + "/" + filename)
-        else:
-            return self.initialParameters['Parameters']
+        return self.initialParameters['Parameters']
 
     def getReferencePDB(self) -> None:
         """Check if any folder called ./reference exists inside cwd or system. Else, it will set the reference using the
@@ -108,11 +109,29 @@ class mwInputParser:
             u = Mda.Universe(f"{self.initialParameters['GRO']}")
 
         # Default settings:
+        self.initialParameters['NumberCV'] = 1
+
+        self.initialParameters['CheckEvery'] = 100
+        self.initialParameters['Temperature'] = 310
+        self.initialParameters['WrapEngine'] = "MDA"
+        self.initialParameters['WrapOn'] = "protein"
+        self.initialParameters['FilterOut'] = "protein"
+        self.initialParameters['PROTEIN_RESTRAINTS'] = None
+        self.initialParameters['MEMBRANE_RESTRAINTS'] = None
+        self.initialParameters['LIGAND_RESNAME'] = None
         self.initialParameters['Metric_1'] = None
         self.initialParameters['Metric_2'] = None
         self.initialParameters['CUSTOMFILE'] = None
+
         self.initialParameters['Timestep'] = 2
         self.initialParameters['Savefreq'] = 20
+
+        self.initialParameters['Relax'] = False
+        self.initialParameters['RelaxTime'] = 10  # duration of the cMD
+        self.initialParameters['RelaxTimestep'] = 2  # Timestep in ps
+        self.initialParameters['RelaxSavefreq'] = 20
+        self.initialParameters['KeepPlumedForRelax'] = False
+
         self.initialParameters['Wrap'] = 'protein and name CA'
         self.initialParameters['Fails'] = 5
         self.initialParameters['Tolerance'] = 0.3
@@ -127,17 +146,7 @@ class mwInputParser:
                               shell=True).wait()
 
         with open(self.inputFile, "r") as infile:
-            self.initialParameters['NumberCV'] = None
-            self.initialParameters['RelaxTime'] = 5
-            self.initialParameters['Relax'] = False
-            self.initialParameters['CheckEvery'] = None
-            self.initialParameters['Temperature'] = None
-            self.initialParameters['WrapEngine'] = "MDA"
-            self.initialParameters['WrapOn'] = "protein"
-            self.initialParameters['FilterOut'] = "protein"
-            self.initialParameters['PROTEIN_RESTRAINTS'] = None
-            self.initialParameters['MEMBRANE_RESTRAINTS'] = None
-            self.initialParameters['LIGAND_RESNAME'] = None
+
             for line in infile:
                 if line.startswith('#'):
                     continue
@@ -171,9 +180,25 @@ class mwInputParser:
                     else:
                         self.initialParameters['Temperature'] = float(line.split('=')[1].strip())
 
-                if line.startswith('RelaxTime'):
+                if line.split("=")[0].strip() == "KeepPlumedForRelax":
+                    if line.split('=')[1].strip() != '':
+                        self.initialParameters['KeepPlumedForRelax'] = True
+
+                if line.split("=")[0].strip() == "RelaxTime":
                     if line.split('=')[1].strip() != '':
                         self.initialParameters['RelaxTime'] = float(line.split('=')[1].strip())
+
+                if line.startswith('RelaxSavefreq'):
+                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip().isdigit():
+                        self.initialParameters['RelaxSavefreq'] = int(line.split('=')[1].strip())
+                    else:
+                        raise ValueError("Please set the Savefreq in your input file as an integer number.")
+
+                if line.split("=")[0].strip() == "RelaxTimestep":
+                    if line.split('=')[1].strip() != '' and line.split('=')[1].strip().isdigit():
+                        self.initialParameters['RelaxTimestep'] = int(line.split('=')[1].strip())
+                    else:
+                        raise ValueError("Please set the Timestep in your input file as an integer number.")
 
                 if line.startswith('CheckEvery'):
                     if line.split('=')[1].strip() != '':

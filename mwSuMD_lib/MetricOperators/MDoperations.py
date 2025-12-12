@@ -56,21 +56,24 @@ class MDoperator:
                     os.system(f'cp "$(ls -t *.cpt | head -1)" {self.folder}/restarts/previous.cpt')
                     os.system(f'cp *.tpr {self.folder}/restarts/previous.tpr')
             if self.par['PLUMED']:
-                with open(self.par['PLUMED'], 'r') as plumedINP:
-                    for line in plumedINP.readlines():
-                        match = re.search(r'FILE=([^\s]+)', line)
-                        if match:
-                            outFile = match.group(1)
-                            Logger.LogToFile('ad', self.cycle, str(os.getcwd() + outFile))
-                            os.system(f'cp {outFile} {self.folder}/restarts/')
-                for filename in os.listdir("./"):
-                    if '.' not in filename:
-                        fullname = os.path.join("./", filename)
-                        os.system(f'cp {fullname}  {self.folder}/restarts/')
-                    if filename.endswith(".dat"):
-                        os.system(f'cp {filename} {self.folder}/restarts/')
+                try:
+                    with open(self.par['PLUMED'], 'r') as plumedINP:
+                        for line in plumedINP.readlines():
+                            match = re.search(r'FILE=([^\s]+)', line)
+                            if match:
+                                outFile = match.group(1)
+                                Logger.LogToFile('ad', self.cycle, str(os.getcwd() + outFile))
+                                os.system(f'cp {outFile} {self.folder}/restarts/')
+                    for filename in os.listdir("./"):
+                        if '.' not in filename:
+                            fullname = os.path.join("./", filename)
+                            os.system(f'cp {fullname}  {self.folder}/restarts/')
+                        if filename.endswith(".dat"):
+                            os.system(f'cp {filename} {self.folder}/restarts/')
 
-                os.system(f'cp plumed.log  {self.folder}/restarts/ ')
+                    os.system(f'cp plumed.log  {self.folder}/restarts/ ')
+                except Exception as e:
+                    print(f"No plumed folder found: {e}")
         else:
             Logger.LogToFile('ad', self.cycle, "No binary saved: restarting from last checkpoint.")
             with open('walkerSummary.log', 'a') as walkerSummary:
@@ -101,21 +104,19 @@ class MDoperator:
         shutil.rmtree('./tmp', ignore_errors=True)
 
     def prepareTPR(self, walk_count, trajcount, customFile=None):
-        gro = f'{self.par["Root"]}/system/{self.par["GRO"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.gro'
-        cpt = f'{self.par["Root"]}/system/{self.par["CPT"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.cpt'
+        gro = f'{self.par["GRO"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.gro'
+        cpt = f'{self.par["CPT"]}' if self.cycle == 0 else f'{self.par["Root"]}/restarts/previous.cpt'
         if customFile is None:
-            command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]} -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr -maxwarn 3 > tpr_log.log 2>&1'
+            command = f'gmx grompp -f input_{walk_count}_{trajcount}.mdp -c {gro} -t {cpt} -p {self.par["TOP"]} -o {self.par["Output"]}_{trajcount}_{walk_count}.tpr -maxwarn 3 > tpr_log.log 2>&1'
         else:
-            command = f'gmx grompp -f production.mdp -c {gro} -t {cpt} -p {self.folder}/system/{self.par["TOP"]} -o production.tpr -maxwarn 3 >tpr_log.log 2>&1'
+            command = f'gmx grompp -f production.mdp -c {gro} -t {cpt} -p {self.par["TOP"]} -o production.tpr -maxwarn 3 >tpr_log.log 2>&1'
 
-        tprPreparation = subprocess.Popen(command, shell=True, stdout=DEVNULL).wait()
-        tprPreparation.wait()
+        subprocess.Popen(command, shell=True, stdout=DEVNULL).wait()
 
     def checkIfStuck(self, values, accumulatedFails) -> bool:
-        if accumulatedFails >= self.par['Fails'] * int(self.par['NumberCV']):
+        if accumulatedFails >= self.par['Fails']:
             with open('walkerSummary.log', 'a') as logFile:
-                logFile.write(
-                    '\nSimulation seemed stuck. It will run the last relaxation protocol and it will be terminated\n')
+                logFile.write('\nSimulation seemed stuck. It will run the last relaxation protocol and it will be terminated\n')
                 logFile.close()
             if not self.openMM:
                 self.relaxSystemMulti()

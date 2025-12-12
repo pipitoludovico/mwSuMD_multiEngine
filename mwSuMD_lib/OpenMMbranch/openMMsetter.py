@@ -1,19 +1,20 @@
 import os.path
-
-import numpy as np
-import pkg_resources
 from subprocess import Popen, DEVNULL
+
+import MDAnalysis as Mda
+import numpy as np
+import openmm.app as app
+import pkg_resources
 from openmm import *
 from openmm import XmlSerializer, Platform, LangevinMiddleIntegrator, CustomExternalForce
-import openmm.app as app
 from openmm.unit import *
-import MDAnalysis as Mda
 
 from mwSuMD_lib.Utilities.Loggers import Logger
 
 
 class openMMsetter:
     def __init__(self, par):
+
         self.initialParameters = par
         self.parameterFolderPath = None
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
@@ -23,16 +24,17 @@ class openMMsetter:
             self.parameterFolderPath = os.path.abspath(package_dir)
         else:
             self.parameterFolderPath = os.path.abspath('../parameters')
+        self.ActivatePlumed = True if self.initialParameters.get('PLUMED') is not None else False
 
     def runOPENMM(self, walker_folder, gpu, folder_path):
         coord = None
         pdbREF: str = self.initialParameters['REFERENCE']
-        psfREF: str = self.initialParameters['PSF']
         try:
             refUni = Mda.Universe(pdbREF)
             ligand = refUni.select_atoms('resname UNL LIG UNK')
         except:
-            raise ValueError('An issue occurred when loading the reference. Please check the ligand resname (UNL LIG UNK) or if the reference file is coherent with your system.')
+            raise ValueError(
+                'An issue occurred when loading the reference. Please check the ligand resname (UNL LIG UNK) or if the reference file is coherent with your system.')
         initialDistance = ligand.center_of_geometry()
 
         def ApplyRestraints(system_, coords, restraintIndexesLocal):
@@ -115,7 +117,7 @@ class openMMsetter:
                 n = 610 - (dist * 30)
 
                 temperature = max(min(n, n), 310)
-                if walker_folder ==1:
+                if walker_folder == 1:
                     print("Temperature: ", temperature, "at a distance of  ", dist, "A")
             else:
                 temperature = self.initialParameters.get('Temperature', 310)
@@ -128,10 +130,12 @@ class openMMsetter:
                 properties = {'Precision': 'mixed'}
 
             if self.initialParameters.get('Relax') is True:
+                # if we're in relax mode we need to change variable scale and evaluate if we still want PLUMED
                 self.initialParameters['Timewindow'] = int(self.initialParameters['RelaxTime'] * 1000)
-                number_of_steps = int(
-                    (self.initialParameters['RelaxTime'] * 1000) / (self.initialParameters['Timestep'] / 1000))
+                number_of_steps = int((self.initialParameters['RelaxTime'] * 1000) / (self.initialParameters['Timestep'] / 1000))
                 saveFreq = 5000
+                if self.initialParameters.get("KeepPlumedForRelax") is False:
+                    self.ActivatePlumed = False
 
             os.makedirs(folder_path, exist_ok=True)
             os.chdir(folder_path)
@@ -165,7 +169,8 @@ class openMMsetter:
             restraintIdxs = GetRestraintIndex(self.initialParameters['PROTEIN_RESTRAINTS'],
                                               self.initialParameters['MEMBRANE_RESTRAINTS'],
                                               self.initialParameters['LIGAND_RESNAME'],
-                                              self.initialParameters['Forcefield'], walker=walker_folder, cycle=self.trajCount)
+                                              self.initialParameters['Forcefield'], walker=walker_folder,
+                                              cycle=self.trajCount)
             if charmm:
                 system = p_top.createSystem(params, nonbondedMethod=app.PME, nonbondedCutoff=0.9 * nanometer,
                                             switchDistance=0.75 * nanometer, constraints=app.HBonds, rigidWater=True,
@@ -202,8 +207,8 @@ class openMMsetter:
                 for file in os.listdir('../../restarts'):
                     if "." not in file:
                         os.system(f"cp ../../restarts/{file} .")
-
-            CheckPlumed()
+            if self.ActivatePlumed:
+                CheckPlumed()
             sim = app.Simulation(p_top.topology, system, integrator, platform, properties)
             _PATH = 'system' if self.trajCount == 0 else 'restarts'
             xmlPATH = [os.path.abspath(os.path.join(self.initialParameters['Root'], _PATH, file)) for file in

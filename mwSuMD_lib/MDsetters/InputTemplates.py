@@ -12,7 +12,17 @@ class Template(mwInputParser):
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.root = self.initialParameters['Root']
         self.relax = self.initialParameters.get('Relax', False)
-        self.relaxNumSteps = int((self.initialParameters['RelaxTime'] * 1000) / (self.initialParameters['Timestep'] / 1000))
+        self.NumSteps = int((self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep')) * 10 ** 3))
+        self.DurationInPS = self.initialParameters.get('Timewindow')
+        self.TimeStep = self.initialParameters.get('Timestep')
+        self.ActivatePlumed = self.initialParameters.get('PLUMED')
+        if self.relax:
+            self.NumSteps = int((self.initialParameters.get("RelaxSavefreq") / (self.initialParameters.get('RelaxTimestep')) * 10 ** 3))
+            self.DurationInPS = self.initialParameters.get('RelaxTime')
+            self.TimeStep = self.initialParameters.get('RelaxTimestep')
+            self.DurationInPS = self.DurationInPS * 1000  # converted...same name for simplicity
+            self.ActivatePlumed = self.initialParameters.get('PLUMED', '') if self.initialParameters.get("KeepPlumedForRelax") is True else False
+
         if self.trajCount == 0:
             self.sys_folder = "../../system"
         else:
@@ -22,12 +32,12 @@ class Template(mwInputParser):
             self.inputFile = [
                 'restart\toff\n',
                 'minimize        0\n',
-                'run            %sps\n' % self.initialParameters.get('Timewindow'),
-                'timeStep        %s\n' % self.initialParameters.get('Timestep'),
-                '%s' % f'parmfile ../../system/{self.initialParameters.get("PRMTOP")}\n' if self.initialParameters['Forcefield'] == 'AMBER' else '\n',
-                f'structure\t../../system/{self.initialParameters.get("PSF")}\n' if self.initialParameters.get('PSF') is not None else '\n',
-                'coordinates\t../../system/%s\n' % self.initialParameters.get('PDB'),
-                "plumedFile\t%s\n" % (self.initialParameters.get('PLUMED')) if self.initialParameters.get('PLUMED') is not None else "\n",
+                'run            %sps\n' % self.DurationInPS,
+                'timeStep        %s\n' % self.TimeStep,
+                '%s' % f'parmfile {self.initialParameters.get("PRMTOP")}\n' if self.initialParameters['Forcefield'] == 'AMBER' else '\n',
+                f'structure\t{self.initialParameters.get("PSF")}\n' if self.initialParameters.get('PSF') is not None else '\n',
+                'coordinates\t%s\n' % self.initialParameters.get('PDB'),
+                "plumedFile\t%s\n" % self.ActivatePlumed if self.ActivatePlumed else "\n",
                 'temperature     %s\n' % self.initialParameters.get('Temperature'),
                 'PME             on\n',
                 'cutoff          9.0\n',
@@ -37,7 +47,7 @@ class Template(mwInputParser):
                 'thermostatTemperature   %s\n' % self.initialParameters.get('Temperature'),
                 'barostat                off\n',
                 'trajectoryFile          %s_%s.xtc\n' % (self.initialParameters.get('Output'), str(self.trajCount)),
-                'trajectoryPeriod               %s\n' % int((self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep')) * 10 ** 3)) if self.initialParameters.get('Relax') is False else "trajectoryPeriod\t50000\n",
+                'trajectoryPeriod               %s\n' % self.NumSteps,
                 f'binCoordinates          %s/%s\n' % (self.sys_folder, self.initialParameters.get('coor')),
                 f'extendedSystem          %s/%s\n' % (self.sys_folder, self.initialParameters.get('xsc')),
                 'binVelocities           %s/%s\n' % (self.sys_folder, self.initialParameters.get('vel'))]
@@ -50,8 +60,8 @@ class Template(mwInputParser):
                               f'binVelocities\t%s/%s\n' % (self.sys_folder, self.initialParameters.get("vel")),
                               f'extendedSystem\t%s/%s\n' % (self.sys_folder, self.initialParameters.get("xsc")),
                               f'set xscfile [open %s/%s]\n' % (self.sys_folder, self.initialParameters.get("xsc")),
-                              "plumed on\n" if self.initialParameters.get("PLUMED") is not None else "\n",
-                              "plumedfile\t%s\n" % self.initialParameters.get("PLUMED") if self.initialParameters.get('PLUMED') is not None else "\n",
+                              "plumed on\n" if self.ActivatePlumed is not False else "\n",
+                              "plumedfile\t%s\n" % self.ActivatePlumed if self.ActivatePlumed is not False else "\n",
                               'proc get_first_ts { xscfile } {\n',
                               '  set fd [open $xscfile r]\n',
                               '  gets $fd\n',
@@ -64,10 +74,10 @@ class Template(mwInputParser):
                               f'set firsttime [get_first_ts %s/{self.initialParameters.get("xsc")}]\n' % self.sys_folder,
                               'firsttimestep\t$firsttime\n',
                               'set temp\t%s;\n' % self.initialParameters.get('Temperature'),
-                              'outputEnergies %s\n' % int(self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep') / 10 ** 3)),
-                              'dcdfreq\t%s;\t\n' % int(self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep') / 10 ** 3)) if self.relax is False else "dcdfreq\t50000\n",
+                              'outputEnergies %s\n' % self.NumSteps,
+                              'dcdfreq\t%s;\t\n' % self.NumSteps,
                               'dcdUnitCell\tyes;\n',
-                              'xstFreq\t%s;\t\n' % int(self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)) if self.relax is False else "xstFreq\t50000\n",
+                              'xstFreq\t%s;\t\n' % self.NumSteps,
                               '# Force-Field Parameters\n',
                               "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n',
                               '%s;\n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}' if self.initialParameters["Forcefield"] == "AMBER" else "\n",
@@ -111,26 +121,26 @@ class Template(mwInputParser):
                               'langevinPistonTemp      $temp;              \n',
                               '\n',
                               '\n',
-                              'numsteps\t%s;\n' % int(self.initialParameters['Timewindow'] / (self.initialParameters['Timestep'] / 10 ** 3)),
-                              'run\t%s;\n' % int(self.initialParameters['Timewindow'] / (self.initialParameters['Timestep'] / 10 ** 3))]
+                              'numsteps\t%s;\n' % self.NumSteps,
+                              'run\t%s;\n' % self.NumSteps]
 
         if self.initialParameters['MDEngine'] == 'GROMACS':
             self.inputFile = ['title                   = %s\n' % self.initialParameters['Output'],
                               '; Run parameters\n',
                               'integrator              = md        ; leap-frog integrator\n',
-                              'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' % int(self.initialParameters['Timewindow'] / (self.initialParameters['Timestep'] / 1000)),
-                              'dt                      = %s     ; Timestep/1000 \n' % float(self.initialParameters['Timestep'] / 10 ** 3),
+                              'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' % self.NumSteps,
+                              'dt                      = %s     ; Timestep/1000 \n' % str(self.TimeStep/1000),
                               '; Output control\n',
                               'nstxout                 = 0         ; suppress bulky .trr file by specifying \n',
                               'nstvout                 = 0         ; 0 for output frequency of nstxout,\n',
                               'nstfout                 = 0         ; nstvout, and nstfout\n',
-                              'nstenergy               = %s      ; savefrequency\n' % int(self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)) if self.relax is False else "nstenergy               = 50000      ; savefrequency\n",
-                              'nstlog                  = %s      ; update log file every 10.0 ps\n'% int(self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)),
-                              'nstxout-compressed      = %s      ; save compressed coordinates every 10.0 ps\n' % int(self.initialParameters["Savefreq"] / (self.initialParameters['Timestep'] / 10 ** 3)) if self.relax is False else "nstxout-compressed      = 50000      ; save compressed coordinates every 10.0 ps\n",
+                              'nstenergy               = %s      ; savefrequency\n' % self.NumSteps,
+                              'nstlog                  = %s      ; update log file every 10.0 ps\n'% self.NumSteps,
+                              'nstxout-compressed      = %s      ; save compressed coordinates every 10.0 ps\n' % self.NumSteps,
                               'compressed-x-grps       = System    ; save the whole system\n', '; Bond parameters\n',
                               'continuation            = no       ; Restarting after NPT \n',
-                              'constraint_algorithm    = SHAKE     ; holonomic constraints \n',
-                              'constraints             = none   ; bonds involving H are constrained\n',
+                              'constraint_algorithm    = lincs\n',
+                              'constraints             = h-bonds\n',
                               'lincs_iter              = 1         ; accuracy of LINCS\n',
                               'lincs_order             = 4         ; also related to accuracy\n',
                               '; Neighborsearching\n',
@@ -147,7 +157,7 @@ class Template(mwInputParser):
                               'tcoupl                  = V-rescale             ; modified Berendsen thermostat\n',
                               'tc-grps                 = Protein Non-Protein   ; two coupling groups - more accurate\n',
                               'tau_t                   = 0.1     0.1           ; time constant, in ps\n',
-                              'ref_t\t= %s     ; reference temperature, one for each group, in K%s\n' % (self.initialParameters.get('Temperature'), self.initialParameters.get('Temperature')),
+                              'ref_t                   = %s %s     ; reference temperature for groups\n' % (self.initialParameters['Temperature'], self.initialParameters['Temperature']),
                               '; Pressure coupling is on\n',
                               'pcoupl                  = Parrinello-Rahman     ; Pressure coupling on in NPT\n',
                               'pcoupltype              = isotropic             ; uniform scaling of box vectors\n',

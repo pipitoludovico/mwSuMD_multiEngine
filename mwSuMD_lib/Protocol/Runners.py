@@ -41,15 +41,15 @@ class Runner(mwInputParser):
             else:
                 Logger.LogToFile('ad', self.trajCount, "No trajectory found. Check your tmp folder.")
                 exit()
-        try:
-            for walker_wrap in range(1, self.par['Walkers'] + 1):
-                if self.par['WrapEngine'] == 'MDA':
-                    TrajectoryOperator().wrap(walker_wrap)
-                else:
-                    TrajectoryOperator().wrapVMD(walker_wrap)
-        except Exception as e:
-            print("Wrapping failed: ", e)
-            exit()
+        # try:
+        for walker_wrap in range(1, self.par['Walkers'] + 1):
+            if self.par['WrapEngine'] == 'MDA':
+                TrajectoryOperator().wrap(walker_wrap)
+            else:
+                TrajectoryOperator().wrapVMD(walker_wrap)
+        # except Exception as e:
+        #     print("Wrapping failed: ", e)
+        #     exit()
 
     def runSimulation(self):
         # let's divide the available GPU in batches by the number of walkers
@@ -184,19 +184,19 @@ class Runner(mwInputParser):
             else:
                 raise Exception("No trajectory found. Check your tmp folder.")
 
-        try:
-            processes = []
-            if self.par['WrapEngine'] == 'MDA':
-                wrapcall = TrajectoryOperator().wrap
-            else:
-                wrapcall = TrajectoryOperator().wrapVMD
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                for walker_wrap in range(1, self.initialParameters['Walkers'] + 1):
-                    future = executor.submit(wrapcall, walker_wrap)
-                    processes.append(future)
-        except Exception as e:
-            print("Wrapping failed: ", e)
-            exit()
+        # try:
+        processes = []
+        if self.par['WrapEngine'] == 'MDA':
+            wrapcall = TrajectoryOperator().wrap
+        else:
+            wrapcall = TrajectoryOperator().wrapVMD
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            for walker_wrap in range(1, self.initialParameters['Walkers'] + 1):
+                future = executor.submit(wrapcall, walker_wrap)
+                processes.append(future)
+        # except Exception as e:
+        #     print("Wrapping failed: ", e)
+        #     exit()
         self.initialParameters['Walkers'] = walker_snapshot
 
     def runSimulationOpen(self):
