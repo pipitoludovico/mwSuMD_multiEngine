@@ -125,6 +125,7 @@ class Template(mwInputParser):
                               'run\t%s;\n' % self.NumSteps]
 
         if self.initialParameters['MDEngine'] == 'GROMACS':
+            # FIXED PATHING AND TIMESTEP
             self.inputFile = ['title                   = %s\n' % self.initialParameters['Output'],
                               '; Run parameters\n',
                               'integrator              = md        ; leap-frog integrator\n',
