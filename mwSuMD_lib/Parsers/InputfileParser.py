@@ -294,11 +294,11 @@ class mwInputParser:
 
                 if line.startswith("Sel_"):
                     if line.split('=')[1].strip() != '':
-                        if len(u.select_atoms(f"{line.split('=')[1].strip()}")) != 0:
+                        selection_ = line.split('=')[1].strip()
+                        if len(u.select_atoms(selection_)) != 0:
                             self.selection_list.append(line.split('=')[1].strip())
                         else:
-                            raise ValueError(
-                                "One of your selection pointed to 0 atoms: please check your selection with your structure file")
+                            raise ValueError(f"Your selection {selection_} pointed to 0 atoms: please check your selection with your structure file")
         # cleaning Universe as the check is completed
         del u
         if self.initialParameters['NumberCV'] == 2 and (
