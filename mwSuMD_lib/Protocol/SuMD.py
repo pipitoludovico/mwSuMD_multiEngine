@@ -15,7 +15,7 @@ filterwarnings(action='ignore')
 class suMD1(mwInputParser):
     pars = mwInputParser()
     parameters, selection_list, parameterFolderPath = pars.getSettings()
-    settings_df = pd.DataFrame(sorted(list(parameters.items())), columns=['Setting', 'Parameter'])
+    settings_df = pd.DataFrame(sorted(parameters.items()), columns=['Setting', 'Parameter'])
 
     def __init__(self, openMM):
         super(mwInputParser, self).__init__()
@@ -35,7 +35,7 @@ class suMD1(mwInputParser):
                              "If you want to use a custom input file for your engine of choice, please, place it in the './system' folder, and call it \n "
                              "production.inp/namd/mdp (according to your engine). MwSuMD will use that instead of the default file. \n"
                              "If you choose to do so, make sure it points to a folder named 'restart' for continuing from the last binaries!\n")
-        Logger.PrintSettingsToFile("w", self.cycle, str(self.settings_df))
+        Logger.PrintSettingsToFile("w", self.cycle, self.settings_df)
         Logger.countTraj_logTraj(self.initialParameters, self.selection_list)
         self.run_First()
 
@@ -183,7 +183,7 @@ class suMD1(mwInputParser):
                 except Exception as e:
                     Logger.LogToFile('w', self.cycle, f"Error logging changes: {repr(e)}")
 
-            Logger.PrintSettingsToFile("w", self.cycle, str(self.settings_df))
+            Logger.PrintSettingsToFile("w", self.cycle, self.settings_df)
 
         if 'ACTUAL_DISTANCE' in parametersSnapshot:
             self.parameters['ACTUAL_DISTANCE'] = parametersSnapshot['ACTUAL_DISTANCE']

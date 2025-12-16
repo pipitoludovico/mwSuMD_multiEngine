@@ -69,12 +69,15 @@ class Logger:
         if mode == "w":
             with open('settings.txt', 'w') as settingsFile:
                 settingsFile.write(f"Settings at cycle: {cycle}.\n")
-                settingsFile.write(settings_df)
+                for k, v in settings_df.values:
+                    settingsFile.write(f"{k:20}: {v}\n")
                 settingsFile.write('\n')
+
         if mode == "a":
             with open('settings.txt', 'a') as settingsFile:
                 settingsFile.write(f"\nSettings at cycle: {cycle}.\n")
-                settingsFile.write(settings_df)
+                for k, v in settings_df.values:
+                    settingsFile.write(f"{k:20}: {v}\n")
                 settingsFile.write('\n')
 
     @staticmethod
@@ -101,4 +104,6 @@ class Logger:
                 logF.write('#' * 5 + " Simulation Starts " + '#' * 5 + "\n")
         else:
             with open('walkerSummary.log', 'a') as logF:
-                logF.write(str(trajCount) + " |Checkpoint| Metric 1: " + (str(initialParameters["Metric_1"])) + " Metric 2: " + (str(initialParameters["Metric_2"]) + f" |Selections: {selection_list} |\n"))
+                logF.write(str(trajCount) + " |Checkpoint| Metric 1: " + (
+                    str(initialParameters["Metric_1"])) + " Metric 2: " + (
+                                   str(initialParameters["Metric_2"]) + f" |Selections: {selection_list} |\n"))
