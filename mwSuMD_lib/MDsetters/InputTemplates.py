@@ -129,8 +129,8 @@ class Template(mwInputParser):
                               'langevinPistonTemp      $temp;              \n',
                               '\n',
                               '\n',
-                              'numsteps\t%s;\n' % self.SaveFreq,
-                              'run\t%s;\n' % self.SaveFreq]
+                              'numsteps\t%s;\n' % (self.DurationInPS // (self.initialParameters['TimeStep']/1000)),
+                              'run\t%s;\n' % (self.DurationInPS // (self.initialParameters['TimeStep']/1000))]
 
         if self.initialParameters['MDEngine'] == 'GROMACS':
             # FIXED PATHING AND TIMESTEP
