@@ -1,7 +1,7 @@
 import os
+from warnings import filterwarnings
 
 from mwSuMD_lib.Parsers.InputfileParser import mwInputParser
-from warnings import filterwarnings
 
 filterwarnings(action='ignore')
 
@@ -12,16 +12,19 @@ class Template(mwInputParser):
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.root = self.initialParameters['Root']
         self.relax = self.initialParameters.get('Relax', False)
-        self.NumSteps = int((self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep')) * 10 ** 3))
+        self.SaveFreq = int(
+            (self.initialParameters.get("Savefreq") / (self.initialParameters.get('Timestep')) * 10 ** 3))
         self.DurationInPS = self.initialParameters.get('Timewindow')
         self.TimeStep = self.initialParameters.get('Timestep')
         self.ActivatePlumed = self.initialParameters.get('PLUMED')
         if self.relax:
-            self.NumSteps = int((self.initialParameters.get("RelaxSavefreq") / (self.initialParameters.get('RelaxTimestep')) * 10 ** 3))
+            self.SaveFreq = int(
+                (self.initialParameters.get("RelaxSavefreq") / (self.initialParameters.get('RelaxTimestep')) * 10 ** 3))
             self.DurationInPS = self.initialParameters.get('RelaxTime')
             self.TimeStep = self.initialParameters.get('RelaxTimestep')
             self.DurationInPS = self.DurationInPS * 1000  # converted...same name for simplicity
-            self.ActivatePlumed = self.initialParameters.get('PLUMED', '') if self.initialParameters.get("KeepPlumedForRelax") is True else False
+            self.ActivatePlumed = self.initialParameters.get('PLUMED', '') if self.initialParameters.get(
+                "KeepPlumedForRelax") is True else False
 
         if self.trajCount == 0:
             self.sys_folder = "../../system"
@@ -34,8 +37,10 @@ class Template(mwInputParser):
                 'minimize        0\n',
                 'run            %sps\n' % self.DurationInPS,
                 'timeStep        %s\n' % self.TimeStep,
-                '%s' % f'parmfile {self.initialParameters.get("PRMTOP")}\n' if self.initialParameters['Forcefield'] == 'AMBER' else '\n',
-                f'structure\t{self.initialParameters.get("PSF")}\n' if self.initialParameters.get('PSF') is not None else '\n',
+                '%s' % f'parmfile {self.initialParameters.get("PRMTOP")}\n' if self.initialParameters[
+                                                                                   'Forcefield'] == 'AMBER' else '\n',
+                f'structure\t{self.initialParameters.get("PSF")}\n' if self.initialParameters.get(
+                    'PSF') is not None else '\n',
                 'coordinates\t%s\n' % self.initialParameters.get('PDB'),
                 "plumedFile\t%s\n" % self.ActivatePlumed if self.ActivatePlumed else "\n",
                 'temperature     %s\n' % self.initialParameters.get('Temperature'),
@@ -47,7 +52,7 @@ class Template(mwInputParser):
                 'thermostatTemperature   %s\n' % self.initialParameters.get('Temperature'),
                 'barostat                off\n',
                 'trajectoryFile          %s_%s.xtc\n' % (self.initialParameters.get('Output'), str(self.trajCount)),
-                'trajectoryPeriod               %s\n' % self.NumSteps,
+                'trajectoryPeriod               %s\n' % self.SaveFreq,
                 f'binCoordinates          %s/%s\n' % (self.sys_folder, self.initialParameters.get('coor')),
                 f'extendedSystem          %s/%s\n' % (self.sys_folder, self.initialParameters.get('xsc')),
                 'binVelocities           %s/%s\n' % (self.sys_folder, self.initialParameters.get('vel'))]
@@ -74,13 +79,15 @@ class Template(mwInputParser):
                               f'set firsttime [get_first_ts %s/{self.initialParameters.get("xsc")}]\n' % self.sys_folder,
                               'firsttimestep\t$firsttime\n',
                               'set temp\t%s;\n' % self.initialParameters.get('Temperature'),
-                              'outputEnergies %s\n' % self.NumSteps,
-                              'dcdfreq\t%s;\t\n' % self.NumSteps,
+                              'outputEnergies %s\n' % self.SaveFreq,
+                              'dcdfreq\t%s;\t\n' % self.SaveFreq,
                               'dcdUnitCell\tyes;\n',
-                              'xstFreq\t%s;\t\n' % self.NumSteps,
+                              'xstFreq\t%s;\t\n' % self.SaveFreq,
                               '# Force-Field Parameters\n',
-                              "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters['Forcefield'] == 'CHARMM' else 'amber\ton\n',
-                              '%s;\n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}' if self.initialParameters["Forcefield"] == "AMBER" else "\n",
+                              "%s;\n" % 'paraTypeCharmm\ton' if self.initialParameters[
+                                                                    'Forcefield'] == 'CHARMM' else 'amber\ton\n',
+                              '%s;\n' % f'parmfile ../../system/{self.initialParameters["PRMTOP"]}' if
+                              self.initialParameters["Forcefield"] == "AMBER" else "\n",
                               'exclude                 scaled1-4\n',
                               '1-4scaling              1.0\n',
                               'switching               on\n',
@@ -90,7 +97,8 @@ class Template(mwInputParser):
                               'pairlistdist            16.0;               # \n',
                               'stepspercycle           5;                  # SET TO 5 (or lower than 20 if HMR)\n',
                               'pairlistsPerCycle       2;                  # 2 is the default\n',
-                              'timestep\t%s;                # fs/step SET 4 is you use HMR\n' % self.initialParameters['Timestep'],
+                              'timestep\t%s;                # fs/step SET 4 is you use HMR\n' % self.initialParameters[
+                                  'Timestep'],
                               'rigidBonds              all;                # Bound constraint\n',
                               '%s' % 'useSettle\ton' if self.initialParameters['Forcefield'] == 'AMBER' else '',
                               '%s' % 'rigidTolerance 1.0e-8' if self.initialParameters['Forcefield'] == 'AMBER' else '',
@@ -121,23 +129,23 @@ class Template(mwInputParser):
                               'langevinPistonTemp      $temp;              \n',
                               '\n',
                               '\n',
-                              'numsteps\t%s;\n' % self.NumSteps,
-                              'run\t%s;\n' % self.NumSteps]
+                              'numsteps\t%s;\n' % self.SaveFreq,
+                              'run\t%s;\n' % self.SaveFreq]
 
         if self.initialParameters['MDEngine'] == 'GROMACS':
             # FIXED PATHING AND TIMESTEP
             self.inputFile = ['title                   = %s\n' % self.initialParameters['Output'],
                               '; Run parameters\n',
                               'integrator              = md        ; leap-frog integrator\n',
-                              'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' % self.NumSteps,
-                              'dt                      = %s     ; Timestep/1000 \n' % str(self.TimeStep/1000),
+                              'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' % (self.DurationInPS // (self.initialParameters['TimeStep']/1000)),
+                              'dt                      = %s     ; Timestep/1000 \n' % str(self.TimeStep / 1000),
                               '; Output control\n',
                               'nstxout                 = 0         ; suppress bulky .trr file by specifying \n',
                               'nstvout                 = 0         ; 0 for output frequency of nstxout,\n',
                               'nstfout                 = 0         ; nstvout, and nstfout\n',
-                              'nstenergy               = %s      ; savefrequency\n' % self.NumSteps,
-                              'nstlog                  = %s      ; update log file every 10.0 ps\n'% self.NumSteps,
-                              'nstxout-compressed      = %s      ; save compressed coordinates every 10.0 ps\n' % self.NumSteps,
+                              'nstenergy               = %s      ; savefrequency\n' % self.SaveFreq,
+                              'nstlog                  = %s      ; update log file every 10.0 ps\n' % self.SaveFreq,
+                              'nstxout-compressed      = %s      ; save compressed coordinates every 10.0 ps\n' % self.SaveFreq,
                               'compressed-x-grps       = System    ; save the whole system\n', '; Bond parameters\n',
                               'continuation            = no       ; Restarting after NPT \n',
                               'constraint_algorithm    = lincs\n',
@@ -158,7 +166,8 @@ class Template(mwInputParser):
                               'tcoupl                  = V-rescale             ; modified Berendsen thermostat\n',
                               'tc-grps                 = Protein Non-Protein   ; two coupling groups - more accurate\n',
                               'tau_t                   = 0.1     0.1           ; time constant, in ps\n',
-                              'ref_t                   = %s %s     ; reference temperature for groups\n' % (self.initialParameters['Temperature'], self.initialParameters['Temperature']),
+                              'ref_t                   = %s %s     ; reference temperature for groups\n' % (
+                                  self.initialParameters['Temperature'], self.initialParameters['Temperature']),
                               '; Pressure coupling is on\n',
                               'pcoupl                  = Parrinello-Rahman     ; Pressure coupling on in NPT\n',
                               'pcoupltype              = isotropic             ; uniform scaling of box vectors\n',
