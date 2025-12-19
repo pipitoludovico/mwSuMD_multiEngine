@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import warnings
-from mwSuMD_lib.Utilities import ProcessAndGPUutilities, Loggers
+from mwSuMD_lib.Utilities import ProcessAndGPUutilities
 from mwSuMD_lib.Parsers import CLIparser
 warnings.filterwarnings('ignore')
 
