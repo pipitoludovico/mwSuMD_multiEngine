@@ -129,15 +129,15 @@ class Template(mwInputParser):
                               'langevinPistonTemp      $temp;              \n',
                               '\n',
                               '\n',
-                              'numsteps\t%s;\n' % (self.DurationInPS // (self.initialParameters['TimeStep']/1000)),
-                              'run\t%s;\n' % (self.DurationInPS // (self.initialParameters['TimeStep']/1000))]
+                              'numsteps\t%s;\n' % (self.DurationInPS // (self.TimeStep/1000)),
+                              'run\t%s;\n' % (self.DurationInPS // (self.TimeStep/1000))]
 
         if self.initialParameters['MDEngine'] == 'GROMACS':
             # FIXED PATHING AND TIMESTEP
             self.inputFile = ['title                   = %s\n' % self.initialParameters['Output'],
                               '; Run parameters\n',
                               'integrator              = md        ; leap-frog integrator\n',
-                              'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' % (self.DurationInPS // (self.initialParameters['TimeStep']/1000)),
+                              'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' % (self.DurationInPS // (self.TimeStep/1000)),
                               'dt                      = %s     ; Timestep/1000 \n' % str(self.TimeStep / 1000),
                               '; Output control\n',
                               'nstxout                 = 0         ; suppress bulky .trr file by specifying \n',
