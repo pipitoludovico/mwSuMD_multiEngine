@@ -137,7 +137,7 @@ class Template(mwInputParser):
             self.inputFile = ['title                   = %s\n' % self.initialParameters['Output'],
                               '; Run parameters\n',
                               'integrator              = md        ; leap-frog integrator\n',
-                              'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' % (int(self.DurationInPS // (self.TimeStep/1000))),
+                              'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' % str(int(self.DurationInPS // (self.TimeStep/1000))),
                               'dt                      = %s     ; Timestep/1000 \n' % str(int(self.TimeStep / 1000)),
                               '; Output control\n',
                               'nstxout                 = 0         ; suppress bulky .trr file by specifying \n',
