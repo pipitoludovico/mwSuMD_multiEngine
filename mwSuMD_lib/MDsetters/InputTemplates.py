@@ -138,7 +138,7 @@ class Template(mwInputParser):
                               '; Run parameters\n',
                               'integrator              = md        ; leap-frog integrator\n',
                               'nsteps                  = %s    ; ts (ps) * ns = Timewindow (ps)\n' % str(int(self.DurationInPS // (self.TimeStep/1000))),
-                              'dt                      = %s     ; Timestep/1000 \n' % str(int(self.TimeStep / 1000)),
+                              'dt                      = %s     ; Timestep/1000 \n' % str(self.TimeStep / 1000),
                               '; Output control\n',
                               'nstxout                 = 0         ; suppress bulky .trr file by specifying \n',
                               'nstvout                 = 0         ; 0 for output frequency of nstxout,\n',
