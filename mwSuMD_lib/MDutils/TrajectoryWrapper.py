@@ -90,7 +90,7 @@ class TrajectoryOperator(mwInputParser):
         except Exception as e:
             with open('wrappingLog.txt', 'a') as wrapLog:
                 print(repr(e))
-                wrapLog.write(f"Wrapping Exception in {os.getcwd()}. Exception: {e} ")
+                wrapLog.write(f"Wrapping Exception in {os.getcwd()}. Exception: {repr(e)} ")
             Logger.LogToFile('a', self.trajCount, "Wrapping failed: check your MD results in tmp/walker_x folders")
             raise FileNotFoundError
 
