@@ -73,8 +73,7 @@ class TrajectoryOperator(mwInputParser):
                                  "your wrapping selection selected 0 atoms! using protein and name CA instead...")
                 selection = u.select_atoms('protein and name CA')
             ag = u.select_atoms(f"{self.initialParameters['FilterOut']}")
-            workflow = [transformations.unwrap(selection), transformations.center_in_box(selection),
-                        transformations.wrap(ag, compound="fragments")]
+            workflow = [transformations.unwrap(selection), transformations.center_in_box(selection), transformations.wrap(ag, compound="fragments")]
             u.trajectory.add_transformations(*workflow)
             # we write the filtered out trj and coords for the metrics
             ag.write("filtered.pdb")

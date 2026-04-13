@@ -132,8 +132,11 @@ class openMMsetter:
             if self.initialParameters.get('Relax') is True:
                 # if we're in relax mode we need to change variable scale and evaluate if we still want PLUMED
                 self.initialParameters['Timewindow'] = int(self.initialParameters['RelaxTime'] * 1000)
-                number_of_steps = int((self.initialParameters['RelaxTime'] * 1000) / (self.initialParameters['Timestep'] / 1000))
-                saveFreq = 5000
+                number_of_steps = int(
+                    (self.initialParameters['RelaxTime'] * 1000) / (self.initialParameters['Timestep'] / 1000))
+                saveFreq = int(self.initialParameters['RelaxSavefreq'] / (
+                            self.initialParameters['RelaxTimestep'] / 1000)) if self.initialParameters.get(
+                    'RelaxSavefreq') else 5000
                 if self.initialParameters.get("KeepPlumedForRelax") is False:
                     self.ActivatePlumed = False
 
