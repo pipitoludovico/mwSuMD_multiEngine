@@ -2,7 +2,6 @@ import os
 
 import MDAnalysis as Mda
 import MDAnalysis.analysis.rms
-
 import numpy as np
 from MDAnalysis.analysis.hydrogenbonds import HydrogenBondAnalysis
 from MDAnalysis.lib.distances import distance_array
@@ -39,7 +38,8 @@ class Getters(mwInputParser):
                         Logger.LogToFile('a', self.trajCount, self.selection_error)
                         raise ValueError
                     else:
-                        distance = Mda.lib.distances.distance_array(sel1.center_of_geometry(), sel2.center_of_geometry())[0][0]
+                        distance = \
+                        Mda.lib.distances.distance_array(sel1.center_of_geometry(), sel2.center_of_geometry())[0][0]
                         distances.append(distance)
             final_distance = ligand.center_of_geometry()
             mean_lin = np.mean(distances)
@@ -95,9 +95,17 @@ class Getters(mwInputParser):
 
         if str(metric).startswith('HB'):
             try:
-                if sel_1 or sel_2 is not None:
-                    hbonds = HydrogenBondAnalysis(universe=u, between=[f'{sel_1}', f'{sel_2}'], d_a_cutoff=3,
-                                                  d_h_a_angle_cutoff=120, update_selections=False)
+                if sel_1 is not None and sel_2 is not None:
+                    hbonds = HydrogenBondAnalysis(
+                        universe=u,
+                        between=[f'{sel_1}', f'{sel_2}'],
+                        donors_sel=f"({sel_1} or {sel_2}) and (name N* O* S*)",
+                        hydrogens_sel=f"({sel_1} or {sel_2}) and (name H*)",
+                        acceptors_sel=f"({sel_1} or {sel_2}) and (name N* O* S* F*)",
+                        d_a_cutoff=4,
+                        d_h_a_angle_cutoff=90,
+                        update_selections=False
+                    )
                     hbonds.run(verbose=False)
                     mean_contacts = hbonds.count_by_time().mean()
                     last_contact = hbonds.count_by_time()[-1]
@@ -154,3 +162,4 @@ class Getters(mwInputParser):
                 print("Contacts Exception: ", e)
                 Logger.LogToFile('a', self.trajCount, f"Contacts calculation in walker {os.getcwd()} failed.")
                 raise ArithmeticError
+        return None

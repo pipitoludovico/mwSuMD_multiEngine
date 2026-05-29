@@ -15,7 +15,7 @@ class TrajMerger:
         self.sortedTrajs = None
         self.topology = None
         self.coordinates = None
-        self.topologyExtensions = ('.psf', '.prmtop', '.tpr')
+        # self.topologyExtensions = ('.psf', '.prmtop', '.tpr')
         self.coordinatesExtensions = ('.pdb', '.innpcr', '.gro')
         self.inputFile = 'simulation_settings_mwSuMD.inp'
         self.outputFileName = 'merged.xtc'
@@ -24,10 +24,8 @@ class TrajMerger:
 
     def LoadParameters(self, interval: list):
         for file in os.listdir("./"):
-            if file.endswith(self.topologyExtensions):
-                self.topology = file
             if file.endswith(self.coordinatesExtensions):
-                self.coordinates = file
+                self.topology = file
         for traj in os.listdir('trajectories'):
             if traj.endswith('.xtc'):
                 self.trajList.append('trajectories/' + traj)
@@ -57,6 +55,7 @@ class TrajMerger:
 
     def Merge(self):
         # Load just the topology first
+        print(f"File used: {self.topology}")
         u = Universe(self.topology)
         ag = u.select_atoms(self.filterSelection)
 
