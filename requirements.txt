@@ -3,5 +3,5 @@ MDAnalysis==2.7.0
 numpy==1.24.3
 openmm
 pandas==2.0.3
-setuptools==70.0.1
+setuptools==78.1.1
 openmmplumed
