@@ -9,6 +9,9 @@ setup(
     author_email='pipitol@uni.coventry.ac.uk',
     python_requires=">=3.6.6",
     packages=find_packages(),
+    # the CHARMM36 topologies/parameters live inside the package: without this they are
+    # left out of the wheel and an installed mwSuMD finds an empty parameters folder
+    package_data={'mwSuMD_lib.parameters': ['*.prm', '*.rtf', '*.str', '*.par', '*.top', '*.param']},
     install_requires=[
         'MDAnalysis',
         'GPUtil',
