@@ -28,7 +28,7 @@ class mwInputParser:
     excludedGPUS = []
 
     def __init__(self):
-        self.customInputFileExtension = ('namd', 'inp', 'mdp')
+        self.customInputFileExtension = ('namd', 'inp', 'mdp', 'yaml')
         self.outExtensions = ('cpi', 'coor', 'vel', 'xsc')
         self.fileExtensions = ('.psf', '.pdb', '.mdp', '.gro', '.cpt', 'top', '.prmtop', '.tpr')
         self.initialParametersameter_extensions = ('.param', '.prm', '.par', '.top', '.rtf', '.str')
@@ -45,6 +45,11 @@ class mwInputParser:
             file.endswith('.namd') for file in os.listdir('./system')) else 'ACEMD' if any(
             file.endswith('.inp') for file in os.listdir("./system")) else "OPENMM" if any(
             file.endswith('.chk') for file in os.listdir("./system")) else None
+        # ACEMD4 takes a .yaml/.json input: it is looked up only if no other engine was detected,
+        # so any system folder that resolved to an engine before keeps resolving to the same one.
+        if self.initialParameters['MDEngine'] is None and any(
+                file.endswith(('.yaml', '.json')) for file in os.listdir('./system')):
+            self.initialParameters['MDEngine'] = 'ACEMD4'
         if not self.initialParameters['MDEngine']:
             raise FileNotFoundError(
                 "No MD Engine detected. Make sure you kept your input setting's file in the system folder")

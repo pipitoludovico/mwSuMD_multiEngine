@@ -57,6 +57,42 @@ class Template(mwInputParser):
                 f'extendedSystem          %s/%s\n' % (self.sys_folder, self.initialParameters.get('xsc')),
                 'binVelocities           %s/%s\n' % (self.sys_folder, self.initialParameters.get('vel'))]
 
+        if self.initialParameters['MDEngine'] == 'ACEMD4':
+            # ACEMD4 reads a YAML input instead of ACEMD3's key/value file: same settings,
+            # different keywords. Parameters are listed inside the input, so MDsetter does not
+            # prepend them like it does for ACEMD/NAMD.
+            structureFile = self.initialParameters.get('PRMTOP') if self.initialParameters[
+                'Forcefield'] == 'AMBER' else self.initialParameters.get('PSF')
+            acemd4Params = sorted(param for param in self.initialParameters.get('Parameters', [])
+                                  if param.endswith(('.par', '.prm')))
+            self.inputFile = ['# mwSuMD generated input for ACEMD4\n',
+                              'structure: "%s"\n' % structureFile]
+            if self.initialParameters['Forcefield'] != 'AMBER' and acemd4Params:
+                self.inputFile.append(
+                    'parameters: [%s]\n' % ", ".join('"%s"' % param for param in acemd4Params))
+            self.inputFile += ['coordinates: "%s/%s"\n' % (self.sys_folder, self.initialParameters.get('coor')),
+                               'boxsize: "%s/%s"\n' % (self.sys_folder, self.initialParameters.get('xsc')),
+                               'velocities: "%s/%s"\n' % (self.sys_folder, self.initialParameters.get('vel')),
+                               'restart: false\n',
+                               'pme: true\n',
+                               'cutoff: 9.0\n',
+                               'switching: true\n',
+                               'switchdistance: 7.5\n',
+                               'timestep: %s\n' % self.TimeStep,
+                               'hydrogenmass: 4.032\n',
+                               'thermostat: true\n',
+                               'thermostattemperature: %s\n' % self.initialParameters.get('Temperature'),
+                               'thermostatdamping: 0.1\n',
+                               'barostat: false\n',
+                               'trajectoryfile: "%s_%s.xtc"\n' % (
+                                   self.initialParameters.get('Output'), str(self.trajCount)),
+                               'trajectoryperiod: %s\n' % self.SaveFreq,
+                               'stepzero: false\n',
+                               'minimize: 0\n',
+                               'run: %sps\n' % int(self.DurationInPS)]
+            if self.ActivatePlumed:
+                self.inputFile.append('plumedfile: "%s"\n' % self.ActivatePlumed)
+
         if self.initialParameters['MDEngine'] == 'NAMD':
             self.inputFile = ['structure               ../../system/%s\n' % self.initialParameters.get('PSF'),
                               'coordinates             ../../system/%s\n' % self.initialParameters.get('PDB'),

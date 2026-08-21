@@ -147,6 +147,24 @@ class Runner(mwInputParser):
             if customFile is not None and self.initialParameters['COMMAND'] is not None:
                 command = f'{self.initialParameters["COMMAND"]} {gpuCall} production.inp > acemd.log'
 
+        if self.par['MDEngine'] == 'ACEMD4':
+            if not self.initialParameters.get('NOGPU'):
+                gpuCall = f'--device {GPU}'
+            else:
+                gpuCall = '--platform CPU'
+            # standard call: no custom file, no custom command
+            if customFile is None and self.initialParameters['COMMAND'] is None:
+                command = f'acemd {gpuCall} input_{walk_count}_{trajCount}.yaml > acemd.log'
+            # no custom file / custom command
+            if customFile is None and self.initialParameters['COMMAND'] is not None:
+                command = f'{self.initialParameters["COMMAND"]} {gpuCall} input_{walk_count}_{trajCount}.yaml > acemd.log'
+            # custom file / no custom command
+            if customFile is not None and self.initialParameters['COMMAND'] is None:
+                command = f'acemd {gpuCall} production.yaml > acemd.log'
+            # custom file / custom command
+            if customFile is not None and self.initialParameters['COMMAND'] is not None:
+                command = f'{self.initialParameters["COMMAND"]} {gpuCall} production.yaml > acemd.log'
+
         if self.par['MDEngine'] == 'NAMD':
             if not self.initialParameters.get('NOGPU'):
                 gpuCall = f'+devices {GPU}'
