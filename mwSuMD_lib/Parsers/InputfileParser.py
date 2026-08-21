@@ -3,7 +3,6 @@ from subprocess import Popen, DEVNULL
 from warnings import filterwarnings
 
 import MDAnalysis as Mda
-import pkg_resources
 
 filterwarnings(action='ignore')
 
@@ -15,7 +14,8 @@ class mwInputParser:
     initialParameters = {'Root': os.getcwd()}
     selection_list = []
     walker_metrics = []
-    package_dir = pkg_resources.resource_filename('mwSuMD_lib', 'parameters')
+    # shipped alongside the package: pkg_resources was dropped from setuptools 83
+    package_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'parameters')
     parameterFolderPath = os.path.abspath(package_dir)
     coordExtensions = ('.pdb', '.gro', '.inpcrd', '.restrt')
     parameterPaths = [parameterFolderPath, ]

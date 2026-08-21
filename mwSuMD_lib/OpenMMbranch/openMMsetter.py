@@ -4,7 +4,6 @@ from subprocess import Popen, DEVNULL
 import MDAnalysis as Mda
 import numpy as np
 import openmm.app as app
-import pkg_resources
 from openmm import *
 from openmm import XmlSerializer, Platform, LangevinMiddleIntegrator, CustomExternalForce
 from openmm.unit import *
@@ -20,7 +19,8 @@ class openMMsetter:
         self.trajCount = len([traj for traj in os.listdir('./trajectories') if traj.endswith('.xtc')])
         self.timeWindow = None
         if 'parameters' not in os.listdir(os.getcwd()):
-            package_dir = pkg_resources.resource_filename('mwSuMD_lib', 'parameters')
+            # shipped alongside the package: pkg_resources was dropped from setuptools 83
+            package_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'parameters')
             self.parameterFolderPath = os.path.abspath(package_dir)
         else:
             self.parameterFolderPath = os.path.abspath('../parameters')
