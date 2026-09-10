@@ -83,19 +83,25 @@ class Getters(mwInputParser):
             referencePDB = self.initialParameters['REFERENCE']
             try:
                 ref = Mda.Universe(referencePDB)
-                if len(u.select_atoms(sel_1)) == 0 or len(u.select_atoms(sel_2)) == 0:
-                    Logger.LogToFile('a', self.trajCount, self.selection_error)
-                    raise ValueError
-                else:
-                    R = Mda.analysis.rms.RMSD(u, ref, tol_mass=100, select="%s" % sel_1, groupselections=["%s" % sel_2])
-                    R.run()
-                    rmsd = R.rmsd.T
-                    data = list(rmsd[3])
-                    mean_rmsd = sum(data) / len(data)
-                    last_rmsd = data[-1]
+                try:
+                    if len(u.select_atoms(sel_1)) == 0 or len(u.select_atoms(sel_2)) == 0:
+                        Logger.LogToFile('a', self.trajCount, self.selection_error)
+                        raise ValueError
+                    else:
+                        R = Mda.analysis.rms.RMSD(u, ref, tol_mass=100, select="%s" % sel_1,
+                                                  groupselections=["%s" % sel_2])
+                        R.run()
+                        rmsd = R.rmsd.T
+                        data = list(rmsd[3])
+                        mean_rmsd = sum(data) / len(data)
+                        last_rmsd = data[-1]
 
-                    distMetric = (mean_rmsd * last_rmsd) ** 0.5
-                    return distMetric, data, data[-1]
+                        distMetric = (mean_rmsd * last_rmsd) ** 0.5
+                        return distMetric, data, data[-1]
+                finally:
+                    # the reference PDB lives in system/, so it leaves no .nfs leftover, but the
+                    # reader stays open once per cycle for the whole run if nobody closes it.
+                    ref.trajectory.close()
             except Exception as e:
                 print("RMSD Exception: ", e)
                 Logger.LogToFile('a', self.trajCount, f"RMSD calculation in walker {os.getcwd()} failed.")
