@@ -93,7 +93,7 @@ class Checker(mwInputParser):
 
         for file in os.listdir(os.getcwd()):
             if file.endswith('.inp'):
-                subprocess.Popen(f'{plumedCopy} acemd --device {jointGPUs} {file} 1> relax.log', shell=True).wait()
+                subprocess.Popen(f'{plumedCopy} acemd3 --device {jointGPUs} {file} 1> relax.log', shell=True).wait()
             elif file.endswith('.yaml'):
                 subprocess.Popen(f'{plumedCopy} acemd --device={jointGPUs} {file} > relax.log 2>&1', shell=True).wait()
             elif file.endswith('.namd'):
