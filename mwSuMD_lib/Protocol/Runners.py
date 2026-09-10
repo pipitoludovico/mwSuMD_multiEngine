@@ -152,21 +152,22 @@ class Runner(mwInputParser):
                 gpuCall = f'--device {GPU}'
             else:
                 gpuCall = '--platform CPU'
-            # stderr goes to the log too, as the GROMACS branch does: acemd reports a missing
-            # binary, a rejected argument or a bad input on stderr, which a plain "> acemd.log"
-            # drops on the floor since Popen runs with stdout=DEVNULL
+            # The input file goes BEFORE the flags: acemd's --device takes one or more indices,
+            # so with the input last it swallows the filename as a device id and dies with
+            # "argument --device: invalid int value". stderr is logged too, as GROMACS does,
+            # since Popen runs with stdout=DEVNULL and would otherwise drop acemd's errors.
             # standard call: no custom file, no custom command
             if customFile is None and self.initialParameters['COMMAND'] is None:
-                command = f'acemd {gpuCall} input_{walk_count}_{trajCount}.yaml > acemd.log 2>&1'
+                command = f'acemd input_{walk_count}_{trajCount}.yaml {gpuCall} > acemd.log 2>&1'
             # no custom file / custom command
             if customFile is None and self.initialParameters['COMMAND'] is not None:
-                command = f'{self.initialParameters["COMMAND"]} {gpuCall} input_{walk_count}_{trajCount}.yaml > acemd.log 2>&1'
+                command = f'{self.initialParameters["COMMAND"]} input_{walk_count}_{trajCount}.yaml {gpuCall} > acemd.log 2>&1'
             # custom file / no custom command
             if customFile is not None and self.initialParameters['COMMAND'] is None:
-                command = f'acemd {gpuCall} production.yaml > acemd.log 2>&1'
+                command = f'acemd production.yaml {gpuCall} > acemd.log 2>&1'
             # custom file / custom command
             if customFile is not None and self.initialParameters['COMMAND'] is not None:
-                command = f'{self.initialParameters["COMMAND"]} {gpuCall} production.yaml > acemd.log 2>&1'
+                command = f'{self.initialParameters["COMMAND"]} production.yaml {gpuCall} > acemd.log 2>&1'
 
         if self.par['MDEngine'] == 'NAMD':
             if not self.initialParameters.get('NOGPU'):
