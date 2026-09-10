@@ -58,6 +58,7 @@ class TrajectoryOperator(mwInputParser):
                     for ts in conv.trajectory:
                         if ts:
                             converter.write(all_atoms)
+                conv.trajectory.close()
                 trajFile = 'converted.xtc'
 
             try:
@@ -84,6 +85,8 @@ class TrajectoryOperator(mwInputParser):
                 for ts in u.trajectory:
                     if ts:
                         w.write(ag)
+            # closed before saveStep deletes this folder, or NFS leaves a .nfsXXXX behind
+            u.trajectory.close()
 
             os.chdir(self.folder)
         except Exception as e:
@@ -181,6 +184,7 @@ class TrajectoryOperator(mwInputParser):
             with XTCWriter("wrapped.xtc", n_atoms=natoms) as writer:
                 for ts in u.trajectory:
                     writer.write(ag)
+            chain_reader.close()
             os.chdir(self.folder)
         except RuntimeError:
             print(traceback.format_exc())

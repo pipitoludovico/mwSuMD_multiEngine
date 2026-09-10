@@ -23,9 +23,17 @@ class Getters(mwInputParser):
         filterwarnings(action='ignore')
 
     def GetMetric(self, metric, sel_1, sel_2):
-        psf = "filtered.pdb"
-        xtc = 'wrapped.xtc'
-        u = Mda.Universe(psf, xtc)
+        u = Mda.Universe("filtered.pdb", "wrapped.xtc")
+        try:
+            return self.computeMetric(u, metric, sel_1, sel_2)
+        finally:
+            # saveStep removes the walker folder as soon as the metrics are in. On NFS a file
+            # that is still open cannot be unlinked: it gets silly-renamed to .nfsXXXX and sits
+            # there for the rest of the run. MDAnalysis leaves closing to the garbage collector
+            # and its objects hold reference cycles, so the handle outlives the rmtree.
+            u.trajectory.close()
+
+    def computeMetric(self, u, metric, sel_1, sel_2):
         if str(metric).startswith('DISTANCE'):
             sel1 = u.select_atoms(sel_1)
             sel2 = u.select_atoms(sel_2)
