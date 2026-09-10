@@ -40,16 +40,14 @@ class mwInputParser:
 
     def checkEngine(self):
         self.getSystem()
+        # ACEMD4 takes a .yaml/.json input and is tested last, so a system folder that already
+        # resolved to another engine keeps resolving to the same one.
         self.initialParameters['MDEngine'] = 'GROMACS' if any(
             file.endswith('.gro') for file in os.listdir('./system')) else 'NAMD' if any(
             file.endswith('.namd') for file in os.listdir('./system')) else 'ACEMD' if any(
             file.endswith('.inp') for file in os.listdir("./system")) else "OPENMM" if any(
-            file.endswith('.chk') for file in os.listdir("./system")) else None
-        # ACEMD4 takes a .yaml/.json input: it is looked up only if no other engine was detected,
-        # so any system folder that resolved to an engine before keeps resolving to the same one.
-        if self.initialParameters['MDEngine'] is None and any(
-                file.endswith(('.yaml', '.json')) for file in os.listdir('./system')):
-            self.initialParameters['MDEngine'] = 'ACEMD4'
+            file.endswith('.chk') for file in os.listdir("./system")) else "ACEMD4" if any(
+            file.endswith(('.yaml', '.json')) for file in os.listdir("./system")) else None
         if not self.initialParameters['MDEngine']:
             raise FileNotFoundError(
                 "No MD Engine detected. Make sure you kept your input setting's file in the system folder")
